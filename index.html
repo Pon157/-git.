@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>💬 Чат поддержки</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            text-align: center;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #007aff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .admin-message {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .input-container {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        #messageInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+        }
+        
+        #sendButton {
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        #sendButton:hover {
+            background: #0056cc;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin: 10px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timestamp {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>💬 Чат поддержки</h2>
+        <div id="status">Готов к работе</div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <div class="welcome-message">
+            <h3>Добро пожаловать! 👋</h3>
+            <p>Напишите сообщение и администратор ответит вам</p>
+        </div>
+    </div>
+    
+    <div class="input-container">
+        <div class="input-row">
+            <textarea 
+                id="messageInput" 
+                placeholder="Введите ваше сообщение..." 
+                rows="1"
+            ></textarea>
+            <button id="sendButton" onclick="sendMessage()">
+                📤
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const status = document.getElementById('status');
+        
+        // Авто-расширение textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Отправка по Enter (без Shift)
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            // Добавляем сообщение в чат
+            addMessage(text, 'user');
+            
+            // Отправляем в бот
+            tg.sendData(JSON.stringify({
+                action: 'send_message',
+                text: text
+            }));
+            
+            // Очищаем поле ввода
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            sendButton.disabled = true;
+            
+            // Показываем статус отправки
+            status.textContent = 'Сообщение отправлено ✅';
+            setTimeout(() => {
+                status.textContent = 'Ожидание ответа...';
+            }, 3000);
+        }
+        
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const messageText = document.createElement('div');
+            messageText.textContent = text;
+            
+            const timestamp = document.createElement('div');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = new Date().toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            messageDiv.appendChild(messageText);
+            messageDiv.appendChild(timestamp);
+            chatContainer.appendChild(messageDiv);
+            
+            // Прокрутка вниз
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Инициализация
+        messageInput.addEventListener('input', function() {
+            sendButton.disabled = !this.value.trim();
+        });
+        
+        sendButton.disabled = true;
+        status.textContent = 'Готов к работе ✅';
+        
+        // Обработка данных от бота
+        tg.onEvent('webAppDataReceived', (event) => {
+            const data = JSON.parse(event.data);
+            if (data.action === 'admin_message') {
+                addMessage(data.text, 'admin');
+                status.textContent = 'Новое сообщение ✨';
+            }
+        });
+    </script>
+</body>
+</html>

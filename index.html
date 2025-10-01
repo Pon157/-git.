@@ -248,7 +248,7 @@ function showReviewModal(chatId) {
                 <div class="modal-body">
                     <div class="rating-stars">
                         ${[1,2,3,4,5].map(star => `
-                            <span class="star" onclick="setRating(${star})">${star <= currentRating ? '⭐' : '☆'}</span>
+                            <span class="star" onclick="setRating(${star})">☆</span>
                         `).join('')}
                     </div>
                     <textarea class="review-comment" placeholder="Ваш комментарий (необязательно)"></textarea>
@@ -365,3 +365,142 @@ function formatTime(timestamp) {
 function getInitials(name) {
     return name.split(' ').map(word => word[0]).join('').toUpperCase();
 }
+
+// 🆕 ДОБАВЛЕННЫЕ ФУНКЦИИ ДЛЯ ОТСУТСТВУЮЩЕЙ ФУНКЦИОНАЛЬНОСТИ
+
+// Функция для получения администратора по имени
+function getAdminByUsername(username) {
+    const admins = JSON.parse(localStorage.getItem('admins')) || [];
+    return admins.find(admin => admin.username === username);
+}
+
+// Функция для обновления рейтинга администратора
+function updateAdminRating(adminUsername) {
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const adminReviews = reviews.filter(review => review.adminUsername === adminUsername);
+    
+    if (adminReviews.length === 0) return;
+    
+    const averageRating = adminReviews.reduce((sum, review) => sum + review.rating, 0) / adminReviews.length;
+    
+    // Обновляем рейтинг в localStorage
+    const admins = JSON.parse(localStorage.getItem('admins')) || [];
+    const adminIndex = admins.findIndex(admin => admin.username === adminUsername);
+    
+    if (adminIndex !== -1) {
+        admins[adminIndex].rating = averageRating.toFixed(1);
+        admins[adminIndex].reviewCount = adminReviews.length;
+        localStorage.setItem('admins', JSON.stringify(admins));
+    }
+}
+
+// Функция для пометки чата как прочитанного
+function markChatAsRead(chatId) {
+    const chats = JSON.parse(localStorage.getItem('chats')) || [];
+    const chat = chats.find(c => c.id === chatId);
+    
+    if (chat) {
+        chat.messages.forEach(message => {
+            if (message.from !== currentUser.username) {
+                message.isRead = true;
+            }
+        });
+        chat.hasUnread = false;
+        localStorage.setItem('chats', JSON.stringify(chats));
+    }
+}
+
+// Функция для пометки уведомлений как прочитанных
+function markNotificationsAsRead() {
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    notifications.forEach(notification => {
+        notification.isRead = true;
+    });
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+}
+
+// Функция для показа интерфейса чата
+function showChatInterface(chat) {
+    const chatContainer = document.getElementById('chatsContainer');
+    
+    let html = `
+        <div class="chat-header">
+            <button class="back-btn" onclick="showChatsList()">←</button>
+            <div>
+                <h3>${chat.adminUsername}</h3>
+                <p>${chat.adminSpecialty}</p>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages-${chat.id}">
+    `;
+    
+    if (chat.messages.length === 0) {
+        html += '<div class="empty-state">Начните общение</div>';
+    } else {
+        chat.messages.forEach(message => {
+            const messageClass = message.from === currentUser.username ? 'message-outgoing' : 'message-incoming';
+            html += `
+                <div class="message ${messageClass}">
+                    <div class="message-text">${message.text}</div>
+                    <div class="message-time">${formatTime(message.timestamp)}</div>
+                </div>
+            `;
+        });
+    }
+    
+    html += `
+        </div>
+        <div class="chat-input">
+            <input type="text" id="messageInput-${chat.id}" placeholder="Введите сообщение...">
+            <button onclick="sendRealMessage('${chat.id}', document.getElementById('messageInput-${chat.id}').value)">
+                Отправить
+            </button>
+        </div>
+    `;
+    
+    chatContainer.innerHTML = html;
+}
+
+// Функция для добавления сообщения в интерфейс чата
+function addMessageToChat(chatId, message) {
+    const messagesContainer = document.getElementById(`chatMessages-${chatId}`);
+    if (!messagesContainer) return;
+    
+    const messageClass = message.from === currentUser.username ? 'message-outgoing' : 'message-incoming';
+    const messageHtml = `
+        <div class="message ${messageClass}">
+            <div class="message-text">${message.text}</div>
+            <div class="message-time">${formatTime(message.timestamp)}</div>
+        </div>
+    `;
+    
+    messagesContainer.insertAdjacentHTML('beforeend', messageHtml);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Функция для обновления списка чатов
+function updateChatsList() {
+    showChatsList();
+}
+
+// Инициализация тестовых данных
+function initializeTestData() {
+    // Тестовые администраторы
+    const admins = [
+        { username: "admin1", specialty: "Техническая поддержка", rating: 4.8, reviewCount: 15 },
+        { username: "admin2", specialty: "Отдел продаж", rating: 4.9, reviewCount: 22 },
+        { username: "admin3", specialty: "Бухгалтерия", rating: 4.7, reviewCount: 8 }
+    ];
+    localStorage.setItem('admins', JSON.stringify(admins));
+    
+    // Тестовый пользователь
+    if (!currentUser) {
+        currentUser = { username: "test_user", role: "user" };
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTestData();
+    showChatsList();
+});

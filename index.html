@@ -35,7 +35,6 @@
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
-            padding: 0;
         }
 
         .app-container {
@@ -85,12 +84,6 @@
             transition: var(--transition);
         }
 
-        .card:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -111,7 +104,6 @@
             background: rgba(255, 255, 255, 0.1);
             color: var(--text-primary);
             font-size: 16px;
-            transition: var(--transition);
             border: 1px solid transparent;
         }
 
@@ -178,7 +170,6 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: var(--transition);
         }
 
         .tab-btn.active {
@@ -216,46 +207,61 @@
             margin-bottom: 4px;
         }
 
-        .table {
-            width: 100%;
-            border-collapse: collapse;
+        .chats-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
-        .table th, .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .chat-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+        .chat-item:hover {
+            background: var(--card-hover);
+            transform: translateY(-2px);
+        }
+
+        .chat-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
             font-weight: 600;
         }
 
-        .badge-success { background: var(--success); }
-        .badge-warning { background: var(--warning); }
-        .badge-danger { background: var(--danger); }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 16px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 1000;
-            transition: var(--transition);
-            max-width: 90%;
+        .chat-info {
+            flex: 1;
         }
 
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
+        .chat-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-badge {
+            background: var(--primary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .chat-container {
@@ -293,8 +299,61 @@
             align-self: flex-start;
         }
 
+        .message-system {
+            background: rgba(255, 255, 255, 0.05);
+            align-self: center;
+            max-width: 90%;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .message-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.6;
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .send-btn {
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+        }
+
         .logs-container {
-            max-height: 400px;
+            max-height: 300px;
             overflow-y: auto;
             background: rgba(0,0,0,0.2);
             border-radius: 8px;
@@ -311,7 +370,35 @@
 
         .log-info { background: rgba(59, 130, 246, 0.1); }
         .log-warning { background: rgba(245, 158, 11, 0.1); }
-        .log-error { background: rgba(239, 68, 68, 0.1); }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -319,19 +406,19 @@
         <!-- Экран авторизации -->
         <div id="authScreen" class="screen active">
             <div class="header">
-                <h1>🔐 Система поддержки</h1>
-                <p>Войдите в свою учетную запись</p>
+                <h1>🔐 Чат Поддержки</h1>
+                <p>Войдите в систему</p>
             </div>
             
             <div class="card">
                 <div class="form-group">
                     <label class="form-label">👤 Логин</label>
-                    <input type="text" class="form-input" id="authUsername" placeholder="Введите логин">
+                    <input type="text" class="form-input" id="authUsername" placeholder="Введите логин" value="owner">
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🔐 Пароль</label>
-                    <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
+                    <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль" value="owner123">
                 </div>
                 
                 <button class="btn btn-primary" onclick="login()">
@@ -341,8 +428,16 @@
             
             <div class="card">
                 <button class="btn btn-secondary" onclick="showScreen('registerScreen')">
-                    <span>📝 Регистрация пользователя</span>
+                    <span>📝 Создать аккаунт</span>
                 </button>
+            </div>
+
+            <div class="card">
+                <div style="text-align: center; font-size: 12px; color: var(--text-secondary);">
+                    <p>👑 Тестовые аккаунты:</p>
+                    <p><strong>Владелец:</strong> owner / owner123</p>
+                    <p><strong>Пользователь:</strong> user / user123</p>
+                </div>
             </div>
         </div>
 
@@ -393,6 +488,15 @@
             <div id="chatsTab" class="tab-content active">
                 <div class="chats-list" id="chatsList"></div>
                 <button class="btn btn-primary" onclick="startNewChat()">➕ Новый чат</button>
+                
+                <div class="chat-item" onclick="openSystemChat()">
+                    <div class="chat-avatar" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">⚙️</div>
+                    <div class="chat-info">
+                        <div class="chat-name">Системные уведомления</div>
+                        <div class="chat-preview">Технические уведомления и обновления</div>
+                    </div>
+                    <div class="chat-badge" id="systemNotificationsCount">0</div>
+                </div>
             </div>
             
             <div id="adminsTab" class="tab-content">
@@ -448,17 +552,18 @@
             <div id="adminUsersTab" class="tab-content">
                 <div class="card">
                     <h3>👥 Управление пользователями</h3>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Логин</th>
-                                <th>Роль</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTable"></tbody>
-                    </table>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Логин</th>
+                                    <th style="text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Роль</th>
+                                    <th style="text-align: left; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
@@ -501,7 +606,7 @@
                 <button class="back-btn" onclick="closeChat()">←</button>
                 <div style="flex: 1;">
                     <div class="chat-name" id="chatWithName"></div>
-                    <div class="admin-status" id="chatPartnerStatus"></div>
+                    <div id="chatPartnerStatus"></div>
                 </div>
             </div>
             
@@ -523,8 +628,6 @@
         // Глобальные переменные
         let currentUser = null;
         let currentChat = null;
-        let isAdmin = false;
-        let userRole = 'user';
 
         // Инициализация системы
         function init() {
@@ -537,12 +640,9 @@
         function initLocalDB() {
             const defaults = {
                 users: [],
-                admins: [],
                 chats: [],
-                messages: [],
-                reviews: [],
                 systemLogs: [],
-                settings: { theme: 'gradient', fontSize: 14 }
+                settings: {}
             };
 
             Object.keys(defaults).forEach(key => {
@@ -551,19 +651,27 @@
                 }
             });
 
-            // Создаем владельца системы если его нет
+            // Создаем тестовые аккаунты если их нет
             const users = JSON.parse(localStorage.getItem('users'));
-            if (!users.find(u => u.username === 'owner')) {
-                users.push({
-                    username: 'owner',
-                    password: 'owner123',
-                    role: 'Совладелец',
-                    isOnline: false,
-                    registeredAt: new Date().toISOString(),
-                    lastLogin: null
-                });
-                localStorage.setItem('users', JSON.stringify(users));
-            }
+            const testAccounts = [
+                { username: 'owner', password: 'owner123', role: 'Совладелец' },
+                { username: 'user', password: 'user123', role: 'user' }
+            ];
+
+            testAccounts.forEach(acc => {
+                if (!users.find(u => u.username === acc.username)) {
+                    users.push({
+                        username: acc.username,
+                        password: acc.password,
+                        role: acc.role,
+                        isOnline: false,
+                        registeredAt: new Date().toISOString(),
+                        lastLogin: null
+                    });
+                }
+            });
+
+            localStorage.setItem('users', JSON.stringify(users));
         }
 
         // Проверка активной сессии
@@ -576,14 +684,12 @@
                 
                 if (user && user.password === userData.password) {
                     currentUser = user;
-                    userRole = user.role;
-                    isAdmin = user.role !== 'user';
                     
                     user.isOnline = true;
                     user.lastLogin = new Date().toISOString();
                     localStorage.setItem('users', JSON.stringify(users));
                     
-                    if (isAdmin) {
+                    if (user.role !== 'user') {
                         showAdminPanel();
                     } else {
                         showMainScreen();
@@ -610,8 +716,6 @@
 
             if (user) {
                 currentUser = user;
-                userRole = user.role;
-                isAdmin = user.role !== 'user';
                 
                 // Сохраняем сессию
                 localStorage.setItem('activeUser', JSON.stringify({
@@ -628,11 +732,15 @@
                 showNotification('✅ Вход выполнен успешно!', 'success');
                 addSystemLog(`Успешный вход: ${username}`, 'info');
 
-                if (isAdmin) {
-                    showAdminPanel();
-                } else {
-                    showMainScreen();
-                }
+                // Переходим на нужный экран
+                setTimeout(() => {
+                    if (user.role !== 'user') {
+                        showAdminPanel();
+                    } else {
+                        showMainScreen();
+                    }
+                }, 500);
+
             } else {
                 showNotification('❌ Неверный логин или пароль!', 'error');
                 addSystemLog(`Неудачная попытка входа: ${username}`, 'warning');
@@ -674,8 +782,6 @@
             localStorage.setItem('users', JSON.stringify(users));
 
             currentUser = newUser;
-            userRole = 'user';
-            isAdmin = false;
 
             localStorage.setItem('activeUser', JSON.stringify({
                 username: username,
@@ -685,12 +791,15 @@
 
             showNotification('✅ Регистрация выполнена!', 'success');
             addSystemLog(`Зарегистрирован новый пользователь: ${username}`, 'info');
-            showMainScreen();
+            
+            setTimeout(() => {
+                showMainScreen();
+            }, 500);
         }
 
         // Создание администратора
         function createAdmin() {
-            if (userRole !== 'Совладелец') {
+            if (currentUser.role !== 'Совладелец') {
                 showNotification('❌ Только совладелец может создавать администраторов!', 'error');
                 return;
             }
@@ -744,7 +853,7 @@
         // Показать панель администратора
         function showAdminPanel() {
             document.getElementById('adminName').textContent = currentUser.username;
-            document.getElementById('adminRole').textContent = userRole;
+            document.getElementById('adminRole').textContent = currentUser.role;
             loadAdminChats();
             updateAdminStats();
             loadUsersTable();
@@ -766,11 +875,10 @@
             };
             
             logs.unshift(logEntry);
-            if (logs.length > 1000) logs.length = 1000; // Ограничение логов
+            if (logs.length > 1000) logs.length = 1000;
             
             localStorage.setItem('systemLogs', JSON.stringify(logs));
             
-            // Обновляем отображение если открыта панель логов
             if (document.getElementById('adminSystemTab').classList.contains('active')) {
                 loadSystemLogs();
             }
@@ -833,6 +941,265 @@
             addSystemLog(`Создан новый чат: ${currentUser.username} -> ${adminUsername}`, 'info');
         }
 
+        function loadChats() {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const userChats = chats.filter(chat => 
+                chat.participants.includes(currentUser.username)
+            );
+            
+            const container = document.getElementById('chatsList');
+            if (userChats.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">У вас пока нет чатов</p></div>';
+                return;
+            }
+            
+            container.innerHTML = userChats.map(chat => {
+                const partner = chat.participants.find(p => p !== currentUser.username);
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                return `
+                    <div class="chat-item" onclick="openChat('${chat.id}')">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            ${partner.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">${partner}</div>
+                            <div class="chat-preview">${lastMessage.text}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openChat(chatId) {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            currentChat = chats.find(c => c.id === chatId);
+            
+            if (!currentChat) return;
+            
+            const partner = currentChat.participants.find(p => p !== currentUser.username);
+            document.getElementById('chatWithName').textContent = partner;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = currentChat.messages.map(msg => `
+                <div class="message ${msg.sender === currentUser.username ? 'message-user' : msg.sender === 'system' ? 'message-system' : 'message-admin'}">
+                    <div class="message-text">${msg.text}</div>
+                    <div class="message-time">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                </div>
+            `).join('');
+            
+            showScreen('chatScreen');
+        }
+
+        function closeChat() {
+            if (currentUser.role !== 'user') {
+                showAdminPanel();
+            } else {
+                showMainScreen();
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentChat) return;
+            
+            const message = {
+                id: 'msg_' + Date.now(),
+                sender: currentUser.username,
+                text: text,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            currentChat.messages.push(message);
+            
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const chatIndex = chats.findIndex(c => c.id === currentChat.id);
+            if (chatIndex !== -1) {
+                chats[chatIndex] = currentChat;
+                localStorage.setItem('chats', JSON.stringify(chats));
+            }
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-user`;
+            messageDiv.innerHTML = `
+                <div class="message-text">${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            `;
+            messagesContainer.appendChild(messageDiv);
+            
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Имитация ответа
+            setTimeout(() => {
+                const responses = [
+                    "Спасибо за ваше сообщение! Я уже изучаю ваш вопрос.",
+                    "Понял вас. Давайте разберемся с этим вместе.",
+                    "Интересный вопрос! У меня есть несколько идей по решению."
+                ];
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                
+                const adminMessage = {
+                    id: 'msg_' + Date.now(),
+                    sender: currentChat.participants.find(p => p !== currentUser.username),
+                    text: response,
+                    timestamp: new Date().toISOString(),
+                    read: false
+                };
+                
+                currentChat.messages.push(adminMessage);
+                chats[chatIndex] = currentChat;
+                localStorage.setItem('chats', JSON.stringify(chats));
+                
+                const adminMessageDiv = document.createElement('div');
+                adminMessageDiv.className = 'message message-admin';
+                adminMessageDiv.innerHTML = `
+                    <div class="message-text">${response}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                `;
+                messagesContainer.appendChild(adminMessageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function handleMessageKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function openSystemChat() {
+            const systemChat = {
+                id: 'system',
+                participants: [currentUser.username, 'system'],
+                messages: [{
+                    id: 'sys_1',
+                    sender: 'system',
+                    text: 'Добро пожаловать в системные уведомления! Здесь вы будете получать технические уведомления.',
+                    timestamp: new Date().toISOString(),
+                    read: true
+                }]
+            };
+            currentChat = systemChat;
+            document.getElementById('chatWithName').textContent = 'Системные уведомления';
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="message message-system">
+                    <div class="message-text">Добро пожаловать в системные уведомления! Здесь вы будете получать технические уведомления.</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            showScreen('chatScreen');
+        }
+
+        function loadAdminsList() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const admins = users.filter(u => u.role !== 'user');
+            const container = document.getElementById('adminsList');
+            
+            if (admins.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">Администраторы не найдены</p></div>';
+                return;
+            }
+            
+            container.innerHTML = admins.map(admin => `
+                <div class="chat-item">
+                    <div class="chat-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        ${admin.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${admin.username} <span style="font-size: 11px; color: var(--warning);">${admin.role}</span></div>
+                        <div class="chat-preview">${admin.isOnline ? '🟢 Online' : '🔴 Offline'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadAdminChats() {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const adminChats = chats.filter(chat => 
+                chat.participants.includes(currentUser.username)
+            );
+            
+            const container = document.getElementById('adminChatsList');
+            if (adminChats.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">У вас пока нет чатов</p></div>';
+                return;
+            }
+            
+            container.innerHTML = adminChats.map(chat => {
+                const partner = chat.participants.find(p => p !== currentUser.username);
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                return `
+                    <div class="chat-item" onclick="openChat('${chat.id}')">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            ${partner.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">${partner}</div>
+                            <div class="chat-preview">${lastMessage.text}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadUsersTable() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const container = document.getElementById('usersTable');
+            
+            container.innerHTML = users.map(user => `
+                <tr>
+                    <td style="padding: 8px;">${user.username}</td>
+                    <td style="padding: 8px;">${user.role}</td>
+                    <td style="padding: 8px;">${user.isOnline ? '🟢 Online' : '🔴 Offline'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function loadAllChats() {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const container = document.getElementById('allChatsList');
+            
+            if (chats.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">Чатов нет</p></div>';
+                return;
+            }
+            
+            container.innerHTML = chats.map(chat => `
+                <div class="chat-item">
+                    <div class="chat-avatar" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                        💬
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.participants.join(' ↔ ')}</div>
+                        <div class="chat-preview">${chat.messages.length} сообщений</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateOnlineStats() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const onlineUsers = users.filter(u => u.isOnline).length;
+            const onlineAdmins = users.filter(u => u.role !== 'user' && u.isOnline).length;
+            
+            document.getElementById('onlineUsers').textContent = onlineUsers;
+            document.getElementById('onlineAdmins').textContent = onlineAdmins;
+        }
+
+        function updateAdminStats() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const chats = JSON.parse(localStorage.getItem('chats'));
+            
+            document.getElementById('statTotalUsers').textContent = users.length;
+            document.getElementById('statActiveChats').textContent = chats ? chats.length : 0;
+            document.getElementById('statTotalMessages').textContent = chats ? 
+                chats.reduce((total, chat) => total + chat.messages.length, 0) : 0;
+        }
+
         // Вспомогательные функции
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
@@ -887,23 +1254,6 @@
 
         // Инициализация при загрузке
         window.onload = init;
-        // Выполните в консоли браузера:
-const users = JSON.parse(localStorage.getItem('users')) || [];
-if (!users.find(u => u.username === 'owner')) {
-    users.push({
-        username: 'owner',
-        password: 'owner123',
-        role: 'Совладелец',
-        isOnline: false,
-        registeredAt: new Date().toISOString(),
-        lastLogin: null
-    });
-    localStorage.setItem('users', JSON.stringify(users));
-    console.log('✅ Владелец создан! Логин: owner, Пароль: owner123');
-} else {
-    console.log('👑 Владелец уже существует в системе');
-}
     </script>
-
 </body>
 </html>

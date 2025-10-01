@@ -21,7 +21,6 @@
             --border-radius: 16px;
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --glass: rgba(255, 255, 255, 0.08);
         }
 
         * {
@@ -47,7 +46,6 @@
             flex-direction: column;
         }
 
-        /* Экраны */
         .screen {
             display: none;
             flex: 1;
@@ -58,7 +56,6 @@
             display: flex;
         }
 
-        /* Заголовки */
         .header {
             text-align: center;
             margin-bottom: 24px;
@@ -78,12 +75,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .header p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* Карточки */
         .card {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -100,7 +91,6 @@
             box-shadow: var(--shadow);
         }
 
-        /* Формы */
         .form-group {
             margin-bottom: 20px;
         }
@@ -129,14 +119,8 @@
             outline: none;
             border-color: var(--primary);
             background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Кнопки */
         .btn {
             width: 100%;
             padding: 16px 24px;
@@ -161,7 +145,6 @@
         .btn-primary:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
 
         .btn-secondary {
@@ -170,66 +153,12 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .btn-secondary:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
         .btn-sm {
             padding: 8px 16px;
             font-size: 14px;
             width: auto;
         }
 
-        /* Навигация */
-        .nav-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 10px;
-            transition: var(--transition);
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Табы */
         .tabs-container {
             display: flex;
             gap: 8px;
@@ -267,404 +196,6 @@
             display: flex;
         }
 
-        /* Список чатов */
-        .chats-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .chat-item {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            border: 1px solid transparent;
-            text-decoration: none;
-        }
-
-        .chat-item:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .chat-item.active {
-            border-color: var(--primary);
-            background: var(--card-hover);
-        }
-
-        .chat-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .chat-info {
-            flex: 1;
-        }
-
-        .chat-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .chat-name {
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .chat-time {
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .chat-preview {
-            font-size: 13px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .chat-badge {
-            background: var(--primary);
-            color: white;
-            border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 11px;
-            font-weight: 600;
-            min-width: 20px;
-            text-align: center;
-        }
-
-        /* Список администраторов */
-        .admin-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .admin-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .admin-card:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .admin-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .admin-info {
-            flex: 1;
-        }
-
-        .admin-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .admin-specialty {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .admin-status {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-        }
-
-        .status-online {
-            color: var(--success);
-        }
-
-        .status-offline {
-            color: var(--danger);
-        }
-
-        .status-away {
-            color: var(--warning);
-        }
-
-        .admin-rating {
-            color: #ffd700;
-            font-size: 12px;
-        }
-
-        .admin-badge {
-            background: var(--warning);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        /* Чат */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            position: relative;
-            animation: messageSlide 0.3s ease-out;
-        }
-
-        @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-user {
-            background: var(--primary);
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-        }
-
-        .message-admin {
-            background: var(--card-hover);
-            align-self: flex-start;
-            border-bottom-left-radius: 6px;
-        }
-
-        .message-system {
-            background: rgba(255, 255, 255, 0.05);
-            align-self: center;
-            max-width: 90%;
-            font-size: 12px;
-            color: var(--text-secondary);
-            border-radius: 12px;
-        }
-
-        .message-sender {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            opacity: 0.8;
-        }
-
-        .message-text {
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .message-time {
-            font-size: 10px;
-            opacity: 0.6;
-            text-align: right;
-            margin-top: 4px;
-        }
-
-        .chat-input-container {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--card-bg);
-        }
-
-        .chat-input {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .chat-input-field {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        .chat-input-field:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .send-btn {
-            background: var(--primary);
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .send-btn:hover {
-            background: var(--primary-dark);
-            transform: scale(1.05);
-        }
-
-        /* Модальные окна */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: modalSlide 0.3s ease-out;
-        }
-
-        @keyframes modalSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .rating-stars {
-            display: flex;
-            gap: 8px;
-            margin: 16px 0;
-            justify-content: center;
-        }
-
-        .star {
-            font-size: 24px;
-            cursor: pointer;
-            color: #666;
-            transition: var(--transition);
-        }
-
-        .star.active {
-            color: #ffd700;
-            transform: scale(1.1);
-        }
-
-        /* Уведомления */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 16px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            transition: var(--transition);
-            max-width: 90%;
-        }
-
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -685,31 +216,17 @@
             margin-bottom: 4px;
         }
 
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        /* Таблицы */
         .table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .table th,
-        .table td {
+        .table th, .table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .table th {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--text-secondary);
-        }
-
-        /* Бейджи */
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -718,98 +235,103 @@
             font-weight: 600;
         }
 
-        .badge-success {
-            background: var(--success);
-            color: white;
+        .badge-success { background: var(--success); }
+        .badge-warning { background: var(--warning); }
+        .badge-danger { background: var(--danger); }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 1000;
+            transition: var(--transition);
+            max-width: 90%;
         }
 
-        .badge-warning {
-            background: var(--warning);
-            color: white;
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
         }
 
-        .badge-danger {
-            background: var(--danger);
-            color: white;
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
 
-        .badge-info {
-            background: var(--info);
-            color: white;
+        .chat-messages {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        /* Анимации */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            animation: messageSlide 0.3s ease-out;
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
+        .message-user {
+            background: var(--primary);
+            align-self: flex-end;
         }
 
-        /* Адаптивность */
-        @media (max-width: 480px) {
-            .app-container {
-                padding: 12px;
-            }
-            
-            .header {
-                padding: 16px;
-                margin-bottom: 20px;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .card {
-                padding: 16px;
-            }
-            
-            .btn {
-                padding: 14px 20px;
-            }
-            
-            .tabs-container {
-                padding: 6px;
-            }
-            
-            .tab-btn {
-                padding: 10px 12px;
-                font-size: 13px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+        .message-admin {
+            background: var(--card-hover);
+            align-self: flex-start;
         }
+
+        .logs-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .log-info { background: rgba(59, 130, 246, 0.1); }
+        .log-warning { background: rgba(245, 158, 11, 0.1); }
+        .log-error { background: rgba(239, 68, 68, 0.1); }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- Экран авторизации -->
-        <div id="authScreen" class="screen active fade-in">
+        <div id="authScreen" class="screen active">
             <div class="header">
-                <h1>🔐 Добро пожаловать</h1>
-                <p>Войдите в систему поддержки</p>
+                <h1>🔐 Система поддержки</h1>
+                <p>Войдите в свою учетную запись</p>
             </div>
             
             <div class="card">
                 <div class="form-group">
-                    <label class="form-label">👤 Ваш никнейм</label>
-                    <input type="text" class="form-input" id="authUsername" placeholder="Введите ваш никнейм">
+                    <label class="form-label">👤 Логин</label>
+                    <input type="text" class="form-input" id="authUsername" placeholder="Введите логин">
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">🔐 Пароль</label>
-                    <input type="password" class="form-input" id="authPassword" placeholder="Введите ваш пароль">
+                    <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
                 </div>
                 
                 <button class="btn btn-primary" onclick="login()">
@@ -819,39 +341,30 @@
             
             <div class="card">
                 <button class="btn btn-secondary" onclick="showScreen('registerScreen')">
-                    <span>📝 Создать аккаунт</span>
-                </button>
-                
-                <button class="btn btn-outline" onclick="showScreen('adminRegisterScreen')">
-                    <span>👑 Стать администратором</span>
+                    <span>📝 Регистрация пользователя</span>
                 </button>
             </div>
         </div>
 
-        <!-- Экран регистрации пользователя -->
+        <!-- Экран регистрации -->
         <div id="registerScreen" class="screen">
             <div class="nav-header">
                 <button class="back-btn" onclick="showScreen('authScreen')">←</button>
                 <div>
                     <h1>📝 Регистрация</h1>
-                    <p>Создайте новый аккаунт</p>
+                    <p>Создайте учетную запись</p>
                 </div>
             </div>
             
             <div class="card">
                 <div class="form-group">
-                    <label class="form-label">👤 Придумайте никнейм</label>
-                    <input type="text" class="form-input" id="regUsername" placeholder="Уникальное имя пользователя">
+                    <label class="form-label">👤 Логин</label>
+                    <input type="text" class="form-input" id="regUsername" placeholder="Придумайте логин">
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">🔐 Создайте пароль</label>
+                    <label class="form-label">🔐 Пароль</label>
                     <input type="password" class="form-input" id="regPassword" placeholder="Не менее 6 символов">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">📧 Email (необязательно)</label>
-                    <input type="email" class="form-input" id="regEmail" placeholder="email@example.com">
                 </div>
                 
                 <button class="btn btn-primary" onclick="registerUser()">
@@ -860,145 +373,35 @@
             </div>
         </div>
 
-        <!-- Экран регистрации администратора -->
-        <div id="adminRegisterScreen" class="screen">
-            <div class="nav-header">
-                <button class="back-btn" onclick="showScreen('authScreen')">←</button>
-                <div>
-                    <h1>👑 Администратор</h1>
-                    <p>Требуется пригласительный код</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="form-group">
-                    <label class="form-label">🎫 Пригласительный код</label>
-                    <input type="text" class="form-input" id="inviteCode" placeholder="Введите код доступа">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
-                        Коды создаются существующими администраторами
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">👤 Никнейм администратора</label>
-                    <input type="text" class="form-input" id="adminUsername" placeholder="Ваше уникальное имя">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🔐 Пароль</label>
-                    <input type="password" class="form-input" id="adminPassword" placeholder="Надежный пароль">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🎯 Специализация</label>
-                    <select class="form-input" id="specialty">
-                        <option value="">Выберите специализацию</option>
-                        <option value="Техническая поддержка">Техническая поддержка</option>
-                        <option value="Консультации">Консультации</option>
-                        <option value="Продажи">Продажи</option>
-                        <option value="Бухгалтерия">Бухгалтерия</option>
-                        <option value="Юридическая помощь">Юридическая помощь</option>
-                    </select>
-                </div>
-                
-                <button class="btn btn-primary" onclick="registerAdmin()">
-                    <span>👑 Стать администратором</span>
-                </button>
-            </div>
-        </div>
-
         <!-- Главный экран пользователя -->
         <div id="mainScreen" class="screen">
             <div class="header">
-                <h1>💬 Мои Чаты</h1>
+                <h1>💬 Чат поддержки</h1>
                 <p>Добро пожаловать, <span id="currentUser"></span></p>
                 <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 12px;">
-                    <span>👥 <span id="onlineUsers">1</span> онлайн</span>
+                    <span>👥 <span id="onlineUsers">0</span> онлайн</span>
                     <span>👑 <span id="onlineAdmins">0</span> администраторов</span>
-                    <span>💬 <span id="activeChats">0</span> активных чатов</span>
                 </div>
             </div>
             
             <div class="tabs-container">
-                <button class="tab-btn active" onclick="showTab('chatsTab')">
-                    💬 Чаты
-                </button>
-                <button class="tab-btn" onclick="showTab('adminsTab')">
-                    👨‍💼 Админы
-                </button>
-                <button class="tab-btn" onclick="showTab('settingsTab')">
-                    ⚙️ Настройки
-                </button>
+                <button class="tab-btn active" onclick="showTab('chatsTab')">💬 Чаты</button>
+                <button class="tab-btn" onclick="showTab('adminsTab')">👨‍💼 Админы</button>
+                <button class="tab-btn" onclick="showTab('settingsTab')">⚙️ Настройки</button>
             </div>
             
-            <!-- Вкладка чатов -->
             <div id="chatsTab" class="tab-content active">
-                <div class="chats-list" id="chatsList">
-                    <!-- Чаты загружаются динамически -->
-                </div>
-                
-                <button class="btn btn-primary" onclick="startNewChat()">
-                    <span>➕ Новый чат</span>
-                </button>
-                
-                <!-- Чат с системными уведомлениями -->
-                <div class="chat-item" onclick="openSystemChat()">
-                    <div class="chat-avatar" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">⚙️</div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">Системные уведомления</div>
-                            <div class="chat-time"></div>
-                        </div>
-                        <div class="chat-preview">Технические уведомления и обновления</div>
-                    </div>
-                    <div class="chat-badge" id="systemNotificationsCount">0</div>
-                </div>
+                <div class="chats-list" id="chatsList"></div>
+                <button class="btn btn-primary" onclick="startNewChat()">➕ Новый чат</button>
             </div>
             
-            <!-- Вкладка администраторов -->
             <div id="adminsTab" class="tab-content">
-                <div class="admin-grid" id="adminsList">
-                    <!-- Администраторы загружаются динамически -->
-                </div>
+                <div class="admin-grid" id="adminsList"></div>
             </div>
             
-            <!-- Вкладка настроек -->
             <div id="settingsTab" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 16px;">🎨 Внешний вид</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Тема оформления</label>
-                        <select class="form-input" onchange="changeTheme(this.value)">
-                            <option value="gradient">Градиент</option>
-                            <option value="dark">Темная</option>
-                            <option value="blue">Синяя</option>
-                            <option value="purple">Фиолетовая</option>
-                            <option value="sunset">Закат</option>
-                            <option value="ocean">Океан</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Размер текста: <span id="fontSizeValue">14px</span></label>
-                        <input type="range" class="form-input" min="12" max="18" value="14" oninput="changeFontSize(this.value)">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Прозрачность: <span id="opacityValue">80%</span></label>
-                        <input type="range" class="form-input" min="50" max="100" value="80" oninput="changeOpacity(this.value)">
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 style="margin-bottom: 16px;">🔐 Аккаунт</h3>
-                    <button class="btn btn-secondary" onclick="showScreen('authScreen')">
-                        <span>🔄 Сменить пользователя</span>
-                    </button>
-                    
-                    <button class="btn btn-outline" onclick="logout()">
-                        <span>🚪 Выйти</span>
-                    </button>
+                    <button class="btn btn-secondary" onclick="logout()">🚪 Выйти</button>
                 </div>
             </div>
         </div>
@@ -1007,287 +410,224 @@
         <div id="adminPanel" class="screen">
             <div class="header">
                 <h1>👑 Панель администратора</h1>
-                <p>Добро пожаловать, <span id="adminName"></span></p>
-                <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 12px;">
-                    <span>👥 <span id="totalUsers">0</span> пользователей</span>
-                    <span>💬 <span id="totalChats">0</span> активных чатов</span>
-                    <span>⭐ <span id="avgRating">5.0</span> средний рейтинг</span>
-                </div>
+                <p><span id="adminName"></span> | <span id="adminRole"></span></p>
             </div>
             
             <div class="tabs-container">
-                <button class="tab-btn active" onclick="showAdminTab('adminChatsTab')">
-                    💬 Чаты
-                </button>
-                <button class="tab-btn" onclick="showAdminTab('adminStatsTab')">
-                    📊 Статистика
-                </button>
-                <button class="tab-btn" onclick="showAdminTab('adminUsersTab')">
-                    👥 Пользователи
-                </button>
-                <button class="tab-btn" onclick="showAdminTab('adminSettingsTab')">
-                    ⚙️ Управление
-                </button>
+                <button class="tab-btn active" onclick="showAdminTab('adminChatsTab')">💬 Мои чаты</button>
+                <button class="tab-btn" onclick="showAdminTab('adminStatsTab')">📊 Статистика</button>
+                <button class="tab-btn" onclick="showAdminTab('adminUsersTab')">👥 Пользователи</button>
+                <button class="tab-btn" onclick="showAdminTab('adminSystemTab')">⚙️ Система</button>
             </div>
             
-            <!-- Вкладка чатов администратора -->
             <div id="adminChatsTab" class="tab-content active">
-                <div class="chats-list" id="adminChatsList">
-                    <!-- Чаты администратора загружаются динамически -->
-                </div>
-                
-                <div class="card">
-                    <h3 style="margin-bottom: 12px;">Статус администратора</h3>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-success btn-sm" onclick="setAdminStatus('online')">
-                            🟢 Online
-                        </button>
-                        <button class="btn btn-warning btn-sm" onclick="setAdminStatus('away')">
-                            🟡 Away
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="setAdminStatus('offline')">
-                            🔴 Offline
-                        </button>
-                    </div>
-                </div>
+                <div class="chats-list" id="adminChatsList"></div>
             </div>
             
-            <!-- Вкладка статистики -->
             <div id="adminStatsTab" class="tab-content">
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value" id="statTotalUsers">0</div>
-                        <div class="stat-label">Всего пользователей</div>
+                        <div class="stat-label">Пользователей</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value" id="statActiveChats">0</div>
                         <div class="stat-label">Активных чатов</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statAvgResponse">0с</div>
-                        <div class="stat-label">Среднее время ответа</div>
+                        <div class="stat-value" id="statTotalMessages">0</div>
+                        <div class="stat-label">Сообщений</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statSatisfaction">100%</div>
-                        <div class="stat-label">Удовлетворенность</div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 style="margin-bottom: 12px;">📈 Последние отзывы</h3>
-                    <div id="recentReviews">
-                        <!-- Отзывы загружаются динамически -->
+                        <div class="stat-value" id="statAvgRating">5.0</div>
+                        <div class="stat-label">Рейтинг</div>
                     </div>
                 </div>
             </div>
             
-            <!-- Вкладка пользователей -->
             <div id="adminUsersTab" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 12px;">👥 Список пользователей</h3>
-                    <div style="max-height: 300px; overflow-y: auto;">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Пользователь</th>
-                                    <th>Статус</th>
-                                    <th>Чатов</th>
-                                    <th>Дата регистрации</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                <!-- Пользователи загружаются динамически -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <h3>👥 Управление пользователями</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Логин</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable"></tbody>
+                    </table>
                 </div>
             </div>
             
-            <!-- Вкладка управления -->
-            <div id="adminSettingsTab" class="tab-content">
+            <div id="adminSystemTab" class="tab-content">
                 <div class="card">
-                    <h3 style="margin-bottom: 12px;">🎫 Управление кодами</h3>
+                    <h3>👑 Создание администратора</h3>
                     <div class="form-group">
-                        <label class="form-label">Создать новый код</label>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" class="form-input" id="newCode" placeholder="Название кода" style="flex: 2;">
-                            <input type="number" class="form-input" id="codeUses" placeholder="Лимит" style="flex: 1;" value="10">
-                            <button class="btn btn-primary btn-sm" onclick="createInviteCode()">
-                                Создать
-                            </button>
-                        </div>
+                        <input type="text" class="form-input" id="newAdminLogin" placeholder="Логин нового админа">
                     </div>
-                    
-                    <div id="activeCodes">
-                        <!-- Активные коды загружаются динамически -->
+                    <div class="form-group">
+                        <input type="password" class="form-input" id="newAdminPassword" placeholder="Пароль">
                     </div>
+                    <div class="form-group">
+                        <select class="form-input" id="newAdminRole">
+                            <option value="Слушатель">🎧 Слушатель</option>
+                            <option value="Администратор">👨‍💼 Администратор</option>
+                            <option value="Заместитель">👥 Заместитель</option>
+                            <option value="Совладелец">👑 Совладелец</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="createAdmin()">➕ Создать администратора</button>
                 </div>
                 
                 <div class="card">
-                    <h3 style="margin-bottom: 12px;">⚙️ Настройки системы</h3>
-                    <button class="btn btn-outline" onclick="exportData()">
-                        📤 Экспорт данных
-                    </button>
-                    <button class="btn btn-outline" onclick="clearOldChats()">
-                        🗑️ Очистить старые чаты
-                    </button>
+                    <h3>📋 Все чаты системы</h3>
+                    <div id="allChatsList"></div>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Логи системы</h3>
+                    <div class="logs-container" id="systemLogs"></div>
+                    <button class="btn btn-sm btn-secondary" onclick="clearLogs()" style="margin-top: 8px;">Очистить логи</button>
                 </div>
             </div>
         </div>
 
-        <!-- Экран конкретного чата -->
+        <!-- Экран чата -->
         <div id="chatScreen" class="screen">
             <div class="nav-header">
                 <button class="back-btn" onclick="closeChat()">←</button>
-                <div class="chat-info" style="flex: 1;">
+                <div style="flex: 1;">
                     <div class="chat-name" id="chatWithName"></div>
                     <div class="admin-status" id="chatPartnerStatus"></div>
                 </div>
-                <button class="btn btn-outline" style="padding: 8px 12px; font-size: 12px;" 
-                        onclick="showRateModal()" id="rateButton">
-                    ⭐ Оценить
-                </button>
             </div>
             
             <div class="chat-container">
-                <div class="chat-messages" id="chatMessages">
-                    <!-- Сообщения загружаются динамически -->
-                </div>
-                
+                <div class="chat-messages" id="chatMessages"></div>
                 <div class="chat-input-container">
                     <div class="chat-input">
-                        <input type="text" class="chat-input-field" id="messageInput" 
-                               placeholder="Введите ваше сообщение..." onkeypress="handleMessageKeypress(event)">
-                        <button class="send-btn" onclick="sendMessage()">
-                            <span>➤</span>
-                        </button>
+                        <input type="text" class="chat-input-field" id="messageInput" placeholder="Введите сообщение..." onkeypress="handleMessageKeypress(event)">
+                        <button class="send-btn" onclick="sendMessage()">➤</button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Модальное окно оценки -->
-        <div class="modal" id="rateModal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">⭐ Оцените чат</div>
-                    <button class="modal-close" onclick="closeRateModal()">×</button>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Ваша оценка</label>
-                    <div class="rating-stars" id="ratingStars">
-                        <span class="star" onclick="setRating(1)">★</span>
-                        <span class="star" onclick="setRating(2)">★</span>
-                        <span class="star" onclick="setRating(3)">★</span>
-                        <span class="star" onclick="setRating(4)">★</span>
-                        <span class="star" onclick="setRating(5)">★</span>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Комментарий (необязательно)</label>
-                    <textarea class="form-input" id="reviewComment" 
-                              placeholder="Поделитесь вашими впечатлениями..." 
-                              rows="3" style="resize: none;"></textarea>
-                </div>
-                
-                <button class="btn btn-primary" onclick="submitReview()">
-                    <span>📨 Отправить отзыв</span>
-                </button>
             </div>
         </div>
     </div>
 
-    <!-- Уведомление -->
     <div class="notification" id="notification"></div>
 
     <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-        
+        // Глобальные переменные
         let currentUser = null;
         let currentChat = null;
-        let currentRating = 0;
         let isAdmin = false;
-        
-        // Инициализация при загрузке
+        let userRole = 'user';
+
+        // Инициализация системы
         function init() {
             initLocalDB();
-            loadSettings();
-            showNotification('💬 Добро пожаловать в систему поддержки!', 'success');
-            
-            // Проверяем, есть ли активная сессия
-            const activeSession = localStorage.getItem('activeSession');
-            if (activeSession) {
-                const session = JSON.parse(activeSession);
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                const user = users.find(u => u.username === session.username);
+            checkActiveSession();
+            addSystemLog('Система инициализирована', 'info');
+        }
+
+        // Инициализация базы данных
+        function initLocalDB() {
+            const defaults = {
+                users: [],
+                admins: [],
+                chats: [],
+                messages: [],
+                reviews: [],
+                systemLogs: [],
+                settings: { theme: 'gradient', fontSize: 14 }
+            };
+
+            Object.keys(defaults).forEach(key => {
+                if (!localStorage.getItem(key)) {
+                    localStorage.setItem(key, JSON.stringify(defaults[key]));
+                }
+            });
+
+            // Создаем владельца системы если его нет
+            const users = JSON.parse(localStorage.getItem('users'));
+            if (!users.find(u => u.username === 'owner')) {
+                users.push({
+                    username: 'owner',
+                    password: 'owner123',
+                    role: 'Совладелец',
+                    isOnline: false,
+                    registeredAt: new Date().toISOString(),
+                    lastLogin: null
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        // Проверка активной сессии
+        function checkActiveSession() {
+            const activeUser = localStorage.getItem('activeUser');
+            if (activeUser) {
+                const userData = JSON.parse(activeUser);
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => u.username === userData.username);
                 
-                if (user && user.password === session.password) {
+                if (user && user.password === userData.password) {
                     currentUser = user;
-                    isAdmin = user.role === 'admin';
+                    userRole = user.role;
+                    isAdmin = user.role !== 'user';
+                    
+                    user.isOnline = true;
+                    user.lastLogin = new Date().toISOString();
+                    localStorage.setItem('users', JSON.stringify(users));
+                    
                     if (isAdmin) {
                         showAdminPanel();
                     } else {
                         showMainScreen();
                     }
+                    addSystemLog(`Пользователь ${user.username} вошел в систему`, 'info');
+                    return true;
                 }
             }
+            return false;
         }
-        
-        // Показ уведомления
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Переключение экранов
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-        
-        // Вход пользователя
+
+        // Вход в систему
         function login() {
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value.trim();
-            
+
             if (!username || !password) {
                 showNotification('❌ Заполните все поля!', 'error');
                 return;
             }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            const users = JSON.parse(localStorage.getItem('users'));
             const user = users.find(u => u.username === username && u.password === password);
-            
+
             if (user) {
                 currentUser = user;
-                isAdmin = user.role === 'admin';
+                userRole = user.role;
+                isAdmin = user.role !== 'user';
                 
                 // Сохраняем сессию
-                localStorage.setItem('activeSession', JSON.stringify({
+                localStorage.setItem('activeUser', JSON.stringify({
                     username: username,
                     password: password,
-                    timestamp: Date.now()
+                    loginTime: Date.now()
                 }));
-                
-                // Обновляем онлайн статус
+
+                // Обновляем статус
                 user.isOnline = true;
                 user.lastLogin = new Date().toISOString();
                 localStorage.setItem('users', JSON.stringify(users));
-                
+
                 showNotification('✅ Вход выполнен успешно!', 'success');
-                
+                addSystemLog(`Успешный вход: ${username}`, 'info');
+
                 if (isAdmin) {
                     showAdminPanel();
                 } else {
@@ -1295,136 +635,103 @@
                 }
             } else {
                 showNotification('❌ Неверный логин или пароль!', 'error');
+                addSystemLog(`Неудачная попытка входа: ${username}`, 'warning');
             }
         }
-        
+
         // Регистрация пользователя
         function registerUser() {
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            
+
             if (!username || !password) {
                 showNotification('❌ Заполните все поля!', 'error');
                 return;
             }
-            
+
             if (password.length < 6) {
                 showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
                 return;
             }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
+
+            const users = JSON.parse(localStorage.getItem('users'));
             
             if (users.find(u => u.username === username)) {
-                showNotification('❌ Этот никнейм уже занят!', 'error');
+                showNotification('❌ Этот логин уже занят!', 'error');
                 return;
             }
-            
+
             const newUser = {
                 username: username,
                 password: password,
-                email: email,
                 role: 'user',
                 isOnline: true,
                 registeredAt: new Date().toISOString(),
                 lastLogin: new Date().toISOString()
             };
-            
+
             users.push(newUser);
             localStorage.setItem('users', JSON.stringify(users));
-            
+
             currentUser = newUser;
+            userRole = 'user';
             isAdmin = false;
-            
-            // Сохраняем сессию
-            localStorage.setItem('activeSession', JSON.stringify({
+
+            localStorage.setItem('activeUser', JSON.stringify({
                 username: username,
                 password: password,
-                timestamp: Date.now()
+                loginTime: Date.now()
             }));
-            
-            showNotification('✅ Регистрация выполнена успешно!', 'success');
+
+            showNotification('✅ Регистрация выполнена!', 'success');
+            addSystemLog(`Зарегистрирован новый пользователь: ${username}`, 'info');
             showMainScreen();
         }
-        
-        // Регистрация администратора
-        function registerAdmin() {
-            const code = document.getElementById('inviteCode').value.trim();
-            const username = document.getElementById('adminUsername').value.trim();
-            const password = document.getElementById('adminPassword').value.trim();
-            const specialty = document.getElementById('specialty').value;
-            
-            if (!code || !username || !password || !specialty) {
+
+        // Создание администратора
+        function createAdmin() {
+            if (userRole !== 'Совладелец') {
+                showNotification('❌ Только совладелец может создавать администраторов!', 'error');
+                return;
+            }
+
+            const login = document.getElementById('newAdminLogin').value.trim();
+            const password = document.getElementById('newAdminPassword').value.trim();
+            const role = document.getElementById('newAdminRole').value;
+
+            if (!login || !password) {
                 showNotification('❌ Заполните все поля!', 'error');
                 return;
             }
+
+            const users = JSON.parse(localStorage.getItem('users'));
             
-            // Проверяем код
-            const inviteCodes = JSON.parse(localStorage.getItem('inviteCodes')) || [];
-            const validCode = inviteCodes.find(c => c.code === code && c.remainingUses > 0);
-            
-            if (!validCode) {
-                showNotification('❌ Неверный или исчерпанный код!', 'error');
+            if (users.find(u => u.username === login)) {
+                showNotification('❌ Этот логин уже занят!', 'error');
                 return;
             }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            
-            if (users.find(u => u.username === username)) {
-                showNotification('❌ Этот никнейм уже занят!', 'error');
-                return;
-            }
-            
-            // Уменьшаем количество использований кода
-            validCode.remainingUses--;
-            validCode.usedBy.push({
-                username: username,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('inviteCodes', JSON.stringify(inviteCodes));
-            
-            // Создаем администратора
+
             const newAdmin = {
-                username: username,
+                username: login,
                 password: password,
-                role: 'admin',
-                isOnline: true,
+                role: role,
+                isOnline: false,
                 registeredAt: new Date().toISOString(),
-                lastLogin: new Date().toISOString()
+                lastLogin: null
             };
-            
+
             users.push(newAdmin);
-            
-            admins.push({
-                username: username,
-                specialty: specialty,
-                isAvailable: true,
-                status: 'online',
-                rating: 5.0,
-                totalChats: 0,
-                joinedAt: new Date().toISOString()
-            });
-            
             localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('admins', JSON.stringify(admins));
+
+            document.getElementById('newAdminLogin').value = '';
+            document.getElementById('newAdminPassword').value = '';
             
-            currentUser = newAdmin;
-            isAdmin = true;
-            
-            // Сохраняем сессию
-            localStorage.setItem('activeSession', JSON.stringify({
-                username: username,
-                password: password,
-                timestamp: Date.now()
-            }));
-            
-            showNotification('👑 Вы успешно стали администратором!', 'success');
-            showAdminPanel();
+            showNotification(`✅ ${role} "${login}" создан!`, 'success');
+            addSystemLog(`Создан новый ${role}: ${login}`, 'info');
+            loadUsersTable();
         }
-        
-        // Показ главного экрана пользователя
+
+        // Показать главный экран
         function showMainScreen() {
             document.getElementById('currentUser').textContent = currentUser.username;
             loadChats();
@@ -1433,234 +740,153 @@
             showScreen('mainScreen');
             showTab('chatsTab');
         }
-        
-        // Показ панели администратора
+
+        // Показать панель администратора
         function showAdminPanel() {
             document.getElementById('adminName').textContent = currentUser.username;
+            document.getElementById('adminRole').textContent = userRole;
             loadAdminChats();
             updateAdminStats();
+            loadUsersTable();
+            loadAllChats();
+            loadSystemLogs();
             showScreen('adminPanel');
             showAdminTab('adminChatsTab');
         }
-        
-        // Переключение вкладок пользователя
+
+        // Система логов
+        function addSystemLog(message, type = 'info') {
+            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+            const logEntry = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                type: type,
+                message: message,
+                user: currentUser ? currentUser.username : 'system'
+            };
+            
+            logs.unshift(logEntry);
+            if (logs.length > 1000) logs.length = 1000; // Ограничение логов
+            
+            localStorage.setItem('systemLogs', JSON.stringify(logs));
+            
+            // Обновляем отображение если открыта панель логов
+            if (document.getElementById('adminSystemTab').classList.contains('active')) {
+                loadSystemLogs();
+            }
+        }
+
+        function loadSystemLogs() {
+            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+            const container = document.getElementById('systemLogs');
+            
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry log-${log.type}">
+                    [${new Date(log.timestamp).toLocaleTimeString()}] ${log.message}
+                    ${log.user !== 'system' ? ` (${log.user})` : ''}
+                </div>
+            `).join('');
+        }
+
+        function clearLogs() {
+            localStorage.setItem('systemLogs', JSON.stringify([]));
+            loadSystemLogs();
+            showNotification('📊 Логи очищены', 'success');
+        }
+
+        // Управление чатами
+        function startNewChat() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const availableAdmins = users.filter(u => u.role !== 'user' && u.isOnline);
+            
+            if (availableAdmins.length === 0) {
+                showNotification('❌ Сейчас нет администраторов онлайн!', 'error');
+                return;
+            }
+
+            const randomAdmin = availableAdmins[Math.floor(Math.random() * availableAdmins.length)];
+            createNewChat(randomAdmin.username);
+        }
+
+        function createNewChat(adminUsername) {
+            const chatId = 'chat_' + Date.now();
+            const newChat = {
+                id: chatId,
+                participants: [currentUser.username, adminUsername],
+                messages: [{
+                    id: 'msg_' + Date.now(),
+                    sender: 'system',
+                    text: `Чат создан. Администратор ${adminUsername} подключится к беседе.`,
+                    timestamp: new Date().toISOString(),
+                    read: true
+                }],
+                createdAt: new Date().toISOString(),
+                isActive: true
+            };
+
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            chats.push(newChat);
+            localStorage.setItem('chats', JSON.stringify(chats));
+
+            loadChats();
+            openChat(newChat);
+            addSystemLog(`Создан новый чат: ${currentUser.username} -> ${adminUsername}`, 'info');
+        }
+
+        // Вспомогательные функции
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
         }
-        
-        // Переключение вкладок администратора
+
         function showAdminTab(tabId) {
             document.querySelectorAll('#adminPanel .tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
             document.querySelectorAll('#adminPanel .tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
             document.getElementById(tabId).classList.add('active');
             event.target.classList.add('active');
-            
-            // Загружаем данные для конкретной вкладки
-            if (tabId === 'adminStatsTab') {
-                updateAdminStats();
-            } else if (tabId === 'adminUsersTab') {
-                loadUsersTable();
-            } else if (tabId === 'adminSettingsTab') {
-                loadInviteCodes();
-            }
         }
-        
-        // Создание инвайт-кода
-        function createInviteCode() {
-            const codeName = document.getElementById('newCode').value.trim();
-            const uses = parseInt(document.getElementById('codeUses').value) || 10;
-            
-            if (!codeName) {
-                showNotification('❌ Введите название кода!', 'error');
-                return;
-            }
-            
-            const inviteCodes = JSON.parse(localStorage.getItem('inviteCodes')) || [];
-            const newCode = {
-                id: generateId(),
-                code: codeName.toUpperCase(),
-                maxUses: uses,
-                remainingUses: uses,
-                createdBy: currentUser.username,
-                createdAt: new Date().toISOString(),
-                usedBy: []
-            };
-            
-            inviteCodes.push(newCode);
-            localStorage.setItem('inviteCodes', JSON.stringify(inviteCodes));
-            
-            document.getElementById('newCode').value = '';
-            showNotification('✅ Код создан успешно!', 'success');
-            loadInviteCodes();
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => notification.classList.remove('show'), 3000);
         }
-        
-        // Загрузка инвайт-кодов
-        function loadInviteCodes() {
-            const inviteCodes = JSON.parse(localStorage.getItem('inviteCodes')) || [];
-            const container = document.getElementById('activeCodes');
-            
-            if (inviteCodes.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Нет активных кодов</p>';
-                return;
-            }
-            
-            container.innerHTML = inviteCodes.map(code => `
-                <div class="card" style="margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: between; align-items: center;">
-                        <div>
-                            <strong>${code.code}</strong>
-                            <div style="font-size: 12px; color: var(--text-secondary);">
-                                Использовано: ${code.maxUses - code.remainingUses}/${code.maxUses}
-                            </div>
-                        </div>
-                        <span class="badge ${code.remainingUses > 0 ? 'badge-success' : 'badge-danger'}">
-                            ${code.remainingUses > 0 ? 'Активен' : 'Исчерпан'}
-                        </span>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // Вспомогательные функции
-        function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        }
-        
-        // Инициализация локальной базы данных
-        function initLocalDB() {
-            if (!localStorage.getItem('users')) {
-                localStorage.setItem('users', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('admins')) {
-                localStorage.setItem('admins', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('chats')) {
-                localStorage.setItem('chats', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('reviews')) {
-                localStorage.setItem('reviews', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('inviteCodes')) {
-                // Создаем начальные коды
-                const initialCodes = [
-                    {
-                        id: generateId(),
-                        code: 'ADMIN2024',
-                        maxUses: 50,
-                        remainingUses: 50,
-                        createdBy: 'system',
-                        createdAt: new Date().toISOString(),
-                        usedBy: []
-                    }
-                ];
-                localStorage.setItem('inviteCodes', JSON.stringify(initialCodes));
-            }
-            if (!localStorage.getItem('settings')) {
-                localStorage.setItem('settings', JSON.stringify({
-                    theme: 'gradient',
-                    fontSize: 14,
-                    opacity: 80
-                }));
-            }
-        }
-        
-        // Загрузка настроек
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            
-            if (settings.theme) {
-                changeTheme(settings.theme);
-            }
-            
-            if (settings.fontSize) {
-                changeFontSize(settings.fontSize);
-            }
-            
-            if (settings.opacity) {
-                changeOpacity(settings.opacity);
-            }
-        }
-        
-        // Смена темы
-        function changeTheme(theme) {
-            const root = document.documentElement;
-            
-            const themes = {
-                gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                dark: '#1a1a1a',
-                blue: '#1e3a8a',
-                purple: '#6b21a8',
-                sunset: 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)',
-                ocean: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
-            };
-            
-            root.style.setProperty('--background', themes[theme] || themes.gradient);
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.theme = theme;
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-        
-        // Изменение размера шрифта
-        function changeFontSize(size) {
-            document.documentElement.style.fontSize = size + 'px';
-            document.getElementById('fontSizeValue').textContent = size + 'px';
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.fontSize = parseInt(size);
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-        
-        // Изменение прозрачности
-        function changeOpacity(value) {
-            document.documentElement.style.setProperty('--card-bg', `rgba(255, 255, 255, ${value/100 * 0.1})`);
-            document.documentElement.style.setProperty('--card-hover', `rgba(255, 255, 255, ${value/100 * 0.15})`);
-            document.getElementById('opacityValue').textContent = value + '%';
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.opacity = parseInt(value);
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-        
-        // Выход
+
         function logout() {
             if (currentUser) {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
+                const users = JSON.parse(localStorage.getItem('users'));
                 const user = users.find(u => u.username === currentUser.username);
-                if (user) {
-                    user.isOnline = false;
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
+                if (user) user.isOnline = false;
+                localStorage.setItem('users', JSON.stringify(users));
+                addSystemLog(`Пользователь ${currentUser.username} вышел из системы`, 'info');
             }
             
-            localStorage.removeItem('activeSession');
+            localStorage.removeItem('activeUser');
             currentUser = null;
-            isAdmin = false;
             showScreen('authScreen');
             showNotification('👋 До свидания!', 'info');
         }
-        
+
         // Инициализация при загрузке
         window.onload = init;
-        
-        // Остальной функционал (чаты, сообщения, отзывы) можно добавить по аналогии с предыдущим кодом
-        // Для краткости оставлю основные функции, но реализацию можно расширить
-        
     </script>
 </body>
 </html>

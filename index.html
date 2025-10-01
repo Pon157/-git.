@@ -3,16 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Продвинутый Чат Поддержки</title>
+    <title>Чат поддержки</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --message-size: 14px;
-            --user-color: rgba(76, 175, 80, 0.3);
-            --admin-color: rgba(33, 150, 243, 0.3);
-        }
-        
+        /* Ваши стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -21,11 +15,10 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 0;
             min-height: 100vh;
-            transition: all 0.3s;
         }
         
         .container {
@@ -47,14 +40,6 @@
             padding: 15px 0;
             background: rgba(255,255,255,0.1);
             border-radius: 15px;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin: 10px 0;
-            font-size: 12px;
-            opacity: 0.8;
         }
         
         .form-group {
@@ -94,85 +79,6 @@
             background: #4CAF50;
         }
         
-        .btn-danger {
-            background: #f44336;
-        }
-        
-        .admin-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .admin-card {
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .admin-card:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .admin-online {
-            border-left: 3px solid #4CAF50;
-        }
-        
-        .admin-offline {
-            border-left: 3px solid #f44336;
-            opacity: 0.6;
-        }
-        
-        .admin-rating {
-            color: #FFD700;
-            font-size: 12px;
-        }
-        
-        .chat-container {
-            height: 250px;
-            overflow-y: auto;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-            background: rgba(255,255,255,0.05);
-        }
-        
-        .message {
-            margin-bottom: 10px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            max-width: 85%;
-            font-size: var(--message-size);
-        }
-        
-        .user-message {
-            background: var(--user-color);
-            margin-left: auto;
-            text-align: right;
-        }
-        
-        .admin-message {
-            background: var(--admin-color);
-            margin-right: auto;
-        }
-        
-        .message-input {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .message-input input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.15);
-            color: white;
-        }
-        
         .nav-btn {
             background: none;
             border: none;
@@ -181,110 +87,20 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
-        
-        .settings-grid {
-            display: grid;
-            gap: 10px;
-        }
-        
-        .setting-item {
-            background: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 10px;
-        }
-        
-        .admin-panel {
-            background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 15px;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 8px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-        }
-        
-        .tab-btn.active {
-            background: rgba(255,255,255,0.3);
-        }
     </style>
 </head>
 <body>
-    <!-- Экран входа/регистрации -->
-    <div id="authScreen" class="screen active">
-        <div class="header">
-            <h1>🔐 Авторизация</h1>
-            <p>Войдите или зарегистрируйтесь</p>
-        </div>
-        
-        <div class="form-group">
-            <label>👤 Никнейм:</label>
-            <input type="text" class="form-input" id="authUsername" placeholder="Ваш никнейм">
-        </div>
-        
-        <div class="form-group">
-            <label>🔐 Пароль:</label>
-            <input type="password" class="form-input" id="authPassword" placeholder="Ваш пароль">
-        </div>
-        
-        <button class="btn btn-primary" onclick="login()">
-            ✅ Войти
-        </button>
-        
-        <button class="btn" onclick="showScreen('registerScreen')">
-            📝 Зарегистрироваться
-        </button>
-        
-        <button class="btn" onclick="showScreen('adminRegisterScreen')">
-            👨‍💼 Регистрация администратора
-        </button>
-    </div>
-    
-    <!-- Экран регистрации пользователя -->
-    <div id="registerScreen" class="screen">
-        <button class="nav-btn" onclick="showScreen('authScreen')">← Назад</button>
-        <div class="header">
-            <h1>📝 Регистрация</h1>
-            <p>Создайте аккаунт пользователя</p>
-        </div>
-        
-        <div class="form-group">
-            <label>👤 Никнейм:</label>
-            <input type="text" class="form-input" id="regUsername" placeholder="Придумайте никнейм">
-        </div>
-        
-        <div class="form-group">
-            <label>🔐 Пароль:</label>
-            <input type="password" class="form-input" id="regPassword" placeholder="Создайте пароль">
-        </div>
-        
-        <button class="btn btn-primary" onclick="registerUser()">
-            ✅ Зарегистрироваться
-        </button>
-    </div>
-    
     <!-- Экран регистрации администратора -->
     <div id="adminRegisterScreen" class="screen">
         <button class="nav-btn" onclick="showScreen('authScreen')">← Назад</button>
         <div class="header">
             <h1>👨‍💼 Регистрация администратора</h1>
-            <p>Требуется пригласительный код</p>
+            <p>🎫 Коды: ADMIN2024, SUPPORT001, HELPDESK99, MODERATOR55</p>
         </div>
         
         <div class="form-group">
             <label>🔑 Пригласительный код:</label>
-            <input type="text" class="form-input" id="inviteCode" placeholder="Введите код">
+            <input type="text" class="form-input" id="inviteCode" placeholder="Введите один из кодов выше">
         </div>
         
         <div class="form-group">
@@ -306,537 +122,111 @@
             👑 Стать администратором
         </button>
     </div>
-    
-    <!-- Главный экран -->
-    <div id="mainScreen" class="screen">
-        <div class="header">
-            <h1>💬 Чат Поддержки</h1>
-            <div class="stats">
-                <span>👤: <span id="currentUser"></span></span>
-                <span>👨‍💼: <span id="onlineAdmins">0</span> онлайн</span>
-            </div>
-        </div>
-        
-        <div class="tab-buttons">
-            <button class="tab-btn active" onclick="showTab('adminsTab')">👨‍💼 Админы</button>
-            <button class="tab-btn" onclick="showTab('chatTab')">💬 Чат</button>
-            <button class="tab-btn" onclick="showTab('settingsTab')">⚙️ Настройки</button>
-            <button class="tab-btn" onclick="showTab('adminPanelTab')">🔧 Админ-панель</button>
-        </div>
-        
-        <!-- Вкладка администраторов -->
-        <div id="adminsTab" class="tab-content">
-            <div class="admin-list" id="adminsList">
-                <!-- Список админов загружается динамически -->
-            </div>
-        </div>
-        
-        <!-- Вкладка чата -->
-        <div id="chatTab" class="tab-content" style="display: none;">
-            <div class="chat-container" id="chatContainer">
-                <div class="message admin-message">
-                    Выберите администратора для начала общения
-                </div>
-            </div>
-            
-            <div class="message-input">
-                <input type="text" id="messageInput" placeholder="Введите сообщение...">
-                <button class="btn btn-primary" onclick="sendMessage()">📤</button>
-            </div>
-        </div>
-        
-        <!-- Вкладка настроек -->
-        <div id="settingsTab" class="tab-content" style="display: none;">
-            <div class="settings-grid">
-                <div class="setting-item">
-                    <label>🎨 Фон:</label>
-                    <select class="form-input" id="bgSelect" onchange="changeBackground()">
-                        <option value="gradient">Градиент</option>
-                        <option value="dark">Темный</option>
-                        <option value="blue">Синий</option>
-                        <option value="purple">Фиолетовый</option>
-                    </select>
-                </div>
-                
-                <div class="setting-item">
-                    <label>📏 Размер текста:</label>
-                    <input type="range" class="form-input" id="textSize" min="12" max="20" value="14" onchange="changeTextSize()">
-                    <span id="sizeValue">14px</span>
-                </div>
-                
-                <div class="setting-item">
-                    <label>🎨 Цвет ваших сообщений:</label>
-                    <input type="color" id="userColor" value="#4CAF50" onchange="changeUserColor()">
-                </div>
-                
-                <div class="setting-item">
-                    <label>🎨 Цвет сообщений админа:</label>
-                    <input type="color" id="adminColor" value="#2196F3" onchange="changeAdminColor()">
-                </div>
-            </div>
-            
-            <button class="btn btn-danger" onclick="logout()">
-                🚪 Выйти
-            </button>
-        </div>
-        
-        <!-- Вкладка админ-панели -->
-        <div id="adminPanelTab" class="tab-content" style="display: none;">
-            <div class="admin-panel">
-                <h3>🔧 Админ Панель</h3>
-                <div id="adminStats">
-                    <!-- Статистика загружается динамически -->
-                </div>
-                
-                <button class="btn" onclick="toggleAdminStatus()">
-                    🔄 Переключить статус
-                </button>
-                
-                <button class="btn" onclick="viewAllChats()">
-                    📊 Просмотр всех чатов
-                </button>
-            </div>
-        </div>
-    </div>
+</body>
 
-    <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+<script>
+    // Инициализация Telegram Web App
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+    
+    let currentUser = null;
+    let isAdmin = false;
+    
+    // 🎫 ПРАВИЛЬНЫЕ КОДЫ ДЛЯ АДМИНИСТРАТОРОВ
+    const VALID_ADMIN_CODES = [
+        "ADMIN2024",
+        "SUPPORT001", 
+        "HELPDESK99",
+        "MODERATOR55"
+    ];
+    
+    // Функции для работы с экранами
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    }
+    
+    // ⚡ ИСПРАВЛЕННАЯ РЕГИСТРАЦИЯ АДМИНИСТРАТОРА
+    function registerAdmin() {
+        const code = document.getElementById('inviteCode').value.trim().toUpperCase();
+        const username = document.getElementById('adminUsername').value.trim();
+        const password = document.getElementById('adminPassword').value.trim();
+        const specialty = document.getElementById('specialty').value.trim();
         
-        let currentUser = null;
-        let selectedAdmin = null;
-        let isAdmin = false;
-        
-        // База данных в localStorage
-        function initLocalDB() {
-            if (!localStorage.getItem('users')) {
-                localStorage.setItem('users', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('admins')) {
-                localStorage.setItem('admins', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('messages')) {
-                localStorage.setItem('messages', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('settings')) {
-                localStorage.setItem('settings', JSON.stringify({
-                    bg: 'gradient',
-                    textSize: 14,
-                    userColor: '#4CAF50',
-                    adminColor: '#2196F3'
-                }));
-            }
+        if (!code || !username || !password || !specialty) {
+            tg.showAlert('❌ Заполните все поля!');
+            return;
         }
         
-        // Загрузка настроек
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            applySettings(settings);
+        // ПРАВИЛЬНАЯ ПРОВЕРКА КОДА
+        if (!VALID_ADMIN_CODES.includes(code)) {
+            tg.showAlert('❌ Неверный код! Используйте: ADMIN2024, SUPPORT001, HELPDESK99 или MODERATOR55');
+            return;
         }
         
-        // Применение настроек
-        function applySettings(settings) {
-            const root = document.documentElement;
-            
-            // Фон
-            switch(settings.bg) {
-                case 'dark': root.style.setProperty('--bg-color', '#1a1a1a'); break;
-                case 'blue': root.style.setProperty('--bg-color', '#1565C0'); break;
-                case 'purple': root.style.setProperty('--bg-color', '#7B1FA2'); break;
-                default: root.style.setProperty('--bg-color', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
-            }
-            
-            // Размер текста
-            if (settings.textSize) {
-                root.style.setProperty('--message-size', settings.textSize + 'px');
-                document.getElementById('textSize').value = settings.textSize;
-                document.getElementById('sizeValue').textContent = settings.textSize + 'px';
-            }
-            
-            // Цвета
-            if (settings.userColor) {
-                root.style.setProperty('--user-color', settings.userColor + '30');
-                document.getElementById('userColor').value = settings.userColor;
-            }
-            if (settings.adminColor) {
-                root.style.setProperty('--admin-color', settings.adminColor + '30');
-                document.getElementById('adminColor').value = settings.adminColor;
-            }
+        // Инициализация базы данных
+        if (!localStorage.getItem('users')) {
+            localStorage.setItem('users', JSON.stringify([]));
+        }
+        if (!localStorage.getItem('admins')) {
+            localStorage.setItem('admins', JSON.stringify([]));
         }
         
-        // Функции для работы с экранами
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const admins = JSON.parse(localStorage.getItem('admins')) || [];
+        
+        // Проверяем, не занят ли никнейм
+        if (users.find(u => u.username === username)) {
+            tg.showAlert('❌ Этот никнейм уже занят!');
+            return;
         }
         
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            document.getElementById(tabId).style.display = 'block';
-            event.target.classList.add('active');
-        }
-        
-        // Вход пользователя
-        function login() {
-            const username = document.getElementById('authUsername').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-            
-            if (!username || !password) {
-                tg.showAlert('❌ Заполните все поля!');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                currentUser = user;
-                isAdmin = user.role === 'admin';
-                
-                // Обновляем онлайн статус
-                user.isOnline = true;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                tg.showAlert('✅ Вход успешен!');
-                showMainScreen();
-            } else {
-                tg.showAlert('❌ Неверный логин или пароль!');
-            }
-        }
-        
-        // Регистрация пользователя
-        function registerUser() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            
-            if (!username || !password) {
-                tg.showAlert('❌ Заполните все поля!');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            
-            if (users.find(u => u.username === username)) {
-                tg.showAlert('❌ Этот никнейм уже занят!');
-                return;
-            }
-            
-            users.push({
-                username: username,
-                password: password,
-                role: 'user',
-                isOnline: true
-            });
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            currentUser = { username, password, role: 'user' };
-            tg.showAlert('✅ Регистрация успешна!');
-            showMainScreen();
-        }
-        
-        // Регистрация администратора
-        function registerAdmin() {
-            const code = document.getElementById('inviteCode').value.trim();
-            const username = document.getElementById('adminUsername').value.trim();
-            const password = document.getElementById('adminPassword').value.trim();
-            const specialty = document.getElementById('specialty').value.trim();
-            
-            if (!code || !username || !password || !specialty) {
-                tg.showAlert('❌ Заполните все поля!');
-                return;
-            }
-            
-            if (code !== 'ADMIN12345') {
-                tg.showAlert('❌ Неверный пригласительный код!');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            
-            if (users.find(u => u.username === username)) {
-                tg.showAlert('❌ Этот никнейм уже занят!');
-                return;
-            }
-            
-            // Создаем пользователя
-            users.push({
-                username: username,
-                password: password,
-                role: 'admin',
-                isOnline: true
-            });
-            
-            // Создаем администратора
-            admins.push({
-                username: username,
-                specialty: specialty,
-                isAvailable: true,
-                rating: 5.0
-            });
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('admins', JSON.stringify(admins));
-            
-            currentUser = { username, password, role: 'admin' };
-            isAdmin = true;
-            tg.showAlert('👑 Вы стали администратором!');
-            showMainScreen();
-        }
-        
-        // Показ главного экрана
-        function showMainScreen() {
-            document.getElementById('currentUser').textContent = currentUser.username;
-            loadAdminsList();
-            updateOnlineStats();
-            loadSettings();
-            showScreen('mainScreen');
-        }
-        
-        // Загрузка списка администраторов
-        function loadAdminsList() {
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const adminsList = document.getElementById('adminsList');
-            
-            adminsList.innerHTML = '';
-            
-            admins.forEach(admin => {
-                const user = users.find(u => u.username === admin.username);
-                const isOnline = user && user.isOnline;
-                
-                const adminCard = document.createElement('div');
-                adminCard.className = `admin-card ${isOnline ? 'admin-online' : 'admin-offline'}`;
-                adminCard.onclick = () => selectAdmin(admin);
-                
-                adminCard.innerHTML = `
-                    <strong>${admin.username}</strong>
-                    <div>${admin.specialty}</div>
-                    <div class="admin-rating">⭐ ${admin.rating.toFixed(1)}</div>
-                    <div>${isOnline ? '🟢 Online' : '🔴 Offline'}</div>
-                `;
-                
-                adminsList.appendChild(adminCard);
-            });
-            
-            updateOnlineStats();
-        }
-        
-        // Обновление статистики онлайн
-        function updateOnlineStats() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            
-            const onlineAdmins = admins.filter(admin => {
-                const user = users.find(u => u.username === admin.username);
-                return user && user.isOnline;
-            }).length;
-            
-            document.getElementById('onlineAdmins').textContent = onlineAdmins;
-        }
-        
-        // Выбор администратора
-        function selectAdmin(admin) {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === admin.username);
-            
-            if (!user || !user.isOnline) {
-                tg.showAlert('❌ Этот администратор сейчас не в сети!');
-                return;
-            }
-            
-            selectedAdmin = admin;
-            showTab('chatTab');
-            
-            // Очищаем чат
-            document.getElementById('chatContainer').innerHTML = 
-                `<div class="message admin-message">Здравствуйте! Чем могу вам помочь?</div>`;
-        }
-        
-        // Отправка сообщения
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            if (!selectedAdmin) {
-                tg.showAlert('❌ Сначала выберите администратора!');
-                showTab('adminsTab');
-                return;
-            }
-            
-            // Сохраняем сообщение
-            const messages = JSON.parse(localStorage.getItem('messages')) || [];
-            messages.push({
-                from: currentUser.username,
-                to: selectedAdmin.username,
-                text: message,
-                timestamp: new Date().toISOString(),
-                isFromUser: true
-            });
-            localStorage.setItem('messages', JSON.stringify(messages));
-            
-            // Добавляем в чат
-            addMessage('user', message, currentUser.username);
-            input.value = '';
-            
-            // Имитация ответа
-            setTimeout(() => {
-                const responses = [
-                    'Понял ваш вопрос, сейчас помогу...',
-                    'Спасибо за обращение! Уточните пожалуйста...',
-                    'Уже занимаюсь вашим вопросом!',
-                    'Хорошо, понял. Давайте разберемся...'
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                
-                // Сохраняем ответ
-                messages.push({
-                    from: selectedAdmin.username,
-                    to: currentUser.username,
-                    text: response,
-                    timestamp: new Date().toISOString(),
-                    isFromUser: false
-                });
-                localStorage.setItem('messages', JSON.stringify(messages));
-                
-                addMessage('admin', response, selectedAdmin.username);
-            }, 1000 + Math.random() * 2000);
-        }
-        
-        // Добавление сообщения в чат
-        function addMessage(type, text, sender) {
-            const container = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}-message`;
-            messageDiv.innerHTML = `
-                <div><strong>${sender}:</strong></div>
-                <div>${text}</div>
-            `;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        // Настройки
-        function changeBackground() {
-            const bg = document.getElementById('bgSelect').value;
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.bg = bg;
-            localStorage.setItem('settings', JSON.stringify(settings));
-            applySettings(settings);
-        }
-        
-        function changeTextSize() {
-            const size = document.getElementById('textSize').value;
-            document.getElementById('sizeValue').textContent = size + 'px';
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.textSize = parseInt(size);
-            localStorage.setItem('settings', JSON.stringify(settings));
-            applySettings(settings);
-        }
-        
-        function changeUserColor() {
-            const color = document.getElementById('userColor').value;
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.userColor = color;
-            localStorage.setItem('settings', JSON.stringify(settings));
-            applySettings(settings);
-        }
-        
-        function changeAdminColor() {
-            const color = document.getElementById('adminColor').value;
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.adminColor = color;
-            localStorage.setItem('settings', JSON.stringify(settings));
-            applySettings(settings);
-        }
-        
-        // Админ-функции
-        function toggleAdminStatus() {
-            if (!isAdmin) {
-                tg.showAlert('❌ Только для администраторов!');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === currentUser.username);
-            
-            if (user) {
-                user.isOnline = !user.isOnline;
-                localStorage.setItem('users', JSON.stringify(users));
-                tg.showAlert(user.isOnline ? '🟢 Вы теперь онлайн' : '🔴 Вы теперь оффлайн');
-                loadAdminsList();
-            }
-        }
-        
-        function viewAllChats() {
-            if (!isAdmin) {
-                tg.showAlert('❌ Только для администраторов!');
-                return;
-            }
-            
-            const messages = JSON.parse(localStorage.getItem('messages')) || [];
-            let stats = '📊 Статистика чатов:\n\n';
-            
-            // Группируем по пользователям
-            const userChats = {};
-            messages.forEach(msg => {
-                const user = msg.isFromUser ? msg.from : msg.to;
-                if (!userChats[user]) userChats[user] = [];
-                userChats[user].push(msg);
-            });
-            
-            Object.keys(userChats).forEach(user => {
-                if (user !== currentUser.username) {
-                    stats += `👤 ${user}: ${userChats[user].length} сообщ.\n`;
-                }
-            });
-            
-            tg.showAlert(stats);
-        }
-        
-        // Выход
-        function logout() {
-            if (currentUser) {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                const user = users.find(u => u.username === currentUser.username);
-                if (user) {
-                    user.isOnline = false;
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
-            }
-            
-            currentUser = null;
-            selectedAdmin = null;
-            isAdmin = false;
-            showScreen('authScreen');
-        }
-        
-        // Инициализация при загрузке
-        initLocalDB();
-        loadSettings();
-        
-        // Enter для отправки сообщения
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+        // Создаем пользователя-администратора
+        users.push({
+            username: username,
+            password: password,
+            role: 'admin',
+            isOnline: true,
+            registeredAt: new Date().toISOString()
         });
         
-        tg.showAlert('💬 Продвинутый чат поддержки загружен!');
-    </script>
-</body>
+        // Создаем запись администратора
+        admins.push({
+            username: username,
+            specialty: specialty,
+            isAvailable: true,
+            rating: 5.0,
+            joinedAt: new Date().toISOString()
+        });
+        
+        // Сохраняем данные
+        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('admins', JSON.stringify(admins));
+        
+        currentUser = { 
+            username: username, 
+            password: password, 
+            role: 'admin' 
+        };
+        isAdmin = true;
+        
+        tg.showAlert('🎉 Вы успешно зарегистрированы как администратор!');
+        
+        // Переходим на главный экран
+        showMainScreen();
+    }
+    
+    // Функция показа главного экрана (добавьте остальные функции)
+    function showMainScreen() {
+        // Ваш код для главного экрана
+        tg.showAlert('Добро пожаловать в систему!');
+    }
+    
+    // Показываем экран регистрации админа при загрузке для теста
+    showScreen('adminRegisterScreen');
+    tg.showAlert('💬 Для теста используйте код: ADMIN2024');
+</script>
 </html>

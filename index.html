@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Спокойный рассвет</title>
+    <title>Чат поддержки</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -16,17 +16,27 @@
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 0;
             min-height: 100vh;
         }
         
         .container {
             max-width: 100%;
+            padding: 20px;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .active {
+            display: block;
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 20px 0;
         }
         
         .header h1 {
@@ -34,116 +44,387 @@
             margin-bottom: 10px;
         }
         
-        .features {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
+        .form-group {
+            margin-bottom: 20px;
         }
         
-        .feature-btn {
-            background: rgba(255,255,255,0.15);
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
             border: none;
-            padding: 20px;
-            border-radius: 15px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .form-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+        }
+        
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        
+        .avatar-upload {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            margin: 0 auto 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .admin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .admin-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .admin-card:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .chat-container {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 12px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background: rgba(76, 175, 80, 0.3);
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .admin-message {
+            background: rgba(33, 150, 243, 0.3);
+            margin-right: auto;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
             color: white;
             font-size: 18px;
             cursor: pointer;
-            transition: all 0.3s;
-            text-align: left;
-        }
-        
-        .feature-btn:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-2px);
-        }
-        
-        .feature-icon {
-            font-size: 24px;
-            margin-right: 10px;
-        }
-        
-        .status {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            margin-top: 20px;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🧘 Спокойный рассвет</h1>
-            <p>Ваше пространство для релаксации</p>
+        <!-- Экран регистрации -->
+        <div id="registerScreen" class="screen active">
+            <div class="header">
+                <h1>📝 Регистрация</h1>
+                <p>Создайте ваш анонимный профиль</p>
+            </div>
+            
+            <div class="avatar-upload">
+                <div class="avatar-preview" id="avatarPreview">
+                    👤
+                </div>
+                <button class="btn" onclick="document.getElementById('avatarInput').click()">
+                    📷 Добавить аватар
+                </button>
+                <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(event)">
+            </div>
+            
+            <div class="form-group">
+                <label>👤 Ваш никнейм:</label>
+                <input type="text" class="form-input" id="username" placeholder="Придумайте никнейм">
+            </div>
+            
+            <div class="form-group">
+                <label>🔐 Пароль:</label>
+                <input type="password" class="form-input" id="password" placeholder="Создайте пароль">
+            </div>
+            
+            <button class="btn btn-primary" onclick="register()">
+                ✅ Зарегистрироваться
+            </button>
         </div>
         
-        <div class="features">
-            <button class="feature-btn" onclick="startMeditation()">
-                <span class="feature-icon">🧘</span>
-                Начать медитацию
-            </button>
+        <!-- Экран выбора администратора -->
+        <div id="adminScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('registerScreen')">← Назад</button>
+            <div class="header">
+                <h1>👨‍💼 Выбор администратора</h1>
+                <p>Выберите кому написать</p>
+            </div>
             
-            <button class="feature-btn" onclick="openVibrationSettings()">
-                <span class="feature-icon">📳</span>
-                Настройки вибраций
-            </button>
-            
-            <button class="feature-btn" onclick="showStatistics()">
-                <span class="feature-icon">📊</span>
-                Моя статистика
-            </button>
-            
-            <button class="feature-btn" onclick="openSupport()">
-                <span class="feature-icon">💬</span>
-                Поддержка
-            </button>
+            <div class="admin-list">
+                <div class="admin-card" onclick="selectAdmin('Алексей', '💻 Техподдержка')">
+                    <div class="admin-info">
+                        <div class="admin-avatar">👨‍💻</div>
+                        <div>
+                            <strong>Алексей</strong>
+                            <p>💻 Техподдержка | Online</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-card" onclick="selectAdmin('Мария', '📞 Консультации')">
+                    <div class="admin-info">
+                        <div class="admin-avatar">👩‍💼</div>
+                        <div>
+                            <strong>Мария</strong>
+                            <p>📞 Консультации | Online</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-card" onclick="selectAdmin('Иван', '🔧 Технические вопросы')">
+                    <div class="admin-info">
+                        <div class="admin-avatar">👨‍🔧</div>
+                        <div>
+                            <strong>Иван</strong>
+                            <p>🔧 Технические вопросы | Online</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="quickSearch()">
+                    🔍 Быстрый поиск администратора
+                </button>
+            </div>
         </div>
         
-        <div class="status">
-            <p id="statusText">Готов к работе</p>
+        <!-- Экран чата -->
+        <div id="chatScreen" class="screen">
+            <button class="back-btn" onclick="showScreen('adminScreen')">← Назад к выбору</button>
+            <div class="header">
+                <h1 id="chatWith">💬 Чат с поддержкой</h1>
+                <p id="adminSpecialty">Готов помочь вам</p>
+            </div>
+            
+            <div class="chat-container" id="chatContainer">
+                <div class="message admin-message">
+                    Здравствуйте! Чем могу вам помочь?
+                </div>
+            </div>
+            
+            <div class="message-input">
+                <input type="text" id="messageInput" placeholder="Введите ваше сообщение...">
+                <button class="btn btn-primary" onclick="sendMessage()">📤</button>
+            </div>
         </div>
     </div>
 
     <script>
         // Инициализация Telegram Web App
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем на весь экран
-        tg.ready(); // Говорим что приложение готово
+        tg.expand();
+        tg.ready();
         
-        // Функции которые РАБОТАЮТ!
-        function startMeditation() {
-            document.getElementById('statusText').textContent = '🧘 Медитация запущена (10 мин)';
-            showAlert('Медитация началась! Расслабьтесь...');
+        let currentUser = null;
+        let selectedAdmin = null;
+        
+        // Функции для работы с экранами
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
         }
         
-        function openVibrationSettings() {
-            document.getElementById('statusText').textContent = '📳 Настройка вибраций';
-            showAlert('Выберите интенсивность вибрации');
+        // Регистрация пользователя
+        function register() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!username || !password) {
+                tg.showAlert('❌ Заполните все поля!');
+                return;
+            }
+            
+            currentUser = {
+                username: username,
+                avatar: document.getElementById('avatarPreview').innerHTML
+            };
+            
+            tg.showAlert('✅ Регистрация успешна!');
+            showScreen('adminScreen');
         }
         
-        function showStatistics() {
-            document.getElementById('statusText').textContent = '📊 Статистика загружается';
-            showAlert('Ваша статистика: 12 сессий, 3.5 часа');
-        }
-        
-        function openSupport() {
-            document.getElementById('statusText').textContent = '💬 Чат поддержки';
-            showAlert('Связываемся с поддержкой...');
-        }
-        
-        function showAlert(message) {
-            // Используем Telegram Web App для показа уведомлений
-            if (tg && tg.showAlert) {
-                tg.showAlert(message);
-            } else {
-                alert(message);
+        // Предпросмотр аватарки
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('avatarPreview').innerHTML = 
+                        `<img src="${e.target.result}" alt="Avatar">`;
+                };
+                reader.readAsDataURL(file);
             }
         }
         
-        // Показываем что приложение загружено
-        tg.showAlert('Приложение "Спокойный рассвет" загружено!');
+        // Выбор администратора
+        function selectAdmin(name, specialty) {
+            selectedAdmin = { name, specialty };
+            document.getElementById('chatWith').textContent = `💬 Чат с ${name}`;
+            document.getElementById('adminSpecialty').textContent = specialty;
+            showScreen('chatScreen');
+            
+            // Очищаем чат при новом выборе
+            document.getElementById('chatContainer').innerHTML = 
+                `<div class="message admin-message">Здравствуйте! Чем могу вам помочь?</div>`;
+        }
+        
+        // Быстрый поиск администратора
+        function quickSearch() {
+            const admins = [
+                {name: 'Алексей', specialty: '💻 Техподдержка'},
+                {name: 'Мария', specialty: '📞 Консультации'},
+                {name: 'Иван', specialty: '🔧 Технические вопросы'}
+            ];
+            const randomAdmin = admins[Math.floor(Math.random() * admins.length)];
+            selectAdmin(randomAdmin.name, randomAdmin.specialty);
+        }
+        
+        // Отправка сообщения
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            if (!currentUser) {
+                tg.showAlert('❌ Сначала зарегистрируйтесь!');
+                showScreen('registerScreen');
+                return;
+            }
+            
+            if (!selectedAdmin) {
+                tg.showAlert('❌ Сначала выберите администратора!');
+                showScreen('adminScreen');
+                return;
+            }
+            
+            // Добавляем сообщение пользователя
+            addMessage('user', message, currentUser.username);
+            input.value = '';
+            
+            // Имитация ответа администратора
+            setTimeout(() => {
+                const responses = [
+                    'Понял ваш вопрос, сейчас помогу...',
+                    'Спасибо за обращение! Уточните пожалуйста...',
+                    'Уже занимаюсь вашим вопросом!',
+                    'Хорошо, понял. Давайте разберемся...'
+                ];
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addMessage('admin', response, selectedAdmin.name);
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        // Добавление сообщения в чат
+        function addMessage(type, text, sender) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.innerHTML = `
+                <div><strong>${sender}:</strong></div>
+                <div>${text}</div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Enter для отправки сообщения
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

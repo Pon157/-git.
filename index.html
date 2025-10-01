@@ -887,6 +887,23 @@
 
         // Инициализация при загрузке
         window.onload = init;
+        // Выполните в консоли браузера:
+const users = JSON.parse(localStorage.getItem('users')) || [];
+if (!users.find(u => u.username === 'owner')) {
+    users.push({
+        username: 'owner',
+        password: 'owner123',
+        role: 'Совладелец',
+        isOnline: false,
+        registeredAt: new Date().toISOString(),
+        lastLogin: null
+    });
+    localStorage.setItem('users', JSON.stringify(users));
+    console.log('✅ Владелец создан! Логин: owner, Пароль: owner123');
+} else {
+    console.log('👑 Владелец уже существует в системе');
+}
     </script>
+
 </body>
 </html>

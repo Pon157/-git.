@@ -1,1091 +1,367 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат Поддержки | Спокойный Рассвет</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --card-bg: rgba(255, 255, 255, 0.1);
-            --card-hover: rgba(255, 255, 255, 0.15);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.8);
-            --border-radius: 16px;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+// 🆕 НОВЫЕ ФУНКЦИИ ДЛЯ РЕАЛЬНЫХ ЧАТОВ
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+// Создание нового чата с администратором
+async function createChatWithAdmin(adminUsername) {
+    const admin = getAdminByUsername(adminUsername);
+    if (!admin) {
+        showNotification('❌ Администратор не найден!', 'error');
+        return null;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-            padding: 0;
-        }
+    // Сохраняем чат в localStorage
+    const chats = JSON.parse(localStorage.getItem('chats')) || [];
+    const existingChat = chats.find(chat => 
+        chat.userId === currentUser.username && 
+        chat.adminUsername === adminUsername && 
+        chat.status === 'active'
+    );
 
-        .app-container {
-            max-width: 100%;
-            min-height: 100vh;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-        }
+    if (existingChat) {
+        return existingChat.id;
+    }
 
-        /* Экраны */
-        .screen {
-            display: none;
-            flex: 1;
-            flex-direction: column;
-        }
+    const newChat = {
+        id: generateId(),
+        userId: currentUser.username,
+        adminUsername: adminUsername,
+        adminSpecialty: admin.specialty,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messages: [],
+        hasUnread: false
+    };
 
-        .screen.active {
-            display: flex;
-        }
+    chats.push(newChat);
+    localStorage.setItem('chats', JSON.stringify(chats));
+    
+    return newChat.id;
+}
 
-        /* Заголовки */
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            padding: 20px;
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+// Отправка сообщения в реальный чат
+async function sendRealMessage(chatId, messageText) {
+    const chats = JSON.parse(localStorage.getItem('chats')) || [];
+    const chat = chats.find(c => c.id === chatId);
+    
+    if (!chat) {
+        showNotification('❌ Чат не найден!', 'error');
+        return;
+    }
 
-        .header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #fff, #e0e7ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+    const message = {
+        id: generateId(),
+        chatId: chatId,
+        from: currentUser.username,
+        text: messageText,
+        timestamp: new Date().toISOString(),
+        isRead: false,
+        type: 'text'
+    };
 
-        .header p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
+    // Добавляем сообщение в чат
+    chat.messages.push(message);
+    chat.updatedAt = new Date().toISOString();
+    chat.hasUnread = true;
+    
+    localStorage.setItem('chats', JSON.stringify(chats));
+    
+    // Имитируем отправку в "реальную систему"
+    simulateMessageDelivery(chatId, message);
+    
+    // Показываем сообщение в интерфейсе
+    addMessageToChat(chatId, message);
+    
+    // Обновляем список чатов
+    updateChatsList();
+}
 
-        /* Карточки */
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: var(--transition);
-        }
+// Имитация доставки сообщения и ответа админа
+function simulateMessageDelivery(chatId, userMessage) {
+    // Сохраняем в "историю сообщений"
+    const allMessages = JSON.parse(localStorage.getItem('allMessages')) || [];
+    allMessages.push({
+        ...userMessage,
+        delivered: true
+    });
+    localStorage.setItem('allMessages', JSON.stringify(allMessages));
 
-        .card:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        /* Формы */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            font-size: 16px;
-            transition: var(--transition);
-            border: 1px solid transparent;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Кнопки */
-        .btn {
-            width: 100%;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
-        }
-
-        .btn-secondary {
-            background: var(--card-bg);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-secondary:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Навигация */
-        .nav-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 10px;
-            transition: var(--transition);
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Список администраторов */
-        .admin-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .admin-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: var(--transition);
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-
-        .admin-card:hover {
-            background: var(--card-hover);
-            transform: translateY(-2px);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .admin-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .admin-info {
-            flex: 1;
-        }
-
-        .admin-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .admin-specialty {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-bottom: 4px;
-        }
-
-        .admin-status {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-        }
-
-        .status-online {
-            color: var(--success);
-        }
-
-        .status-offline {
-            color: var(--danger);
-        }
-
-        .admin-rating {
-            color: #ffd700;
-            font-size: 12px;
-        }
-
-        /* Чат */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 16px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            position: relative;
-            animation: messageSlide 0.3s ease-out;
-        }
-
-        @keyframes messageSlide {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .message-user {
-            background: var(--primary);
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-        }
-
-        .message-admin {
-            background: var(--card-hover);
-            align-self: flex-start;
-            border-bottom-left-radius: 6px;
-        }
-
-        .message-sender {
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            opacity: 0.8;
-        }
-
-        .message-text {
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .message-time {
-            font-size: 10px;
-            opacity: 0.6;
-            text-align: right;
-            margin-top: 4px;
-        }
-
-        .chat-input-container {
-            padding: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            background: var(--card-bg);
-        }
-
-        .chat-input {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .chat-input-field {
-            flex: 1;
-            padding: 12px 16px;
-            border: none;
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
-            font-size: 14px;
-        }
-
-        .chat-input-field:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .send-btn {
-            background: var(--primary);
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .send-btn:hover {
-            background: var(--primary-dark);
-            transform: scale(1.05);
-        }
-
-        /* Уведомления */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            padding: 16px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow);
-            z-index: 1000;
-            transition: var(--transition);
-            max-width: 90%;
-        }
-
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* Анимации */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        /* Адаптивность */
-        @media (max-width: 480px) {
-            .app-container {
-                padding: 12px;
-            }
-            
-            .header {
-                padding: 16px;
-                margin-bottom: 20px;
-            }
-            
-            .header h1 {
-                font-size: 20px;
-            }
-            
-            .card {
-                padding: 16px;
-            }
-            
-            .btn {
-                padding: 14px 20px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="app-container">
-        <!-- Экран авторизации -->
-        <div id="authScreen" class="screen active fade-in">
-            <div class="header">
-                <h1>🔐 Добро пожаловать</h1>
-                <p>Войдите в систему поддержки</p>
-            </div>
-            
-            <div class="card">
-                <div class="form-group">
-                    <label class="form-label">👤 Ваш никнейм</label>
-                    <input type="text" class="form-input" id="authUsername" placeholder="Введите ваш никнейм">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🔐 Пароль</label>
-                    <input type="password" class="form-input" id="authPassword" placeholder="Введите ваш пароль">
-                </div>
-                
-                <button class="btn btn-primary" onclick="login()">
-                    <span>🚀 Войти в систему</span>
-                </button>
-            </div>
-            
-            <div class="card">
-                <button class="btn btn-secondary" onclick="showScreen('registerScreen')">
-                    <span>📝 Создать аккаунт</span>
-                </button>
-                
-                <button class="btn btn-outline" onclick="showScreen('adminRegisterScreen')">
-                    <span>👑 Стать администратором</span>
-                </button>
-            </div>
-            
-            <div class="card">
-                <h3 style="margin-bottom: 12px;">🎫 Коды для администраторов</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <code style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">ADMIN2024</code>
-                    <code style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">SUPPORT001</code>
-                    <code style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">HELPDESK99</code>
-                    <code style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px;">MODERATOR55</code>
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран регистрации пользователя -->
-        <div id="registerScreen" class="screen">
-            <div class="nav-header">
-                <button class="back-btn" onclick="showScreen('authScreen')">←</button>
-                <div>
-                    <h1>📝 Регистрация</h1>
-                    <p>Создайте новый аккаунт</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="form-group">
-                    <label class="form-label">👤 Придумайте никнейм</label>
-                    <input type="text" class="form-input" id="regUsername" placeholder="Уникальное имя пользователя">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🔐 Создайте пароль</label>
-                    <input type="password" class="form-input" id="regPassword" placeholder="Не менее 6 символов">
-                </div>
-                
-                <button class="btn btn-primary" onclick="registerUser()">
-                    <span>✨ Создать аккаунт</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Экран регистрации администратора -->
-        <div id="adminRegisterScreen" class="screen">
-            <div class="nav-header">
-                <button class="back-btn" onclick="showScreen('authScreen')">←</button>
-                <div>
-                    <h1>👑 Администратор</h1>
-                    <p>Требуется пригласительный код</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="form-group">
-                    <label class="form-label">🎫 Пригласительный код</label>
-                    <input type="text" class="form-input" id="inviteCode" placeholder="ADMIN2024, SUPPORT001, etc.">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
-                        Доступные коды: ADMIN2024, SUPPORT001, HELPDESK99, MODERATOR55
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">👤 Никнейм администратора</label>
-                    <input type="text" class="form-input" id="adminUsername" placeholder="Ваше уникальное имя">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🔐 Пароль</label>
-                    <input type="password" class="form-input" id="adminPassword" placeholder="Надежный пароль">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">🎯 Специализация</label>
-                    <input type="text" class="form-input" id="specialty" placeholder="Техподдержка, Консультации...">
-                </div>
-                
-                <button class="btn btn-primary" onclick="registerAdmin()">
-                    <span>👑 Стать администратором</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Главный экран -->
-        <div id="mainScreen" class="screen">
-            <div class="header">
-                <h1>💬 Чат Поддержки</h1>
-                <p>Добро пожаловать, <span id="currentUser"></span></p>
-                <div style="display: flex; gap: 16px; justify-content: center; margin-top: 12px; font-size: 12px;">
-                    <span>👥 <span id="onlineUsers">1</span> онлайн</span>
-                    <span>👑 <span id="onlineAdmins">0</span> администраторов</span>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                <button class="btn btn-secondary" style="flex: 1;" onclick="showTab('adminsTab')">
-                    👨‍💼 Админы
-                </button>
-                <button class="btn btn-outline" style="flex: 1;" onclick="showTab('chatTab')">
-                    💬 Чат
-                </button>
-                <button class="btn btn-outline" style="flex: 1;" onclick="showTab('settingsTab')">
-                    ⚙️ Настройки
-                </button>
-            </div>
-            
-            <!-- Вкладка администраторов -->
-            <div id="adminsTab" class="tab-content">
-                <div class="admin-grid" id="adminsList">
-                    <!-- Администраторы загружаются динамически -->
-                </div>
-                
-                <button class="btn btn-outline" onclick="quickSearch()">
-                    <span>🔍 Быстрый поиск администратора</span>
-                </button>
-            </div>
-            
-            <!-- Вкладка чата -->
-            <div id="chatTab" class="tab-content" style="display: none; flex: 1;">
-                <div class="chat-container">
-                    <div class="chat-messages" id="chatContainer">
-                        <div class="message message-admin">
-                            <div class="message-sender">Система</div>
-                            <div class="message-text">Выберите администратора для начала общения</div>
-                            <div class="message-time">только что</div>
-                        </div>
-                    </div>
-                    
-                    <div class="chat-input-container">
-                        <div class="chat-input">
-                            <input type="text" class="chat-input-field" id="messageInput" placeholder="Введите ваше сообщение...">
-                            <button class="send-btn" onclick="sendMessage()">
-                                <span>➤</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Вкладка настроек -->
-            <div id="settingsTab" class="tab-content" style="display: none;">
-                <div class="card">
-                    <h3 style="margin-bottom: 16px;">🎨 Внешний вид</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Тема оформления</label>
-                        <select class="form-input" onchange="changeTheme(this.value)">
-                            <option value="gradient">Градиент</option>
-                            <option value="dark">Темная</option>
-                            <option value="blue">Синяя</option>
-                            <option value="purple">Фиолетовая</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Размер текста: <span id="fontSizeValue">14px</span></label>
-                        <input type="range" class="form-input" min="12" max="18" value="14" oninput="changeFontSize(this.value)">
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 style="margin-bottom: 16px;">🔐 Аккаунт</h3>
-                    <button class="btn btn-secondary" onclick="showScreen('authScreen')">
-                        <span>🔄 Сменить пользователя</span>
-                    </button>
-                    
-                    <button class="btn btn-outline" onclick="logout()">
-                        <span>🚪 Выйти</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Уведомление -->
-    <div class="notification" id="notification"></div>
-
-    <script>
-        // Инициализация Telegram Web App
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-        
-        let currentUser = null;
-        let selectedAdmin = null;
-        let isAdmin = false;
-        
-        // 🎫 Действительные коды для администраторов
-        const VALID_ADMIN_CODES = [
-            "ADMIN2024",
-            "SUPPORT001", 
-            "HELPDESK99",
-            "MODERATOR55"
+    // Имитируем ответ администратора через 1-3 секунды
+    setTimeout(() => {
+        const adminResponses = [
+            "Здравствуйте! Чем могу помочь?",
+            "Спасибо за обращение! Уточните, пожалуйста, ваш вопрос.",
+            "Понял вас. Сейчас разберусь с вашим вопросом.",
+            "Интересный вопрос! Давайте обсудим детали.",
+            "Уже занимаюсь вашей проблемой. Скоро вернусь с ответом."
         ];
         
-        // Инициализация при загрузке
-        function init() {
-            initLocalDB();
-            loadSettings();
-            showNotification('💬 Добро пожаловать в систему поддержки!', 'success');
+        const response = adminResponses[Math.floor(Math.random() * adminResponses.length)];
+        
+        const adminMessage = {
+            id: generateId(),
+            chatId: chatId,
+            from: getChatAdmin(chatId),
+            text: response,
+            timestamp: new Date().toISOString(),
+            isRead: false,
+            type: 'text'
+        };
+        
+        // Сохраняем ответ админа
+        const chats = JSON.parse(localStorage.getItem('chats')) || [];
+        const chat = chats.find(c => c.id === chatId);
+        if (chat) {
+            chat.messages.push(adminMessage);
+            chat.updatedAt = new Date().toISOString();
+            localStorage.setItem('chats', JSON.stringify(chats));
+            
+            // Показываем в интерфейсе
+            addMessageToChat(chatId, adminMessage);
+            showNotification(`💬 Новое сообщение от ${adminMessage.from}`, 'info');
         }
         
-        // Показ уведомления
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
+    }, 1000 + Math.random() * 2000);
+}
+
+// 🆕 СИСТЕМА ОТЗЫВОВ
+function createReview(chatId, rating, comment) {
+    const reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+    const chat = getChatById(chatId);
+    
+    if (!chat) {
+        showNotification('❌ Чат не найден!', 'error');
+        return;
+    }
+
+    const review = {
+        id: generateId(),
+        chatId: chatId,
+        adminUsername: chat.adminUsername,
+        userUsername: currentUser.username,
+        rating: rating,
+        comment: comment,
+        createdAt: new Date().toISOString()
+    };
+
+    reviews.push(review);
+    localStorage.setItem('reviews', JSON.stringify(reviews));
+    
+    // Обновляем рейтинг администратора
+    updateAdminRating(chat.adminUsername);
+    
+    showNotification('⭐ Спасибо за ваш отзыв!', 'success');
+}
+
+// 🆕 ТЕХНИЧЕСКИЕ УВЕДОМЛЕНИЯ
+function createTechnicalNotification(title, message) {
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    
+    const notification = {
+        id: generateId(),
+        type: 'technical',
+        title: title,
+        message: message,
+        isRead: false,
+        createdAt: new Date().toISOString()
+    };
+
+    notifications.push(notification);
+    localStorage.setItem('notifications', JSON.stringify(notifications));
+    
+    showNotification(`🔔 ${title}`, 'info');
+}
+
+// 🆕 ОБНОВЛЕННЫЙ ИНТЕРФЕЙС ЧАТОВ
+function showChatsList() {
+    const chats = getUsersChats();
+    
+    let html = '<div class="chats-header"><h3>💬 Мои чаты</h3></div>';
+    
+    if (chats.length === 0) {
+        html += '<div class="empty-state">📭 У вас пока нет активных чатов</div>';
+    } else {
+        chats.forEach(chat => {
+            const lastMessage = chat.messages[chat.messages.length - 1];
+            const unreadCount = chat.messages.filter(m => !m.isRead && m.from !== currentUser.username).length;
             
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Переключение экранов
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-        
-        // Переключение вкладок
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            
-            document.getElementById(tabId).style.display = 'flex';
-        }
-        
-        // Вход пользователя
-        function login() {
-            const username = document.getElementById('authUsername').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-            
-            if (!username || !password) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                currentUser = user;
-                isAdmin = user.role === 'admin';
-                
-                // Обновляем онлайн статус
-                user.isOnline = true;
-                localStorage.setItem('users', JSON.stringify(users));
-                
-                showNotification('✅ Вход выполнен успешно!', 'success');
-                showMainScreen();
-            } else {
-                showNotification('❌ Неверный логин или пароль!', 'error');
-            }
-        }
-        
-        // Регистрация пользователя
-        function registerUser() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            
-            if (!username || !password) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            
-            if (users.find(u => u.username === username)) {
-                showNotification('❌ Этот никнейм уже занят!', 'error');
-                return;
-            }
-            
-            users.push({
-                username: username,
-                password: password,
-                role: 'user',
-                isOnline: true,
-                registeredAt: new Date().toISOString()
-            });
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            
-            currentUser = { username, password, role: 'user' };
-            showNotification('✅ Регистрация выполнена успешно!', 'success');
-            showMainScreen();
-        }
-        
-        // Регистрация администратора
-        function registerAdmin() {
-            const code = document.getElementById('inviteCode').value.trim().toUpperCase();
-            const username = document.getElementById('adminUsername').value.trim();
-            const password = document.getElementById('adminPassword').value.trim();
-            const specialty = document.getElementById('specialty').value.trim();
-            
-            if (!code || !username || !password || !specialty) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-            
-            if (!VALID_ADMIN_CODES.includes(code)) {
-                showNotification('❌ Неверный пригласительный код! Используйте один из доступных кодов.', 'error');
-                return;
-            }
-            
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            
-            if (users.find(u => u.username === username)) {
-                showNotification('❌ Этот никнейм уже занят!', 'error');
-                return;
-            }
-            
-            // Создаем администратора
-            users.push({
-                username: username,
-                password: password,
-                role: 'admin',
-                isOnline: true,
-                registeredAt: new Date().toISOString()
-            });
-            
-            admins.push({
-                username: username,
-                specialty: specialty,
-                isAvailable: true,
-                rating: 5.0,
-                joinedAt: new Date().toISOString()
-            });
-            
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('admins', JSON.stringify(admins));
-            
-            currentUser = { username, password, role: 'admin' };
-            isAdmin = true;
-            
-            showNotification('👑 Вы успешно стали администратором!', 'success');
-            showMainScreen();
-        }
-        
-        // Показ главного экрана
-        function showMainScreen() {
-            document.getElementById('currentUser').textContent = currentUser.username;
-            loadAdminsList();
-            updateOnlineStats();
-            showScreen('mainScreen');
-            showTab('adminsTab');
-        }
-        
-        // Загрузка списка администраторов
-        function loadAdminsList() {
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const adminsList = document.getElementById('adminsList');
-            
-            adminsList.innerHTML = '';
-            
-            if (admins.length === 0) {
-                adminsList.innerHTML = '<div class="card"><p>Администраторы не найдены</p></div>';
-                return;
-            }
-            
-            admins.forEach(admin => {
-                const user = users.find(u => u.username === admin.username);
-                const isOnline = user && user.isOnline;
-                
-                const adminCard = document.createElement('div');
-                adminCard.className = 'admin-card';
-                adminCard.onclick = () => selectAdmin(admin);
-                
-                // Получаем первую букву для аватара
-                const firstLetter = admin.username.charAt(0).toUpperCase();
-                
-                adminCard.innerHTML = `
-                    <div class="admin-avatar">${firstLetter}</div>
-                    <div class="admin-info">
-                        <div class="admin-name">${admin.username}</div>
-                        <div class="admin-specialty">${admin.specialty}</div>
-                        <div class="admin-status">
-                            <span class="${isOnline ? 'status-online' : 'status-offline'}">
-                                ${isOnline ? '🟢 Online' : '🔴 Offline'}
-                            </span>
-                            <span class="admin-rating">⭐ ${admin.rating.toFixed(1)}</span>
-                        </div>
+            html += `
+                <div class="chat-item" onclick="openChat('${chat.id}')">
+                    <div class="chat-avatar">${getInitials(chat.adminUsername)}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.adminUsername}</div>
+                        <div class="chat-specialty">${chat.adminSpecialty}</div>
+                        <div class="chat-last-message">${lastMessage ? lastMessage.text : 'Нет сообщений'}</div>
                     </div>
-                `;
-                
-                adminsList.appendChild(adminCard);
-            });
-        }
-        
-        // Выбор администратора
-        function selectAdmin(admin) {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === admin.username);
-            
-            if (!user || !user.isOnline) {
-                showNotification('❌ Этот администратор сейчас не в сети!', 'error');
-                return;
-            }
-            
-            selectedAdmin = admin;
-            showTab('chatTab');
-            
-            // Очищаем чат и показываем приветствие
-            document.getElementById('chatContainer').innerHTML = `
-                <div class="message message-admin">
-                    <div class="message-sender">${admin.username}</div>
-                    <div class="message-text">Здравствуйте! Чем могу вам помочь?</div>
-                    <div class="message-time">только что</div>
+                    <div class="chat-meta">
+                        <div class="chat-time">${formatTime(chat.updatedAt)}</div>
+                        ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
+                    </div>
                 </div>
             `;
-            
-            showNotification(`💬 Чат с ${admin.username}`, 'success');
-        }
-        
-        // Быстрый поиск администратора
-        function quickSearch() {
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            
-            // Ищем онлайн администраторов
-            const onlineAdmins = admins.filter(admin => {
-                const user = users.find(u => u.username === admin.username);
-                return user && user.isOnline;
-            });
-            
-            if (onlineAdmins.length > 0) {
-                const randomAdmin = onlineAdmins[Math.floor(Math.random() * onlineAdmins.length)];
-                selectAdmin(randomAdmin);
-            } else {
-                showNotification('❌ Сейчас нет администраторов онлайн!', 'error');
-            }
-        }
-        
-        // Отправка сообщения
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            if (!selectedAdmin) {
-                showNotification('❌ Сначала выберите администратора!', 'error');
-                showTab('adminsTab');
-                return;
-            }
-            
-            // Добавляем сообщение пользователя
-            addMessage('user', message, currentUser.username);
-            input.value = '';
-            
-            // Имитация ответа администратора
-            setTimeout(() => {
-                const responses = [
-                    'Понял ваш вопрос, сейчас помогу...',
-                    'Спасибо за обращение! Уточните пожалуйста...',
-                    'Уже занимаюсь вашим вопросом!',
-                    'Хорошо, понял. Давайте разберемся...',
-                    'Интересный вопрос! Давайте обсудим детали.'
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                addMessage('admin', response, selectedAdmin.username);
-            }, 1000 + Math.random() * 2000);
-        }
-        
-        // Добавление сообщения в чат
-        function addMessage(type, text, sender) {
-            const container = document.getElementById('chatContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message message-${type}`;
-            
-            const time = new Date().toLocaleTimeString('ru-RU', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            messageDiv.innerHTML = `
-                <div class="message-sender">${sender}</div>
-                <div class="message-text">${text}</div>
-                <div class="message-time">${time}</div>
-            `;
-            
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        // Настройки
-        function changeTheme(theme) {
-            const root = document.documentElement;
-            
-            switch(theme) {
-                case 'dark':
-                    root.style.setProperty('--background', '#1a1a1a');
-                    break;
-                case 'blue':
-                    root.style.setProperty('--background', '#1e3a8a');
-                    break;
-                case 'purple':
-                    root.style.setProperty('--background', '#6b21a8');
-                    break;
-                default:
-                    root.style.setProperty('--background', 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
-            }
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.theme = theme;
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-        
-        function changeFontSize(size) {
-            document.documentElement.style.fontSize = size + 'px';
-            document.getElementById('fontSizeValue').textContent = size + 'px';
-            
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            settings.fontSize = size;
-            localStorage.setItem('settings', JSON.stringify(settings));
-        }
-        
-        // Обновление статистики онлайн
-        function updateOnlineStats() {
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const admins = JSON.parse(localStorage.getItem('admins')) || [];
-            
-            const onlineUsers = users.filter(u => u.isOnline).length;
-            const onlineAdmins = admins.filter(admin => {
-                const user = users.find(u => u.username === admin.username);
-                return user && user.isOnline;
-            }).length;
-            
-            document.getElementById('onlineUsers').textContent = onlineUsers;
-            document.getElementById('onlineAdmins').textContent = onlineAdmins;
-        }
-        
-        // Инициализация локальной базы данных
-        function initLocalDB() {
-            if (!localStorage.getItem('users')) {
-                localStorage.setItem('users', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('admins')) {
-                localStorage.setItem('admins', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('messages')) {
-                localStorage.setItem('messages', JSON.stringify([]));
-            }
-            if (!localStorage.getItem('settings')) {
-                localStorage.setItem('settings', JSON.stringify({
-                    theme: 'gradient',
-                    fontSize: 14
-                }));
-            }
-        }
-        
-        // Загрузка настроек
-        function loadSettings() {
-            const settings = JSON.parse(localStorage.getItem('settings')) || {};
-            
-            if (settings.theme) {
-                changeTheme(settings.theme);
-            }
-            
-            if (settings.fontSize) {
-                changeFontSize(settings.fontSize);
-            }
-        }
-        
-        // Выход
-        function logout() {
-            if (currentUser) {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-                const user = users.find(u => u.username === currentUser.username);
-                if (user) {
-                    user.isOnline = false;
-                    localStorage.setItem('users', JSON.stringify(users));
-                }
-            }
-            
-            currentUser = null;
-            selectedAdmin = null;
-            isAdmin = false;
-            showScreen('authScreen');
-            showNotification('👋 До свидания!', 'info');
-        }
-        
-        // Enter для отправки сообщения
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
         });
-        
-        // Инициализация при загрузке
-        window.onload = init;
-    </script>
-</body>
-</html>
+    }
+    
+    // Добавляем технический чат
+    html += `
+        <div class="chat-item technical-chat" onclick="openTechnicalChat()">
+            <div class="chat-avatar">🔔</div>
+            <div class="chat-info">
+                <div class="chat-name">Технические уведомления</div>
+                <div class="chat-specialty">Системные сообщения</div>
+                <div class="chat-last-message">Важные обновления и уведомления</div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('chatsList').innerHTML = html;
+}
+
+// 🆕 ОТКРЫТИЕ КОНКРЕТНОГО ЧАТА
+function openChat(chatId) {
+    const chat = getChatById(chatId);
+    if (!chat) return;
+    
+    // Помечаем сообщения как прочитанные
+    markChatAsRead(chatId);
+    
+    // Показываем интерфейс чата
+    showChatInterface(chat);
+    
+    // Добавляем кнопку для отзыва
+    const chatHeader = document.querySelector('.chat-header');
+    chatHeader.innerHTML += `
+        <button class="btn-review" onclick="showReviewModal('${chatId}')">
+            ⭐ Оставить отзыв
+        </button>
+    `;
+}
+
+// 🆕 МОДАЛЬНОЕ ОКНО ДЛЯ ОТЗЫВОВ
+function showReviewModal(chatId) {
+    const modalHtml = `
+        <div class="modal-overlay active" onclick="closeModal()">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3>⭐ Оставить отзыв</h3>
+                    <button class="close-btn" onclick="closeModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="rating-stars">
+                        ${[1,2,3,4,5].map(star => `
+                            <span class="star" onclick="setRating(${star})">${star <= currentRating ? '⭐' : '☆'}</span>
+                        `).join('')}
+                    </div>
+                    <textarea class="review-comment" placeholder="Ваш комментарий (необязательно)"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="submitReview('${chatId}')">Отправить отзыв</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    currentRating = 0;
+}
+
+let currentRating = 0;
+function setRating(rating) {
+    currentRating = rating;
+    const stars = document.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        star.textContent = index < rating ? '⭐' : '☆';
+    });
+}
+
+function submitReview(chatId) {
+    const comment = document.querySelector('.review-comment').value;
+    
+    if (currentRating === 0) {
+        showNotification('❌ Пожалуйста, поставьте оценку', 'error');
+        return;
+    }
+    
+    createReview(chatId, currentRating, comment);
+    closeModal();
+}
+
+function closeModal() {
+    const modal = document.querySelector('.modal-overlay');
+    if (modal) modal.remove();
+}
+
+// 🆕 ТЕХНИЧЕСКИЙ ЧАТ
+function openTechnicalChat() {
+    const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+    
+    let html = `
+        <div class="chat-header">
+            <button class="back-btn" onclick="showChatsList()">←</button>
+            <div>
+                <h3>🔔 Технические уведомления</h3>
+                <p>Системные сообщения и обновления</p>
+            </div>
+        </div>
+        <div class="chat-messages technical-messages">
+    `;
+    
+    if (notifications.length === 0) {
+        html += '<div class="empty-state">📭 Нет уведомлений</div>';
+    } else {
+        notifications.forEach(notification => {
+            html += `
+                <div class="technical-message ${notification.type}">
+                    <div class="tech-message-header">
+                        <strong>${notification.title}</strong>
+                        <span class="tech-time">${formatTime(notification.createdAt)}</span>
+                    </div>
+                    <div class="tech-message-text">${notification.message}</div>
+                </div>
+            `;
+        });
+    }
+    
+    html += '</div>';
+    
+    document.getElementById('chatsContainer').innerHTML = html;
+    
+    // Помечаем уведомления как прочитанные
+    markNotificationsAsRead();
+}
+
+// 🛠️ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+function getChatById(chatId) {
+    const chats = JSON.parse(localStorage.getItem('chats')) || [];
+    return chats.find(chat => chat.id === chatId);
+}
+
+function getUsersChats() {
+    const chats = JSON.parse(localStorage.getItem('chats')) || [];
+    return chats.filter(chat => chat.userId === currentUser.username)
+               .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
+function getChatAdmin(chatId) {
+    const chat = getChatById(chatId);
+    return chat ? chat.adminUsername : 'Администратор';
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    if (diff < 60000) return 'только что';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} мин назад`;
+    if (diff < 86400000) return date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+    
+    return date.toLocaleDateString('ru-RU');
+}
+
+function getInitials(name) {
+    return name.split(' ').map(word => word[0]).join('').toUpperCase();
+}

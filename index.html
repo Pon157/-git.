@@ -6,6 +6,7 @@
     <title>Чат Поддержки | Спокойный Рассвет</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Ваши существующие стили остаются без изменений */
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -1062,6 +1063,25 @@
             }, 500);
         }
 
+        // Показать главный экран
+        function showMainScreen() {
+            document.getElementById('currentUser').textContent = currentUser.username;
+            loadChats();
+            loadAdminsList();
+            updateOnlineStats();
+            showScreen('mainScreen');
+        }
+
+        // Показать панель администратора
+        function showAdminPanel() {
+            document.getElementById('adminName').textContent = currentUser.username;
+            document.getElementById('adminRole').textContent = currentUser.role;
+            loadAdminChats();
+            loadUsersTable();
+            loadSystemStats();
+            showScreen('adminPanel');
+        }
+
         // Показать выбор администратора
         function showAdminSelection() {
             const users = JSON.parse(localStorage.getItem('users'));
@@ -1349,8 +1369,333 @@
             }
         }
 
-        // Остальные функции (loadAdminsList, loadAdminChats, loadUsersTable, etc.)
-        // ... (они остаются такими же как в предыдущей версии)
+        // Вспомогательные функции
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showAdminTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show';
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function addSystemLog(message, type = 'info') {
+            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+            const logEntry = {
+                message: message,
+                type: type,
+                timestamp: new Date().toISOString()
+            };
+            logs.push(logEntry);
+            localStorage.setItem('systemLogs', JSON.stringify(logs));
+            
+            // Обновляем отображение логов если открыта панель администратора
+            if (document.getElementById('adminSystemTab').classList.contains('active')) {
+                renderSystemLogs();
+            }
+        }
+
+        function renderSystemLogs() {
+            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+            const container = document.getElementById('systemLogs');
+            container.innerHTML = logs.slice(-20).map(log => `
+                <div class="log-entry log-${log.type}">
+                    [${new Date(log.timestamp).toLocaleTimeString()}] ${log.message}
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearLogs() {
+            localStorage.setItem('systemLogs', JSON.stringify([]));
+            renderSystemLogs();
+        }
+
+        function updateOnlineStatus() {
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => u.username === currentUser.username);
+                if (user) {
+                    user.isOnline = true;
+                    localStorage.setItem('users', JSON.stringify(users));
+                }
+            }
+        }
+
+        function updateOnlineStats() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const onlineUsers = users.filter(u => u.isOnline).length;
+            const onlineAdmins = users.filter(u => u.isOnline && u.role !== 'user').length;
+            
+            document.getElementById('onlineUsers').textContent = onlineUsers;
+            document.getElementById('onlineAdmins').textContent = onlineAdmins;
+        }
+
+        function loadAdminsList() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const admins = users.filter(u => u.role !== 'user');
+            const container = document.getElementById('adminsList');
+            
+            container.innerHTML = admins.map(admin => `
+                <div class="card">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            ${admin.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div style="flex: 1;">
+                            <div class="chat-name">${admin.username}</div>
+                            <div class="chat-preview">${admin.role} • ${admin.isOnline ? '🟢 Online' : '🔴 Offline'}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadAdminChats() {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const adminChats = chats.filter(chat => 
+                chat.participants.includes(currentUser.username) && chat.isActive
+            );
+            
+            const container = document.getElementById('adminChatsList');
+            if (adminChats.length === 0) {
+                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">Нет активных чатов</p></div>';
+                return;
+            }
+            
+            container.innerHTML = adminChats.map(chat => {
+                const partner = chat.participants.find(p => p !== currentUser.username);
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                const unreadCount = chat.messages.filter(m => 
+                    m.sender !== currentUser.username && !m.read
+                ).length;
+                
+                return `
+                    <div class="chat-item" onclick="openChat('${chat.id}')">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            ${partner.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">${partner} ${unreadCount > 0 ? `<span style="color: var(--primary);">(${unreadCount})</span>` : ''}</div>
+                            <div class="chat-preview">${lastMessage.text}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadUsersTable() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const container = document.getElementById('usersTable');
+            
+            container.innerHTML = users.map(user => `
+                <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">${user.username}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">${user.role}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">${user.isOnline ? '🟢 Online' : '🔴 Offline'}</td>
+                    <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <button class="btn btn-sm btn-secondary" onclick="editUser('${user.username}')">Редактировать</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadSystemStats() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const totalMessages = chats.reduce((sum, chat) => sum + chat.messages.length, 0);
+            const activeChats = chats.filter(chat => chat.isActive).length;
+            
+            document.getElementById('statTotalUsers').textContent = users.length;
+            document.getElementById('statActiveChats').textContent = activeChats;
+            document.getElementById('statTotalMessages').textContent = totalMessages;
+        }
+
+        function handleMessageKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('active');
+        }
+
+        function showDeleteAccountModal() {
+            document.getElementById('deleteAccountModal').classList.add('active');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function changePassword() {
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (!currentPass || !newPass || !confirmPass) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (newPass !== confirmPass) {
+                showNotification('❌ Пароли не совпадают!', 'error');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (users[userIndex].password !== currentPass) {
+                showNotification('❌ Текущий пароль неверен!', 'error');
+                return;
+            }
+            
+            users[userIndex].password = newPass;
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Обновляем активную сессию
+            localStorage.setItem('activeUser', JSON.stringify({
+                username: currentUser.username,
+                password: newPass,
+                loginTime: Date.now()
+            }));
+            
+            hideModal('changePasswordModal');
+            showNotification('✅ Пароль успешно изменен!', 'success');
+        }
+
+        function deleteAccount() {
+            const password = document.getElementById('deletePassword').value;
+            
+            if (!password) {
+                showNotification('❌ Введите пароль для подтверждения!', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (users[userIndex].password !== password) {
+                showNotification('❌ Пароль неверен!', 'error');
+                return;
+            }
+            
+            // Удаляем пользователя
+            users.splice(userIndex, 1);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            // Удаляем активную сессию
+            localStorage.removeItem('activeUser');
+            
+            hideModal('deleteAccountModal');
+            showNotification('✅ Аккаунт удален!', 'success');
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function logout() {
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => u.username === currentUser.username);
+                if (user) user.isOnline = false;
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                localStorage.removeItem('activeUser');
+                currentUser = null;
+                
+                showNotification('👋 До свидания!', 'info');
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            }
+        }
+
+        function createAdmin() {
+            const login = document.getElementById('newAdminLogin').value.trim();
+            const password = document.getElementById('newAdminPassword').value.trim();
+            const role = document.getElementById('newAdminRole').value;
+            
+            if (!login || !password) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            if (users.find(u => u.username === login)) {
+                showNotification('❌ Этот логин уже занят!', 'error');
+                return;
+            }
+            
+            const newAdmin = {
+                username: login,
+                password: password,
+                role: role,
+                isOnline: false,
+                registeredAt: new Date().toISOString(),
+                lastLogin: null
+            };
+            
+            users.push(newAdmin);
+            localStorage.setItem('users', JSON.stringify(users));
+            
+            document.getElementById('newAdminLogin').value = '';
+            document.getElementById('newAdminPassword').value = '';
+            
+            showNotification(`✅ Администратор ${login} создан!`, 'success');
+            addSystemLog(`Создан новый администратор: ${login} (${role})`, 'info');
+        }
+
+        function openSystemChat() {
+            showNotification('⚙️ Системные уведомления пока недоступны', 'info');
+        }
 
         // Инициализация при загрузке
         window.onload = init;
@@ -1372,9 +1717,6 @@
                 clearInterval(chatUpdateInterval);
             }
         });
-
-        // Добавьте остальные функции из предыдущего кода (showMainScreen, showAdminPanel, etc.)
-        // которые не были изменены
     </script>
 </body>
-        </html>
+                            </html>

@@ -60,6 +60,62 @@
             --error-color: #ef476f;
         }
 
+        /* Фиолетовая тема */
+        .theme-purple {
+            --primary-color: #9b59b6;
+            --secondary-color: #8e44ad;
+            --accent-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #e8eaf1;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+        }
+
+        /* Зеленая тема */
+        .theme-green {
+            --primary-color: #2ecc71;
+            --secondary-color: #27ae60;
+            --accent-color: #e74c3c;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #d5dbdb;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+        }
+
+        /* Оранжевая тема */
+        .theme-orange {
+            --primary-color: #e67e22;
+            --secondary-color: #d35400;
+            --accent-color: #e74c3c;
+            --bg-color: #fdf2e9;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #fae5d3;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+        }
+
+        /* Синяя тема */
+        .theme-blue {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #e74c3c;
+            --bg-color: #ebf5fb;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #d6eaf8;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -169,6 +225,16 @@
         .btn-secondary:hover {
             background: var(--primary-color);
             transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
         }
 
         .admin-panel {
@@ -500,10 +566,11 @@
             bottom: 20px;
             right: 20px;
             background: var(--card-bg);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
             z-index: 100;
+            max-width: 200px;
         }
 
         .theme-option {
@@ -513,10 +580,12 @@
             margin: 5px;
             cursor: pointer;
             border: 2px solid transparent;
+            display: inline-block;
         }
 
         .theme-option.active {
             border-color: var(--text-color);
+            transform: scale(1.1);
         }
 
         .theme-light-option {
@@ -529,6 +598,22 @@
 
         .theme-contrast-option {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .theme-purple-option {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .theme-green-option {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .theme-orange-option {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+
+        .theme-blue-option {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
         }
 
         .hidden {
@@ -550,6 +635,88 @@
         .tab.active {
             border-bottom-color: var(--primary-color);
             font-weight: 600;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .profile-role {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
         }
     </style>
 </head>
@@ -613,13 +780,14 @@
                 <h1>Панель<br>управления</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserInfo">owner | Совладелец</span>
+                <span id="currentUserInfo">Мудрец | Владелец</span>
             </div>
             <div class="nav-menu">
                 <div class="nav-item active" onclick="showTab('stats')">Статистика</div>
                 <div class="nav-item" onclick="showTab('chats')">Чаты</div>
                 <div id="usersTabNav" class="nav-item" onclick="showTab('users')">Пользователи</div>
                 <div id="systemTabNav" class="nav-item" onclick="showTab('system')">Система</div>
+                <div class="nav-item" onclick="showTab('profile')">Мой профиль</div>
                 <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">Выйти</div>
             </div>
         </div>
@@ -678,6 +846,7 @@
                                     <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color);">Роль</th>
                                     <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color);">Статус</th>
                                     <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color);">Дата регистрации</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color);">Действия</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTable">
@@ -735,6 +904,53 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Вкладка Профиль -->
+            <div id="profileTab" class="tab-content" style="display: none;">
+                <div class="content-header">
+                    <h2>Мой профиль</h2>
+                    <p>Управление личными данными и настройками</p>
+                </div>
+                
+                <div class="content-card">
+                    <div class="profile-section">
+                        <div class="profile-avatar" id="profileAvatar">
+                            М
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name" id="profileName">Мудрец</div>
+                            <div class="profile-role" id="profileRole">Владелец</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="showEditProfileModal()">
+                                Редактировать профиль
+                            </button>
+                            <button class="btn btn-secondary" onclick="showChangePasswordModal()">
+                                Сменить пароль
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="profileTotalChats">0</div>
+                            <div class="stat-label">Всего чатов</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="profileRating">0</div>
+                            <div class="stat-label">Рейтинг</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="profileMessages">0</div>
+                            <div class="stat-label">Сообщений</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="profileRegistered">0</div>
+                            <div class="stat-label">Дней в системе</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -744,6 +960,7 @@
             <h1>Система поддержки</h1>
             <div>
                 <span id="userWelcome">Добро пожаловать, User!</span>
+                <button class="btn btn-secondary" onclick="showUserProfileModal()" style="margin-left: 15px;">Профиль</button>
                 <button class="btn btn-secondary" onclick="userLogout()" style="margin-left: 15px;">Выйти</button>
             </div>
         </div>
@@ -798,11 +1015,64 @@
         </div>
     </div>
 
+    <!-- Модальное окно редактирования профиля -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Редактирование профиля</h3>
+                <button class="close-modal" onclick="closeModal('editProfileModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Новое имя пользователя</label>
+                <input type="text" class="form-input" id="editUsername" placeholder="Введите новое имя">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email (опционально)</label>
+                <input type="email" class="form-input" id="editEmail" placeholder="Введите email">
+            </div>
+            <button class="btn btn-primary" onclick="updateProfile()" style="width: 100%;">
+                Сохранить изменения
+            </button>
+        </div>
+    </div>
+
+    <!-- Модальное окно смены пароля -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Смена пароля</h3>
+                <button class="close-modal" onclick="closeModal('changePasswordModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Текущий пароль</label>
+                <input type="password" class="form-input" id="currentPassword" placeholder="Введите текущий пароль">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Новый пароль</label>
+                <input type="password" class="form-input" id="newPassword" placeholder="Введите новый пароль">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Подтвердите новый пароль</label>
+                <input type="password" class="form-input" id="confirmPassword" placeholder="Повторите новый пароль">
+            </div>
+            <button class="btn btn-primary" onclick="changePassword()" style="width: 100%;">
+                Сменить пароль
+            </button>
+        </div>
+    </div>
+
     <!-- Селектор тем -->
     <div class="theme-selector">
-        <div class="theme-option theme-light-option active" onclick="changeTheme('light')"></div>
-        <div class="theme-option theme-dark-option" onclick="changeTheme('dark')"></div>
-        <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')"></div>
+        <div style="font-weight: 600; margin-bottom: 10px; text-align: center;">Темы</div>
+        <div>
+            <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая"></div>
+            <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная"></div>
+            <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная"></div>
+            <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая"></div>
+            <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая"></div>
+            <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая"></div>
+            <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя"></div>
+        </div>
     </div>
 
     <div class="notification" id="notification"></div>
@@ -830,14 +1100,16 @@
             const defaults = {
                 users: [
                     {
-                        username: 'admin',
-                        password: 'admin123',
-                        role: 'Совладелец',
+                        username: 'Мудрец',
+                        password: 'Vitechek',
+                        role: 'Владелец',
                         isOnline: false,
                         registeredAt: new Date().toISOString(),
                         lastLogin: null,
-                        rating: 0,
-                        ratingCount: 0
+                        rating: 5.0,
+                        ratingCount: 1,
+                        email: '',
+                        displayName: 'Мудрец'
                     },
                     {
                         username: 'listener1',
@@ -847,7 +1119,9 @@
                         registeredAt: new Date().toISOString(),
                         lastLogin: null,
                         rating: 4.5,
-                        ratingCount: 10
+                        ratingCount: 10,
+                        email: '',
+                        displayName: 'listener1'
                     }
                 ],
                 chats: [],
@@ -915,7 +1189,7 @@
             
             // Обновляем информацию о пользователе
             document.getElementById('currentUserInfo').textContent = 
-                `${currentUser.username} | ${currentUser.role}`;
+                `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
             
             // Настраиваем видимость вкладок в зависимости от роли
             if (currentUser.role === 'Слушатель') {
@@ -931,6 +1205,7 @@
             loadUsersTable();
             loadSystemLogs();
             loadChatsList();
+            updateProfileInfo();
             
             // Показываем первую вкладку
             showTab('stats');
@@ -949,7 +1224,7 @@
             
             // Обновляем приветствие
             document.getElementById('userWelcome').textContent = 
-                `Добро пожаловать, ${currentUser.username}!`;
+                `Добро пожаловать, ${currentUser.displayName || currentUser.username}!`;
             
             // Загружаем данные
             loadUserChatsList();
@@ -1046,7 +1321,9 @@
                 registeredAt: new Date().toISOString(),
                 lastLogin: null,
                 rating: 0,
-                ratingCount: 0
+                ratingCount: 0,
+                email: '',
+                displayName: username
             };
 
             users.push(newUser);
@@ -1062,6 +1339,159 @@
             
             // Переключаемся на вкладку входа
             showAuthTab('login');
+        }
+
+        // Обновление информации профиля
+        function updateProfileInfo() {
+            if (!currentUser) return;
+            
+            document.getElementById('profileAvatar').textContent = (currentUser.displayName || currentUser.username).charAt(0).toUpperCase();
+            document.getElementById('profileName').textContent = currentUser.displayName || currentUser.username;
+            document.getElementById('profileRole').textContent = currentUser.role;
+            
+            // Статистика профиля
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            let userChats = [];
+            
+            if (currentUser.role === 'Слушатель' || currentUser.role === 'Владелец') {
+                userChats = chats.filter(chat => chat.admin === currentUser.username);
+            } else if (currentUser.role === 'user') {
+                userChats = chats.filter(chat => chat.user === currentUser.username);
+            }
+            
+            const totalMessages = userChats.reduce((total, chat) => total + chat.messages.length, 0);
+            const registeredDate = new Date(currentUser.registeredAt);
+            const daysInSystem = Math.floor((new Date() - registeredDate) / (1000 * 60 * 60 * 24));
+            
+            document.getElementById('profileTotalChats').textContent = userChats.length;
+            document.getElementById('profileRating').textContent = currentUser.rating ? currentUser.rating.toFixed(1) : '0';
+            document.getElementById('profileMessages').textContent = totalMessages;
+            document.getElementById('profileRegistered').textContent = daysInSystem;
+        }
+
+        // Показать модальное окно редактирования профиля
+        function showEditProfileModal() {
+            document.getElementById('editUsername').value = currentUser.displayName || currentUser.username;
+            document.getElementById('editEmail').value = currentUser.email || '';
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
+
+        // Показать модальное окно смены пароля
+        function showChangePasswordModal() {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('changePasswordModal').style.display = 'flex';
+        }
+
+        // Показать модальное окно профиля для пользователя
+        function showUserProfileModal() {
+            // Для пользователей используем то же модальное окно
+            showEditProfileModal();
+        }
+
+        // Закрыть модальное окно
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Обновление профиля
+        function updateProfile() {
+            const newUsername = document.getElementById('editUsername').value.trim();
+            const newEmail = document.getElementById('editEmail').value.trim();
+
+            if (!newUsername) {
+                showNotification('❌ Имя пользователя не может быть пустым!', 'error');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex !== -1) {
+                // Проверяем, не занято ли новое имя пользователя
+                if (newUsername !== currentUser.username && users.find(u => u.username === newUsername)) {
+                    showNotification('❌ Это имя пользователя уже занято!', 'error');
+                    return;
+                }
+                
+                users[userIndex].displayName = newUsername;
+                users[userIndex].email = newEmail;
+                
+                // Если меняем username, обновляем его
+                if (newUsername !== currentUser.username) {
+                    users[userIndex].username = newUsername;
+                    
+                    // Обновляем активную сессию
+                    const activeUser = JSON.parse(localStorage.getItem('activeUser'));
+                    activeUser.username = newUsername;
+                    localStorage.setItem('activeUser', JSON.stringify(activeUser));
+                    
+                    // Обновляем текущего пользователя
+                    currentUser.username = newUsername;
+                }
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = users[userIndex];
+                
+                showNotification('✅ Профиль успешно обновлен!', 'success');
+                addSystemLog(`Пользователь ${currentUser.username} обновил профиль`, 'info');
+                
+                // Обновляем интерфейс
+                updateProfileInfo();
+                document.getElementById('currentUserInfo').textContent = 
+                    `${currentUser.displayName} | ${currentUser.role}`;
+                
+                closeModal('editProfileModal');
+            }
+        }
+
+        // Смена пароля
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            if (currentPassword !== currentUser.password) {
+                showNotification('❌ Текущий пароль неверен!', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showNotification('❌ Новые пароли не совпадают!', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                // Обновляем активную сессию
+                const activeUser = JSON.parse(localStorage.getItem('activeUser'));
+                activeUser.password = newPassword;
+                localStorage.setItem('activeUser', JSON.stringify(activeUser));
+                
+                // Обновляем текущего пользователя
+                currentUser.password = newPassword;
+                
+                showNotification('✅ Пароль успешно изменен!', 'success');
+                addSystemLog(`Пользователь ${currentUser.username} сменил пароль`, 'info');
+                
+                closeModal('changePasswordModal');
+            }
         }
 
         // Переключение вкладок авторизации
@@ -1102,6 +1532,8 @@
                 updateStats();
             } else if (tabName === 'chats') {
                 loadChatsList();
+            } else if (tabName === 'profile') {
+                updateProfileInfo();
             }
         }
 
@@ -1161,7 +1593,7 @@
                 
                 document.getElementById('statsDescription').textContent = 'Моя статистика';
             } else {
-                // Для администраторов и совладельцев показываем полную статистику
+                // Для администраторов и владельцев показываем полную статистику
                 document.getElementById('statsDescription').textContent = 'Обзор активности и показателей';
                 
                 container.innerHTML = `
@@ -1193,7 +1625,7 @@
             if (users.length === 0) {
                 container.innerHTML = `
                     <tr>
-                        <td colspan="4" style="padding: 20px; text-align: center; color: #7f8c8d;">
+                        <td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">
                             Пользователи не найдены
                         </td>
                     </tr>
@@ -1203,7 +1635,7 @@
             
             container.innerHTML = users.map(user => `
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 12px;">${user.username}</td>
+                    <td style="padding: 12px;">${user.displayName || user.username}</td>
                     <td style="padding: 12px;">
                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
                               background: ${getRoleColor(user.role)}; color: white;">
@@ -1218,6 +1650,16 @@
                     <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
                         ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
                     </td>
+                    <td style="padding: 12px;">
+                        ${user.role !== 'Владелец' ? `
+                            <button class="btn btn-warning" onclick="editUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
+                                Редактировать
+                            </button>
+                            <button class="btn btn-secondary" onclick="deleteUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
+                                Удалить
+                            </button>
+                        ` : '<span style="color: #7f8c8d;">Недоступно</span>'}
+                    </td>
                 </tr>
             `).join('');
         }
@@ -1225,6 +1667,7 @@
         // Получение цвета для роли
         function getRoleColor(role) {
             const colors = {
+                'Владелец': '#e74c3c',
                 'Совладелец': '#e74c3c',
                 'Заместитель': '#3498db',
                 'Администратор': '#9b59b6',
@@ -1236,8 +1679,8 @@
 
         // Создание администратора
         function createAdmin() {
-            if (!currentUser || currentUser.role !== 'Совладелец') {
-                showNotification('❌ Только совладелец может создавать администраторов!', 'error');
+            if (!currentUser || (currentUser.role !== 'Владелец' && currentUser.role !== 'Совладелец')) {
+                showNotification('❌ Только владелец или совладелец может создавать администраторов!', 'error');
                 return;
             }
 
@@ -1270,7 +1713,9 @@
                 registeredAt: new Date().toISOString(),
                 lastLogin: null,
                 rating: 0,
-                ratingCount: 0
+                ratingCount: 0,
+                email: '',
+                displayName: login
             };
 
             users.push(newAdmin);
@@ -1282,6 +1727,44 @@
             
             showNotification(`✅ ${role} "${login}" создан!`, 'success');
             addSystemLog(`Создан новый ${role}: ${login}`, 'info');
+            
+            // Обновляем данные
+            updateStats();
+            loadUsersTable();
+        }
+
+        // Редактирование пользователя
+        function editUser(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users.find(u => u.username === username);
+            
+            if (user) {
+                document.getElementById('editUsername').value = user.displayName || user.username;
+                document.getElementById('editEmail').value = user.email || '';
+                document.getElementById('editProfileModal').style.display = 'flex';
+                
+                // Сохраняем username для поиска при обновлении
+                document.getElementById('editProfileModal').dataset.editingUser = username;
+            }
+        }
+
+        // Удаление пользователя
+        function deleteUser(username) {
+            if (username === currentUser.username) {
+                showNotification('❌ Нельзя удалить самого себя!', 'error');
+                return;
+            }
+
+            if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users'));
+            const updatedUsers = users.filter(u => u.username !== username);
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            
+            showNotification(`✅ Пользователь ${username} удален!`, 'success');
+            addSystemLog(`Пользователь ${username} удален`, 'info');
             
             // Обновляем данные
             updateStats();
@@ -1558,8 +2041,8 @@
             
             container.innerHTML = listeners.map(listener => `
                 <div class="admin-card" onclick="startChatWith('${listener.username}')">
-                    <div class="admin-avatar">${listener.username.charAt(0).toUpperCase()}</div>
-                    <div style="font-weight: 600;">${listener.username}</div>
+                    <div class="admin-avatar">${(listener.displayName || listener.username).charAt(0).toUpperCase()}</div>
+                    <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
                     <div class="admin-rating">
                         ${'★'.repeat(Math.floor(listener.rating))}${listener.rating % 1 >= 0.5 ? '½' : ''}
                         <span style="color: var(--text-color);">(${listener.rating.toFixed(1)})</span>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система поддержки</title>
+    <title>Спокойный рассвет</title>
     <style>
         :root {
             --primary-color: #3498db;
@@ -44,59 +44,20 @@
             --error-color: #e74c3c;
         }
 
-        .theme-contrast {
-            --primary-color: #ff6b6b;
-            --secondary-color: #4ecdc4;
-            --accent-color: #ffd166;
-            --bg-color: #1a1a2e;
-            --card-bg: #16213e;
-            --text-color: #ffffff;
-            --border-color: #4ecdc4;
-            --success-color: #06d6a0;
-            --warning-color: #ffd166;
-            --error-color: #ef476f;
-        }
-
-        .theme-purple {
-            --primary-color: #9b59b6;
-            --secondary-color: #8e44ad;
-            --accent-color: #e74c3c;
-            --bg-color: #f8f9fa;
+        .theme-sunrise {
+            --primary-color: #ff7e5f;
+            --secondary-color: #feb47b;
+            --accent-color: #ff6b6b;
+            --bg-color: #fffaf0;
             --card-bg: #ffffff;
             --text-color: #2c3e50;
-            --border-color: #e8eaf1;
+            --border-color: #ffeaa7;
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --error-color: #e74c3c;
         }
 
-        .theme-green {
-            --primary-color: #2ecc71;
-            --secondary-color: #27ae60;
-            --accent-color: #e74c3c;
-            --bg-color: #ecf0f1;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #d5dbdb;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-orange {
-            --primary-color: #e67e22;
-            --secondary-color: #d35400;
-            --accent-color: #e74c3c;
-            --bg-color: #fdf2e9;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #fae5d3;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-blue {
+        .theme-ocean {
             --primary-color: #3498db;
             --secondary-color: #2980b9;
             --accent-color: #e74c3c;
@@ -104,6 +65,19 @@
             --card-bg: #ffffff;
             --text-color: #2c3e50;
             --border-color: #d6eaf8;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+        }
+
+        .theme-forest {
+            --primary-color: #27ae60;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #d5dbdb;
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --error-color: #e74c3c;
@@ -178,17 +152,6 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
-        .form-select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 15px;
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-        }
-
         .btn {
             padding: 14px 28px;
             border: none;
@@ -218,16 +181,6 @@
         .btn-secondary:hover {
             background: var(--primary-color);
             transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
         }
 
         .admin-panel {
@@ -475,143 +428,6 @@
             cursor: pointer;
         }
 
-        .rating-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .rating-star {
-            font-size: 24px;
-            cursor: pointer;
-            color: #ddd;
-            transition: color 0.2s;
-        }
-
-        .rating-star.active {
-            color: var(--warning-color);
-        }
-
-        .user-dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .admin-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .admin-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .admin-card.active {
-            border: 2px solid var(--primary-color);
-        }
-
-        .admin-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .admin-rating {
-            margin-top: 10px;
-            color: var(--warning-color);
-        }
-
-        .theme-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .theme-option {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .theme-option.active {
-            border-color: var(--text-color);
-            transform: scale(1.1);
-        }
-
-        .theme-light-option {
-            background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);
-        }
-
-        .theme-dark-option {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
-            color: white;
-        }
-
-        .theme-contrast-option {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: white;
-        }
-
-        .theme-purple-option {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-            color: white;
-        }
-
-        .theme-green-option {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
-        }
-
-        .theme-orange-option {
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
-            color: white;
-        }
-
-        .theme-blue-option {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-        }
-
         .hidden {
             display: none;
         }
@@ -743,26 +559,39 @@
             border-color: var(--primary-color);
         }
 
-        .avatar-upload {
-            margin-top: 15px;
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        .pending-chats-list {
-            max-height: 400px;
-            overflow-y: auto;
+        .theme-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
         }
 
-        .pending-chat-item {
-            padding: 15px;
-            border: 1px solid var(--border-color);
+        .theme-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .theme-card.active {
+            border-color: var(--accent-color);
+            background: var(--border-color);
+        }
+
+        .theme-preview {
+            width: 100%;
+            height: 80px;
             border-radius: 8px;
             margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pending-chat-item:hover {
-            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid var(--border-color);
         }
 
         .settings-grid {
@@ -778,11 +607,11 @@
         }
     </style>
 </head>
-<body class="theme-light">
+<body class="theme-sunrise">
     <!-- Экран авторизации -->
     <div id="authScreen" class="auth-container">
         <div class="auth-card">
-            <h2 class="auth-title">Система поддержки</h2>
+            <h2 class="auth-title">Спокойный рассвет</h2>
             <div class="tabs" style="margin-bottom: 20px;">
                 <div class="tab active" onclick="showAuthTab('login')">Вход</div>
                 <div class="tab" onclick="showAuthTab('register')">Регистрация</div>
@@ -799,7 +628,7 @@
                     <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
                 </div>
                 <button class="btn btn-primary" onclick="login()" style="width: 100%;">
-                    Войти в систему
+                    Войти
                 </button>
             </div>
             
@@ -836,8 +665,7 @@
             <div class="nav-menu">
                 <div class="nav-item active" onclick="showTab('stats')">Статистика</div>
                 <div class="nav-item" onclick="showTab('chats')">Чаты</div>
-                <div id="usersTabNav" class="nav-item" onclick="showTab('users')">Пользователи</div>
-                <div id="systemTabNav" class="nav-item" onclick="showTab('system')">Система</div>
+                <div class="nav-item" onclick="showTab('users')">Пользователи</div>
                 <div class="nav-item" onclick="showTab('settings')">Настройки</div>
                 <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">Выйти</div>
             </div>
@@ -848,7 +676,7 @@
             <div id="statsTab" class="tab-content">
                 <div class="content-header">
                     <h2>Статистика</h2>
-                    <p id="statsDescription">Обзор активности и показателей</p>
+                    <p>Обзор активности и показателей</p>
                 </div>
                 
                 <div class="stats-grid" id="statsGrid">
@@ -861,13 +689,6 @@
                 <div class="content-header">
                     <h2>Мои чаты</h2>
                     <p>Управление беседами с пользователями</p>
-                </div>
-                
-                <div class="content-card" id="pendingChatsCard" style="display: none;">
-                    <h3 style="margin-bottom: 15px;">Непринятые чаты</h3>
-                    <div class="pending-chats-list" id="pendingChatsList">
-                        <!-- Список непринятых чатов -->
-                    </div>
                 </div>
                 
                 <div class="chat-container">
@@ -915,55 +736,17 @@
                 </div>
             </div>
 
-            <!-- Вкладка Система -->
-            <div id="systemTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <h2>Системные настройки</h2>
-                    <p>Управление администраторами и системные функции</p>
-                </div>
-                
-                <div class="content-card">
-                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Создание слушателя</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Логин нового слушателя</label>
-                        <input type="text" class="form-input" id="newAdminLogin" placeholder="Введите логин">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Пароль</label>
-                        <input type="password" class="form-input" id="newAdminPassword" placeholder="Введите пароль">
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="createListener()">
-                        Создать слушателя
-                    </button>
-                </div>
-
-                <div class="content-card">
-                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Системные логи</h3>
-                    <div style="background: var(--border-color); padding: 20px; border-radius: 8px; max-height: 300px; overflow-y: auto;">
-                        <div id="systemLogs">
-                            <!-- Логи будут загружены через JavaScript -->
-                        </div>
-                    </div>
-                    <button class="btn btn-secondary" onclick="clearLogs()" style="margin-top: 15px;">
-                        Очистить логи
-                    </button>
-                </div>
-            </div>
-
             <!-- Вкладка Настройки -->
             <div id="settingsTab" class="tab-content" style="display: none;">
                 <div class="content-header">
-                    <h2>Настройки системы</h2>
+                    <h2>Настройки</h2>
                     <p>Управление профилем и внешним видом</p>
                 </div>
                 
                 <div class="settings-grid">
                     <!-- Настройки профиля -->
                     <div class="content-card">
-                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Настройки профиля</h3>
+                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Профиль</h3>
                         
                         <div class="profile-section">
                             <div class="profile-avatar" id="settingsProfileAvatar" onclick="showAvatarModal()">
@@ -996,30 +779,32 @@
 
                     <!-- Настройки темы -->
                     <div class="content-card">
-                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Настройки темы</h3>
+                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Темы оформления</h3>
                         
-                        <div class="theme-selector">
-                            <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая">☀️</div>
-                            <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная">🌙</div>
-                            <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная">⚡</div>
-                            <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая">💜</div>
-                            <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая">💚</div>
-                            <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая">🧡</div>
-                            <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя">💙</div>
-                        </div>
-                        
-                        <div style="margin-top: 20px; padding: 15px; background: var(--border-color); border-radius: 8px;">
-                            <h4 style="margin-bottom: 10px;">Предпросмотр темы</h4>
-                            <p style="font-size: 14px; color: var(--text-color);">
-                                Текущая тема: <span id="currentThemeName">Светлая</span>
-                            </p>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <div style="padding: 8px 12px; background: var(--primary-color); color: white; border-radius: 4px; font-size: 12px;">
-                                    Основной цвет
-                                </div>
-                                <div style="padding: 8px 12px; background: var(--accent-color); color: white; border-radius: 4px; font-size: 12px;">
-                                    Акцентный цвет
-                                </div>
+                        <div class="theme-grid">
+                            <div class="theme-card active" onclick="changeTheme('sunrise')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                                <div>Рассвет</div>
+                            </div>
+                            <div class="theme-card" onclick="changeTheme('light')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);"></div>
+                                <div>Светлая</div>
+                            </div>
+                            <div class="theme-card" onclick="changeTheme('dark')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
+                                <div>Темная</div>
+                            </div>
+                            <div class="theme-card" onclick="changeTheme('ocean')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);"></div>
+                                <div>Океан</div>
+                            </div>
+                            <div class="theme-card" onclick="changeTheme('forest')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"></div>
+                                <div>Лес</div>
+                            </div>
+                            <div class="theme-card" onclick="changeTheme('contrast')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
+                                <div>Контраст</div>
                             </div>
                         </div>
                     </div>
@@ -1031,10 +816,9 @@
     <!-- Интерфейс пользователя -->
     <div id="userInterface" class="user-dashboard" style="display: none;">
         <div class="user-header">
-            <h1>Система поддержки</h1>
+            <h1>Спокойный рассвет</h1>
             <div>
-                <span id="userWelcome">Добро пожаловать, User!</span>
-                <button class="btn btn-secondary" onclick="showUserProfileModal()" style="margin-left: 15px;">Профиль</button>
+                <span id="userWelcome">Добро пожаловать!</span>
                 <button class="btn btn-secondary" onclick="userLogout()" style="margin-left: 15px;">Выйти</button>
             </div>
         </div>
@@ -1076,14 +860,10 @@
                 <p>Выберите слушателя для общения</p>
             </div>
             
-            <div class="admin-selector" id="adminSelector">
-                <!-- Список доступных слушателей -->
-            </div>
-            
-            <div class="content-card" id="randomChatCard">
-                <h3 style="margin-bottom: 15px;">Или начните чат со случайным слушателем</h3>
+            <div class="content-card">
+                <h3 style="margin-bottom: 15px;">Начать чат</h3>
                 <button class="btn btn-primary" onclick="startRandomChat()">
-                    Начать случайный чат
+                    Начать чат со слушателем
                 </button>
             </div>
         </div>
@@ -1124,10 +904,6 @@
             <div class="avatar-options" id="avatarOptions">
                 <!-- Аватарки будут загружены через JavaScript -->
             </div>
-            <div class="avatar-upload">
-                <label class="form-label">Или загрузите свою аватарку</label>
-                <input type="file" class="form-input" id="avatarUpload" accept="image/*" onchange="uploadAvatar(this)">
-            </div>
         </div>
     </div>
 
@@ -1144,7 +920,6 @@
             console.log('Инициализация системы...');
             initLocalDB();
             checkActiveSession();
-            addSystemLog('Система инициализирована', 'info');
             
             // Обработка нажатия Enter в формах
             setupEnterHandlers();
@@ -1153,39 +928,41 @@
         // Инициализация базы данных
         function initLocalDB() {
             console.log('Инициализация базы данных...');
+            
+            // Очищаем все данные
+            localStorage.clear();
+            
             const defaults = {
                 users: [
                     {
-                        username: 'owner',
-                        password: 'owner123',
+                        username: 'admin',
+                        password: 'admin123',
                         role: 'Владелец',
                         isOnline: false,
                         registeredAt: new Date().toISOString(),
                         lastLogin: null,
                         rating: 5.0,
                         ratingCount: 1,
-                        email: 'owner@system.com',
-                        displayName: 'Владелец Системы',
+                        email: 'admin@system.com',
+                        displayName: 'Владелец',
                         avatar: ''
                     }
                 ],
                 chats: [],
                 systemLogs: [],
                 settings: {
-                    currentTheme: 'light'
+                    currentTheme: 'sunrise'
                 }
             };
 
             Object.keys(defaults).forEach(key => {
-                if (!localStorage.getItem(key)) {
-                    localStorage.setItem(key, JSON.stringify(defaults[key]));
-                    console.log('Создан ключ:', key);
-                }
+                localStorage.setItem(key, JSON.stringify(defaults[key]));
+                console.log('Создан ключ:', key);
             });
 
             // Загружаем текущую тему
             const settings = JSON.parse(localStorage.getItem('settings'));
-            changeTheme(settings.currentTheme || 'light');
+            changeTheme(settings.currentTheme || 'sunrise');
         }
 
         // Проверка активной сессии
@@ -1213,7 +990,6 @@
                             showAdminPanel();
                         }
                         
-                        addSystemLog(`Пользователь ${user.username} автоматически вошел в систему`, 'info');
                         return true;
                     }
                 } catch (e) {
@@ -1240,19 +1016,9 @@
             document.getElementById('currentUserInfo').textContent = 
                 `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
             
-            // Настраиваем видимость вкладок в зависимости от роли
-            if (currentUser.role === 'Слушатель') {
-                document.getElementById('usersTabNav').style.display = 'none';
-                document.getElementById('systemTabNav').style.display = 'none';
-            } else {
-                document.getElementById('usersTabNav').style.display = 'block';
-                document.getElementById('systemTabNav').style.display = 'block';
-            }
-            
             // Загружаем данные
             updateStats();
             loadUsersTable();
-            loadSystemLogs();
             loadChatsList();
             updateSettingsProfile();
             
@@ -1277,7 +1043,6 @@
             
             // Загружаем данные
             loadUserChatsList();
-            loadAdminSelector();
             
             // Показываем первую вкладку
             showUserTab('chats');
@@ -1314,7 +1079,6 @@
                 }));
 
                 showNotification('✅ Вход выполнен успешно!', 'success');
-                addSystemLog(`Успешный вход: ${username}`, 'info');
 
                 // Переходим на соответствующий интерфейс
                 setTimeout(() => {
@@ -1328,7 +1092,6 @@
             } else {
                 console.log('Неудачный вход для:', username);
                 showNotification('❌ Неверный логин или пароль!', 'error');
-                addSystemLog(`Неудачная попытка входа: ${username}`, 'warning');
             }
         }
 
@@ -1384,7 +1147,6 @@
             document.getElementById('regPasswordConfirm').value = '';
             
             showNotification(`✅ Пользователь "${username}" зарегистрирован!`, 'success');
-            addSystemLog(`Зарегистрирован новый пользователь: ${username}`, 'info');
             
             // Переключаемся на вкладку входа
             showAuthTab('login');
@@ -1451,36 +1213,6 @@
             }
         }
 
-        // Загрузка аватарки
-        function uploadAvatar(input) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const avatarData = e.target.result;
-                    const users = JSON.parse(localStorage.getItem('users'));
-                    const userIndex = users.findIndex(u => u.username === currentUser.username);
-                    
-                    if (userIndex !== -1) {
-                        users[userIndex].avatar = avatarData;
-                        localStorage.setItem('users', JSON.stringify(users));
-                        currentUser.avatar = avatarData;
-                        
-                        updateSettingsProfile();
-                        closeModal('avatarModal');
-                        showNotification('✅ Аватарка загружена!', 'success');
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Показать модальное окно профиля для пользователя
-        function showUserProfileModal() {
-            // Для пользователей используем то же модальное окно
-            showEditProfileModal();
-        }
-
         // Закрыть модальное окно
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
@@ -1526,7 +1258,6 @@
                 currentUser = users[userIndex];
                 
                 showNotification('✅ Профиль успешно обновлен!', 'success');
-                addSystemLog(`Пользователь ${currentUser.username} обновил профиль`, 'info');
                 
                 // Обновляем интерфейс
                 updateSettingsProfile();
@@ -1577,7 +1308,6 @@
                 currentUser.password = newPassword;
                 
                 showNotification('✅ Пароль успешно изменен!', 'success');
-                addSystemLog(`Пользователь ${currentUser.username} сменил пароль`, 'info');
                 
                 closeModal('changePasswordModal');
             }
@@ -1643,11 +1373,6 @@
             
             // Добавляем активный класс к выбранной вкладке
             event.target.classList.add('active');
-            
-            // Обновляем данные если необходимо
-            if (tabName === 'newChat') {
-                loadAdminSelector();
-            }
         }
 
         // Обновление статистики
@@ -1656,54 +1381,24 @@
             const chats = JSON.parse(localStorage.getItem('chats')) || [];
             const container = document.getElementById('statsGrid');
             
-            // Очищаем контейнер
-            container.innerHTML = '';
-            
-            // Для слушателей показываем только их статистику
-            if (currentUser.role === 'Слушатель') {
-                const listenerChats = chats.filter(chat => chat.admin === currentUser.username);
-                const rating = currentUser.rating || 0;
-                const ratingCount = currentUser.ratingCount || 0;
-                
-                container.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-value">${listenerChats.length}</div>
-                        <div class="stat-label">Мои чаты</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${rating.toFixed(1)}</div>
-                        <div class="stat-label">Мой рейтинг</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${ratingCount}</div>
-                        <div class="stat-label">Оценок получено</div>
-                    </div>
-                `;
-                
-                document.getElementById('statsDescription').textContent = 'Моя статистика';
-            } else {
-                // Для администраторов и владельцев показываем полную статистику
-                document.getElementById('statsDescription').textContent = 'Обзор активности и показателей';
-                
-                container.innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-value">${users.length}</div>
-                        <div class="stat-label">Пользователей</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${users.filter(u => u.role !== 'user').length}</div>
-                        <div class="stat-label">Слушателей</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${chats.length}</div>
-                        <div class="stat-label">Активных чатов</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value">${chats.reduce((total, chat) => total + chat.messages.length, 0)}</div>
-                        <div class="stat-label">Сообщений</div>
-                    </div>
-                `;
-            }
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${users.length}</div>
+                    <div class="stat-label">Пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${users.filter(u => u.role !== 'user').length}</div>
+                    <div class="stat-label">Слушателей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${chats.length}</div>
+                    <div class="stat-label">Активных чатов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${chats.reduce((total, chat) => total + chat.messages.length, 0)}</div>
+                    <div class="stat-label">Сообщений</div>
+                </div>
+            `;
         }
 
         // Загрузка таблицы пользователей
@@ -1728,7 +1423,7 @@
                         <div style="display: flex; align-items: center; gap: 10px;">
                             ${user.avatar ? 
                                 `<div style="width: 30px; height: 30px; border-radius: 50%; background-image: url(${user.avatar}); background-size: cover; background-position: center;"></div>` :
-                                `<div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
+                                `<div style="width: 30px; height: 30px; border-radius: 50%; background: #e74c3c; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
                                     ${(user.displayName || user.username).charAt(0).toUpperCase()}
                                 </div>`
                             }
@@ -1737,7 +1432,7 @@
                     </td>
                     <td style="padding: 12px;">
                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
-                              background: ${getRoleColor(user.role)}; color: white;">
+                              background: ${user.role === 'Владелец' ? '#e74c3c' : '#f39c12'}; color: white;">
                             ${user.role}
                         </span>
                     </td>
@@ -1750,14 +1445,7 @@
                         ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
                     </td>
                     <td style="padding: 12px;">
-                        ${user.role !== 'Владелец' && user.role !== 'user' ? `
-                            <button class="btn btn-warning" onclick="editUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
-                                Редактировать
-                            </button>
-                            <button class="btn btn-secondary" onclick="deleteUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
-                                Удалить
-                            </button>
-                        ` : user.role === 'user' ? `
+                        ${user.role === 'user' ? `
                             <button class="btn btn-warning" onclick="makeListener('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
                                 Сделать слушателем
                             </button>
@@ -1765,72 +1453,6 @@
                     </td>
                 </tr>
             `).join('');
-        }
-
-        // Получение цвета для роли
-        function getRoleColor(role) {
-            const colors = {
-                'Владелец': '#e74c3c',
-                'Слушатель': '#f39c12',
-                'user': '#95a5a6'
-            };
-            return colors[role] || '#95a5a6';
-        }
-
-        // Создание слушателя
-        function createListener() {
-            if (!currentUser || currentUser.role !== 'Владелец') {
-                showNotification('❌ Только владелец может создавать слушателей!', 'error');
-                return;
-            }
-
-            const login = document.getElementById('newAdminLogin').value.trim();
-            const password = document.getElementById('newAdminPassword').value.trim();
-
-            if (!login || !password) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-                return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            if (users.find(u => u.username === login)) {
-                showNotification('❌ Этот логин уже занят!', 'error');
-                return;
-            }
-
-            const newListener = {
-                username: login,
-                password: password,
-                role: 'Слушатель',
-                isOnline: false,
-                registeredAt: new Date().toISOString(),
-                lastLogin: null,
-                rating: 0,
-                ratingCount: 0,
-                email: '',
-                displayName: login,
-                avatar: ''
-            };
-
-            users.push(newListener);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            // Очищаем форму
-            document.getElementById('newAdminLogin').value = '';
-            document.getElementById('newAdminPassword').value = '';
-            
-            showNotification(`✅ Слушатель "${login}" создан!`, 'success');
-            addSystemLog(`Создан новый слушатель: ${login}`, 'info');
-            
-            // Обновляем данные
-            updateStats();
-            loadUsersTable();
         }
 
         // Сделать пользователя слушателем
@@ -1843,87 +1465,17 @@
                 localStorage.setItem('users', JSON.stringify(users));
                 
                 showNotification(`✅ Пользователь ${username} теперь слушатель!`, 'success');
-                addSystemLog(`Пользователь ${username} назначен слушателем`, 'info');
                 
                 loadUsersTable();
             }
-        }
-
-        // Редактирование пользователя
-        function editUser(username) {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.username === username);
-            
-            if (user) {
-                // Реализуйте редактирование пользователя
-                showNotification('Функция редактирования в разработке', 'info');
-            }
-        }
-
-        // Удаление пользователя
-        function deleteUser(username) {
-            if (username === currentUser.username) {
-                showNotification('❌ Нельзя удалить самого себя!', 'error');
-                return;
-            }
-
-            if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
-                return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('users'));
-            const updatedUsers = users.filter(u => u.username !== username);
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
-            
-            showNotification(`✅ Пользователь ${username} удален!`, 'success');
-            addSystemLog(`Пользователь ${username} удален`, 'info');
-            
-            // Обновляем данные
-            updateStats();
-            loadUsersTable();
         }
 
         // Загрузка списка чатов для администратора/слушателя
         function loadChatsList() {
             const chats = JSON.parse(localStorage.getItem('chats')) || [];
             const container = document.getElementById('chatsList');
-            const pendingContainer = document.getElementById('pendingChatsCard');
-            const pendingList = document.getElementById('pendingChatsList');
             
-            // Фильтруем чаты в зависимости от роли
-            let userChats;
-            let pendingChats = [];
-            
-            if (currentUser.role === 'Слушатель') {
-                userChats = chats.filter(chat => chat.admin === currentUser.username && chat.status === 'active');
-                pendingChats = chats.filter(chat => !chat.admin && chat.status === 'pending');
-            } else {
-                userChats = chats.filter(chat => chat.admin && chat.status === 'active');
-                pendingChats = chats.filter(chat => !chat.admin && chat.status === 'pending');
-            }
-            
-            // Показываем/скрываем блок непринятых чатов
-            if (pendingChats.length > 0) {
-                pendingContainer.style.display = 'block';
-                pendingList.innerHTML = pendingChats.map(chat => `
-                    <div class="pending-chat-item" onclick="acceptPendingChat('${chat.id}')">
-                        <div style="font-weight: 600;">${chat.user}</div>
-                        <div style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">
-                            ${chat.messages.length > 0 ? 
-                              chat.messages[chat.messages.length-1].text.substring(0, 50) + 
-                              (chat.messages[chat.messages.length-1].text.length > 50 ? '...' : '') : 
-                              'Нет сообщений'}
-                        </div>
-                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            ${new Date(chat.createdAt).toLocaleDateString('ru-RU')}
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                pendingContainer.style.display = 'none';
-            }
-            
-            if (userChats.length === 0) {
+            if (chats.length === 0) {
                 container.innerHTML = `
                     <div style="padding: 20px; text-align: center; color: #7f8c8d;">
                         Чаты не найдены
@@ -1932,7 +1484,7 @@
                 return;
             }
             
-            container.innerHTML = userChats.map(chat => `
+            container.innerHTML = chats.map(chat => `
                 <div class="chat-item ${currentChat && currentChat.id === chat.id ? 'active' : ''}" 
                      onclick="selectChat('${chat.id}')">
                     <div style="font-weight: 600;">${chat.user}</div>
@@ -1947,25 +1499,6 @@
                     </div>
                 </div>
             `).join('');
-        }
-
-        // Принять непринятый чат
-        function acceptPendingChat(chatId) {
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            const chatIndex = chats.findIndex(chat => chat.id === chatId);
-            
-            if (chatIndex !== -1) {
-                chats[chatIndex].admin = currentUser.username;
-                chats[chatIndex].status = 'active';
-                localStorage.setItem('chats', JSON.stringify(chats));
-                
-                showNotification('✅ Чат принят!', 'success');
-                addSystemLog(`Слушатель ${currentUser.username} принял чат ${chatId}`, 'info');
-                
-                // Обновляем список чатов
-                loadChatsList();
-                selectChat(chatId);
-            }
         }
 
         // Выбор чата для администратора/слушателя
@@ -2049,8 +1582,6 @@
             
             // Обновляем список чатов
             loadChatsList();
-            
-            addSystemLog(`Сообщение отправлено в чат ${currentChat.id}`, 'info');
         }
 
         // Загрузка списка чатов для пользователя
@@ -2098,10 +1629,9 @@
             // Загружаем сообщения
             loadUserChatMessages();
             
-            // Активируем поле ввода, если чат активен
-            const isActive = currentUserChat.status === 'active' || currentUserChat.status === 'pending';
-            document.getElementById('userMessageInput').disabled = !isActive;
-            document.getElementById('userSendMessageBtn').disabled = !isActive;
+            // Активируем поле ввода
+            document.getElementById('userMessageInput').disabled = false;
+            document.getElementById('userSendMessageBtn').disabled = false;
         }
 
         // Загрузка сообщений чата для пользователя
@@ -2127,20 +1657,6 @@
                     </div>
                 </div>
             `).join('');
-            
-            // Добавляем оценку, если чат завершен и еще не оценен
-            if (currentUserChat.status === 'closed' && !currentUserChat.rated && currentUserChat.admin) {
-                container.innerHTML += `
-                    <div style="text-align: center; margin-top: 20px;">
-                        <div style="margin-bottom: 10px;">Оцените слушателя:</div>
-                        <div class="rating-container">
-                            ${[1,2,3,4,5].map(star => `
-                                <span class="rating-star" onclick="rateChat(${star})">★</span>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
             
             // Прокручиваем вниз
             container.scrollTop = container.scrollHeight;
@@ -2183,134 +1699,25 @@
             loadUserChatsList();
         }
 
-        // Загрузка списка слушателей для выбора
-        function loadAdminSelector() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const listeners = users.filter(user => user.role === 'Слушатель');
-            const container = document.getElementById('adminSelector');
-            
-            if (listeners.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; color: #7f8c8d; padding: 20px;">
-                        Нет доступных слушателей. Ваше сообщение будет сохранено и слушатель ответит вам позже.
-                    </div>
-                `;
-                return;
-            }
-            
-            // Обновляем статусы онлайн
-            const onlineListeners = listeners.filter(listener => listener.isOnline);
-            const offlineListeners = listeners.filter(listener => !listener.isOnline);
-            
-            let html = '';
-            
-            if (onlineListeners.length > 0) {
-                html += '<h3 style="margin-bottom: 15px; width: 100%;">🟢 Слушатели онлайн</h3>';
-                html += onlineListeners.map(listener => `
-                    <div class="admin-card" onclick="startChatWith('${listener.username}')">
-                        <div class="admin-avatar" style="${listener.avatar ? `background-image: url(${listener.avatar})` : `background: ${getRoleColor(listener.role)}`}">
-                            ${!listener.avatar ? (listener.displayName || listener.username).charAt(0).toUpperCase() : ''}
-                        </div>
-                        <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
-                        <div class="admin-rating">
-                            ${'★'.repeat(Math.floor(listener.rating || 0))}${(listener.rating || 0) % 1 >= 0.5 ? '½' : ''}
-                            <span style="color: var(--text-color);">(${(listener.rating || 0).toFixed(1)})</span>
-                        </div>
-                        <div style="font-size: 14px; color: #27ae60; margin-top: 5px;">
-                            🟢 Online
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            if (offlineListeners.length > 0) {
-                html += '<h3 style="margin-bottom: 15px; width: 100%; margin-top: 20px;">🔴 Слушатели оффлайн</h3>';
-                html += offlineListeners.map(listener => `
-                    <div class="admin-card" onclick="startChatWith('${listener.username}')">
-                        <div class="admin-avatar" style="${listener.avatar ? `background-image: url(${listener.avatar})` : `background: ${getRoleColor(listener.role)}`}">
-                            ${!listener.avatar ? (listener.displayName || listener.username).charAt(0).toUpperCase() : ''}
-                        </div>
-                        <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
-                        <div class="admin-rating">
-                            ${'★'.repeat(Math.floor(listener.rating || 0))}${(listener.rating || 0) % 1 >= 0.5 ? '½' : ''}
-                            <span style="color: var(--text-color);">(${(listener.rating || 0).toFixed(1)})</span>
-                        </div>
-                        <div style="font-size: 14px; color: #95a5a6; margin-top: 5px;">
-                            🔴 Offline (сообщение будет сохранено)
-                        </div>
-                    </div>
-                `).join('');
-            }
-            
-            container.innerHTML = html;
-        }
-
-        // Начать чат с выбранным слушателем
-        function startChatWith(adminUsername) {
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            
-            // Проверяем, нет ли уже активного чата с этим слушателем
-            const existingChat = chats.find(chat => 
-                chat.user === currentUser.username && 
-                chat.admin === adminUsername && 
-                chat.status === 'active'
-            );
-            
-            if (existingChat) {
-                // Переходим к существующему чату
-                showUserTab('chats');
-                selectUserChat(existingChat.id);
-                showNotification('У вас уже есть активный чат с этим слушателем', 'info');
-                return;
-            }
-            
-            // Создаем новый чат
-            const newChat = {
-                id: Date.now().toString(),
-                user: currentUser.username,
-                admin: adminUsername,
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-                messages: [],
-                rated: false
-            };
-            
-            chats.push(newChat);
-            localStorage.setItem('chats', JSON.stringify(chats));
-            
-            // Переходим к новому чату
-            showUserTab('chats');
-            selectUserChat(newChat.id);
-            showNotification(`Чат с ${adminUsername} начат!`, 'success');
-            addSystemLog(`Создан новый чат: ${currentUser.username} с ${adminUsername}`, 'info');
-        }
-
         // Начать случайный чат
         function startRandomChat() {
             const users = JSON.parse(localStorage.getItem('users'));
             const listeners = users.filter(user => user.role === 'Слушатель');
             
             if (listeners.length === 0) {
-                // Если нет слушателей, создаем чат без назначенного слушателя
-                startPendingChat();
+                showNotification('❌ Нет доступных слушателей', 'error');
                 return;
             }
             
             // Выбираем случайного слушателя
             const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
-            startChatWith(randomListener.username);
-        }
-
-        // Начать чат без назначенного слушателя
-        function startPendingChat() {
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
             
-            // Создаем новый чат без назначенного слушателя
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
             const newChat = {
                 id: Date.now().toString(),
                 user: currentUser.username,
-                admin: null,
-                status: 'pending',
+                admin: randomListener.username,
+                status: 'active',
                 createdAt: new Date().toISOString(),
                 messages: [],
                 rated: false
@@ -2322,79 +1729,7 @@
             // Переходим к новому чату
             showUserTab('chats');
             selectUserChat(newChat.id);
-            showNotification('Чат создан! Слушатель ответит вам, как только появится онлайн.', 'success');
-            addSystemLog(`Создан новый непринятый чат: ${currentUser.username}`, 'info');
-        }
-
-        // Оценка чата пользователем
-        function rateChat(rating) {
-            if (!currentUserChat) return;
-            
-            // Обновляем рейтинг слушателя
-            const users = JSON.parse(localStorage.getItem('users'));
-            const listener = users.find(user => user.username === currentUserChat.admin);
-            
-            if (listener) {
-                const totalRating = (listener.rating || 0) * (listener.ratingCount || 0);
-                listener.ratingCount = (listener.ratingCount || 0) + 1;
-                listener.rating = (totalRating + rating) / listener.ratingCount;
-                localStorage.setItem('users', JSON.stringify(users));
-            }
-            
-            // Помечаем чат как оцененный
-            currentUserChat.rated = true;
-            
-            // Обновляем чаты в localStorage
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            const chatIndex = chats.findIndex(chat => chat.id === currentUserChat.id);
-            if (chatIndex !== -1) {
-                chats[chatIndex] = currentUserChat;
-                localStorage.setItem('chats', JSON.stringify(chats));
-            }
-            
-            // Обновляем сообщения
-            loadUserChatMessages();
-            
-            showNotification(`Спасибо за оценку! Вы поставили ${rating} звезд`, 'success');
-            addSystemLog(`Пользователь ${currentUser.username} оценил чат с ${currentUserChat.admin} на ${rating} звезд`, 'info');
-        }
-
-        // Система логов
-        function addSystemLog(message, type = 'info') {
-            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
-            const logEntry = {
-                id: Date.now(),
-                timestamp: new Date().toISOString(),
-                type: type,
-                message: message,
-                user: currentUser ? currentUser.username : 'system'
-            };
-            
-            logs.unshift(logEntry);
-            if (logs.length > 1000) logs.length = 1000;
-            
-            localStorage.setItem('systemLogs', JSON.stringify(logs));
-            loadSystemLogs();
-        }
-
-        function loadSystemLogs() {
-            const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
-            const container = document.getElementById('systemLogs');
-            
-            container.innerHTML = logs.map(log => `
-                <div style="padding: 8px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; color: var(--text-color);">
-                    <span style="color: #7f8c8d;">[${new Date(log.timestamp).toLocaleTimeString('ru-RU')}]</span>
-                    ${log.message}
-                    ${log.user !== 'system' ? ` <span style="color: var(--primary-color);">(${log.user})</span>` : ''}
-                </div>
-            `).join('');
-        }
-
-        function clearLogs() {
-            localStorage.setItem('systemLogs', JSON.stringify([]));
-            loadSystemLogs();
-            showNotification('📊 Логи очищены', 'success');
-            addSystemLog('Логи системы очищены', 'info');
+            showNotification(`Чат с ${randomListener.username} начат!`, 'success');
         }
 
         // Смена темы
@@ -2407,22 +1742,10 @@
             localStorage.setItem('settings', JSON.stringify(settings));
             
             // Обновляем активную тему в селекторе
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.classList.remove('active');
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('active');
             });
-            event.target.classList.add('active');
-            
-            // Обновляем название текущей темы
-            const themeNames = {
-                'light': 'Светлая',
-                'dark': 'Темная', 
-                'contrast': 'Контрастная',
-                'purple': 'Фиолетовая',
-                'green': 'Зеленая',
-                'orange': 'Оранжевая',
-                'blue': 'Синяя'
-            };
-            document.getElementById('currentThemeName').textContent = themeNames[themeName];
+            event.target.closest('.theme-card').classList.add('active');
         }
 
         // Уведомления
@@ -2449,7 +1772,6 @@
                     user.isOnline = false;
                     localStorage.setItem('users', JSON.stringify(users));
                 }
-                addSystemLog(`Пользователь ${currentUser.username} вышел из системы`, 'info');
             }
             
             localStorage.removeItem('activeUser');
@@ -2475,7 +1797,6 @@
                     user.isOnline = false;
                     localStorage.setItem('users', JSON.stringify(users));
                 }
-                addSystemLog(`Пользователь ${currentUser.username} вышел из системы`, 'info');
             }
             
             localStorage.removeItem('activeUser');

@@ -57,71 +57,6 @@
             --error-color: #e74c3c;
         }
 
-        .theme-ocean {
-            --primary-color: #4facfe;
-            --secondary-color: #00f2fe;
-            --accent-color: #43e97b;
-            --bg-color: #f0f8ff;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #a8edea;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-forest {
-            --primary-color: #0ba360;
-            --secondary-color: #3cba92;
-            --accent-color: #f9d423;
-            --bg-color: #f1f8e9;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #c5e1a5;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-purple {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --accent-color: #f093fb;
-            --bg-color: #f8f4ff;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #d6c2ff;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-midnight {
-            --primary-color: #4A00E0;
-            --secondary-color: #8E2DE2;
-            --accent-color: #00B4DB;
-            --bg-color: #0f0c29;
-            --card-bg: #1a1a2e;
-            --text-color: #e6e6e6;
-            --border-color: #16213e;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
-        .theme-sunset {
-            --primary-color: #fa709a;
-            --secondary-color: #fee140;
-            --accent-color: #ff6b6b;
-            --bg-color: #fff5f5;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #ffd3d3;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --error-color: #e74c3c;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -1406,26 +1341,6 @@
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
                                 <div>Темная</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('ocean')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
-                                <div>Океан</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('forest')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);"></div>
-                                <div>Лес</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('purple')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                                <div>Фиолетовая</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('midnight')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #4A00E0 0%, #8E2DE2 100%);"></div>
-                                <div>Полночь</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('sunset')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
-                                <div>Закат</div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1563,11 +1478,11 @@
         let currentChat = null;
         let currentUserChat = null;
         let isFullscreen = false;
-        const API_BASE_URL = 'http://localhost:3000/api'; // Базовый URL API
 
         // Инициализация системы
         function init() {
             console.log('Инициализация системы...');
+            initLocalDB();
             checkActiveSession();
             setupEnterHandlers();
             
@@ -1587,54 +1502,81 @@
             }
         }
 
+        // Инициализация базы данных
+        function initLocalDB() {
+            console.log('Инициализация базы данных...');
+            
+            const defaults = {
+                users: [
+                    {
+                        username: 'admin',
+                        password: 'admin123',
+                        role: 'Владелец',
+                        isOnline: false,
+                        registeredAt: new Date().toISOString(),
+                        lastLogin: null,
+                        rating: 5.0,
+                        ratingCount: 1,
+                        email: 'admin@system.com',
+                        displayName: 'Владелец',
+                        avatar: ''
+                    }
+                ],
+                chats: [],
+                systemLogs: [],
+                techNotifications: [],
+                settings: {
+                    currentTheme: 'sunrise'
+                }
+            };
+
+            Object.keys(defaults).forEach(key => {
+                if (!localStorage.getItem(key)) {
+                    localStorage.setItem(key, JSON.stringify(defaults[key]));
+                    console.log('Создан ключ:', key);
+                }
+            });
+
+            const settings = JSON.parse(localStorage.getItem('settings'));
+            changeTheme(settings.currentTheme || 'sunrise');
+        }
+
         // Проверка активной сессии
-        async function checkActiveSession() {
+        function checkActiveSession() {
             console.log('Проверка активной сессии...');
             const activeUser = localStorage.getItem('activeUser');
             if (activeUser) {
                 try {
                     const userData = JSON.parse(activeUser);
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    const user = users.find(u => u.username === userData.username);
                     
-                    // Проверяем сессию на сервере
-                    const response = await fetch(`${API_BASE_URL}/check-session`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            username: userData.username,
-                            token: userData.token
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            console.log('Найдена активная сессия для:', userData.username);
-                            currentUser = result.user;
-                            
-                            if (currentUser.role === 'user') {
-                                showUserInterface();
-                            } else {
-                                showAdminPanel();
-                            }
-                            
-                            return true;
+                    if (user && user.password === userData.password) {
+                        console.log('Найдена активная сессия для:', user.username);
+                        currentUser = user;
+                        
+                        user.isOnline = true;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        
+                        if (user.role === 'user') {
+                            showUserInterface();
+                        } else {
+                            showAdminPanel();
                         }
+                        
+                        return true;
                     }
                 } catch (e) {
                     console.error('Ошибка при проверке сессии:', e);
+                    localStorage.removeItem('activeUser');
                 }
-                
-                // Если сессия невалидна, удаляем её
-                localStorage.removeItem('activeUser');
             }
             console.log('Активная сессия не найдена');
             return false;
         }
 
         // Вход в систему
-        async function login() {
+        function login() {
             console.log('Попытка входа...');
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value.trim();
@@ -1644,53 +1586,41 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password
-                    })
-                });
+            const users = JSON.parse(localStorage.getItem('users'));
+            const user = users.find(u => u.username === username && u.password === password);
 
-                const result = await response.json();
+            if (user) {
+                console.log('Успешный вход для:', username);
+                currentUser = user;
+                
+                user.isOnline = true;
+                user.lastLogin = new Date().toISOString();
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                localStorage.setItem('activeUser', JSON.stringify({
+                    username: username,
+                    password: password,
+                    loginTime: Date.now()
+                }));
 
-                if (result.success) {
-                    console.log('Успешный вход для:', username);
-                    currentUser = result.user;
-                    
-                    // Сохраняем сессию
-                    localStorage.setItem('activeUser', JSON.stringify({
-                        username: username,
-                        token: result.token,
-                        loginTime: Date.now()
-                    }));
+                showNotification('✅ Вход выполнен успешно!', 'success');
 
-                    showNotification('✅ Вход выполнен успешно!', 'success');
+                setTimeout(() => {
+                    if (user.role === 'user') {
+                        showUserInterface();
+                    } else {
+                        showAdminPanel();
+                    }
+                }, 500);
 
-                    setTimeout(() => {
-                        if (currentUser.role === 'user') {
-                            showUserInterface();
-                        } else {
-                            showAdminPanel();
-                        }
-                    }, 500);
-
-                } else {
-                    console.log('Неудачный вход для:', username);
-                    showNotification('❌ ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при входе:', error);
-                showNotification('❌ Ошибка соединения с сервером', 'error');
+            } else {
+                console.log('Неудачный вход для:', username);
+                showNotification('❌ Неверный логин или пароль!', 'error');
             }
         }
 
         // Регистрация нового пользователя
-        async function register() {
+        function register() {
             console.log('Попытка регистрации...');
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
@@ -1719,37 +1649,38 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: username,
-                        password: password,
-                        role: 'user'
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Очищаем форму
-                    document.getElementById('regUsername').value = '';
-                    document.getElementById('regPassword').value = '';
-                    document.getElementById('regPasswordConfirm').value = '';
-                    
-                    showNotification(`✅ Пользователь "${username}" зарегистрирован!`, 'success');
-                    
-                    showAuthTab('login');
-                } else {
-                    showNotification('❌ ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при регистрации:', error);
-                showNotification('❌ Ошибка соединения с сервером', 'error');
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            if (users.find(u => u.username === username)) {
+                showNotification('❌ Этот логин уже занят!', 'error');
+                return;
             }
+
+            const newUser = {
+                username: username,
+                password: password,
+                role: 'user',
+                isOnline: false,
+                registeredAt: new Date().toISOString(),
+                lastLogin: null,
+                rating: 0,
+                ratingCount: 0,
+                email: '',
+                displayName: username,
+                avatar: ''
+            };
+
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // Очищаем форму
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+            
+            showNotification(`✅ Пользователь "${username}" зарегистрирован!`, 'success');
+            
+            showAuthTab('login');
         }
 
         // Показать панель администратора/слушателя
@@ -1819,146 +1750,126 @@
         }
 
         // Обновление статистики
-        async function updateStats() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/stats`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    }
-                });
+        function updateStats() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const container = document.getElementById('statsGrid');
+            
+            const userChats = currentUser.role === 'Слушатель' ? 
+                chats.filter(chat => chat.admin === currentUser.username) : 
+                chats;
+
+            let statsHTML = '';
+            
+            if (currentUser.role === 'Слушатель') {
+                const rating = currentUser.rating || 0;
+                const ratingCount = currentUser.ratingCount || 0;
                 
-                if (response.ok) {
-                    const stats = await response.json();
-                    const container = document.getElementById('statsGrid');
-                    
-                    let statsHTML = '';
-                    
-                    if (currentUser.role === 'Слушатель') {
-                        statsHTML = `
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.myChats}</div>
-                                <div class="stat-label">Мои чаты</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.myRating}</div>
-                                <div class="stat-label">Мой рейтинг</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.ratingCount}</div>
-                                <div class="stat-label">Оценок получено</div>
-                            </div>
-                        `;
-                    } else {
-                        statsHTML = `
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.totalUsers}</div>
-                                <div class="stat-label">Пользователей</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.totalAdmins}</div>
-                                <div class="stat-label">Администраторов</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.activeChats}</div>
-                                <div class="stat-label">Активных чатов</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats.totalMessages}</div>
-                                <div class="stat-label">Сообщений</div>
-                            </div>
-                        `;
-                    }
-                    
-                    container.innerHTML = statsHTML;
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке статистики:', error);
-                showNotification('❌ Ошибка загрузки статистики', 'error');
+                statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${userChats.length}</div>
+                        <div class="stat-label">Мои чаты</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${rating.toFixed(1)}</div>
+                        <div class="stat-label">Мой рейтинг</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${ratingCount}</div>
+                        <div class="stat-label">Оценок получено</div>
+                    </div>
+                `;
+            } else {
+                statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${users.length}</div>
+                        <div class="stat-label">Пользователей</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${users.filter(u => u.role !== 'user').length}</div>
+                        <div class="stat-label">Администраторов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${chats.length}</div>
+                        <div class="stat-label">Активных чатов</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${chats.reduce((total, chat) => total + chat.messages.length, 0)}</div>
+                        <div class="stat-label">Сообщений</div>
+                    </div>
+                `;
             }
+            
+            container.innerHTML = statsHTML;
         }
 
         // Загрузка таблицы пользователей
-        async function loadUsersTable() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/users`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const users = await response.json();
-                    const container = document.getElementById('usersTable');
-                    
-                    if (users.length === 0) {
-                        container.innerHTML = `
-                            <tr>
-                                <td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">
-                                    Пользователи не найдены
-                                </td>
-                            </tr>
-                        `;
-                        return;
-                    }
-                    
-                    const canManageUsers = ['Владелец', 'Совладелец', 'Заместитель'].includes(currentUser.role);
-                    
-                    container.innerHTML = users.map(user => {
-                        const canEdit = canManageUsers && user.username !== currentUser.username && user.role !== 'Владелец';
-                        
-                        return `
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 12px;">
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        ${user.avatar ? 
-                                            `<div style="width: 30px; height: 30px; border-radius: 50%; background-image: url(${user.avatar}); background-size: cover; background-position: center;"></div>` :
-                                            `<div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
-                                                ${(user.displayName || user.username).charAt(0).toUpperCase()}
-                                            </div>`
-                                        }
-                                        ${user.displayName || user.username}
-                                    </div>
-                                </td>
-                                <td style="padding: 12px;">
-                                    <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
-                                          background: ${getRoleColor(user.role)}; color: white;">
-                                        ${user.role}
-                                    </span>
-                                </td>
-                                <td style="padding: 12px;">
-                                    <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
-                                        ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
-                                    </span>
-                                </td>
-                                <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
-                                    ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
-                                </td>
-                                <td style="padding: 12px;">
-                                    ${canEdit ? `
-                                        <select class="form-select" onchange="changeUserRole('${user.username}', this.value)" style="padding: 6px; font-size: 12px;">
-                                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                                            <option value="Слушатель" ${user.role === 'Слушатель' ? 'selected' : ''}>Слушатель</option>
-                                            <option value="Администратор" ${user.role === 'Администратор' ? 'selected' : ''}>Администратор</option>
-                                            ${currentUser.role === 'Владелец' || currentUser.role === 'Совладелец' ? `
-                                                <option value="Заместитель" ${user.role === 'Заместитель' ? 'selected' : ''}>Заместитель</option>
-                                                <option value="Совладелец" ${user.role === 'Совладелец' ? 'selected' : ''}>Совладелец</option>
-                                            ` : ''}
-                                        </select>
-                                        <button class="btn btn-secondary" onclick="deleteUser('${user.username}')" style="padding: 6px 12px; font-size: 12px; margin-top: 5px;">
-                                            Удалить
-                                        </button>
-                                    ` : '<span style="color: #7f8c8d;">Недоступно</span>'}
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке пользователей:', error);
-                showNotification('❌ Ошибка загрузки пользователей', 'error');
+        function loadUsersTable() {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const container = document.getElementById('usersTable');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">
+                            Пользователи не найдены
+                        </td>
+                    </tr>
+                `;
+                return;
             }
+            
+            const canManageUsers = ['Владелец', 'Совладелец', 'Заместитель'].includes(currentUser.role);
+            
+            container.innerHTML = users.map(user => {
+                const canEdit = canManageUsers && user.username !== currentUser.username && user.role !== 'Владелец';
+                
+                return `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${user.avatar ? 
+                                    `<div style="width: 30px; height: 30px; border-radius: 50%; background-image: url(${user.avatar}); background-size: cover; background-position: center;"></div>` :
+                                    `<div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
+                                        ${(user.displayName || user.username).charAt(0).toUpperCase()}
+                                    </div>`
+                                }
+                                ${user.displayName || user.username}
+                            </div>
+                        </td>
+                        <td style="padding: 12px;">
+                            <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
+                                  background: ${getRoleColor(user.role)}; color: white;">
+                                ${user.role}
+                            </span>
+                        </td>
+                        <td style="padding: 12px;">
+                            <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
+                                ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
+                            ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
+                        </td>
+                        <td style="padding: 12px;">
+                            ${canEdit ? `
+                                <select class="form-select" onchange="changeUserRole('${user.username}', this.value)" style="padding: 6px; font-size: 12px;">
+                                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                                    <option value="Слушатель" ${user.role === 'Слушатель' ? 'selected' : ''}>Слушатель</option>
+                                    <option value="Администратор" ${user.role === 'Администратор' ? 'selected' : ''}>Администратор</option>
+                                    ${currentUser.role === 'Владелец' || currentUser.role === 'Совладелец' ? `
+                                        <option value="Заместитель" ${user.role === 'Заместитель' ? 'selected' : ''}>Заместитель</option>
+                                        <option value="Совладелец" ${user.role === 'Совладелец' ? 'selected' : ''}>Совладелец</option>
+                                    ` : ''}
+                                </select>
+                                <button class="btn btn-secondary" onclick="deleteUser('${user.username}')" style="padding: 6px 12px; font-size: 12px; margin-top: 5px;">
+                                    Удалить
+                                </button>
+                            ` : '<span style="color: #7f8c8d;">Недоступно</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Получение цвета для роли
@@ -1975,39 +1886,28 @@
         }
 
         // Изменение роли пользователя
-        async function changeUserRole(username, newRole) {
+        function changeUserRole(username, newRole) {
             if (!confirm(`Вы уверены, что хотите изменить роль пользователя ${username} на "${newRole}"?`)) {
                 loadUsersTable(); // Перезагружаем таблицу для отмены изменений
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/users/${username}/role`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        role: newRole
-                    })
-                });
-
-                if (response.ok) {
-                    showNotification(`✅ Роль пользователя ${username} изменена на "${newRole}"!`, 'success');
-                    loadUsersTable();
-                    updateStats();
-                } else {
-                    showNotification('❌ Ошибка изменения роли', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при изменении роли:', error);
-                showNotification('❌ Ошибка изменения роли', 'error');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].role = newRole;
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                showNotification(`✅ Роль пользователя ${username} изменена на "${newRole}"!`, 'success');
+                
+                loadUsersTable();
+                updateStats();
             }
         }
 
         // Удаление пользователя
-        async function deleteUser(username) {
+        function deleteUser(username) {
             if (username === currentUser.username) {
                 showNotification('❌ Нельзя удалить самого себя!', 'error');
                 return;
@@ -2017,29 +1917,18 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/users/${username}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    }
-                });
-
-                if (response.ok) {
-                    showNotification(`✅ Пользователь ${username} удален!`, 'success');
-                    updateStats();
-                    loadUsersTable();
-                } else {
-                    showNotification('❌ Ошибка удаления пользователя', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при удалении пользователя:', error);
-                showNotification('❌ Ошибка удаления пользователя', 'error');
-            }
+            const users = JSON.parse(localStorage.getItem('users'));
+            const updatedUsers = users.filter(u => u.username !== username);
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            
+            showNotification(`✅ Пользователь ${username} удален!`, 'success');
+            
+            updateStats();
+            loadUsersTable();
         }
 
         // Создание администратора
-        async function createAdmin() {
+        function createAdmin() {
             const login = document.getElementById('newAdminLogin').value.trim();
             const password = document.getElementById('newAdminPassword').value.trim();
             const role = document.getElementById('newAdminRole').value;
@@ -2054,75 +1943,61 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        username: login,
-                        password: password,
-                        role: role
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('newAdminLogin').value = '';
-                    document.getElementById('newAdminPassword').value = '';
-                    
-                    showNotification(`✅ ${role} "${login}" создан!`, 'success');
-                    
-                    updateStats();
-                    loadUsersTable();
-                } else {
-                    showNotification('❌ ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при создании администратора:', error);
-                showNotification('❌ Ошибка создания администратора', 'error');
+            const users = JSON.parse(localStorage.getItem('users'));
+            
+            if (users.find(u => u.username === login)) {
+                showNotification('❌ Этот логин уже занят!', 'error');
+                return;
             }
+
+            const newAdmin = {
+                username: login,
+                password: password,
+                role: role,
+                isOnline: false,
+                registeredAt: new Date().toISOString(),
+                lastLogin: null,
+                rating: 0,
+                ratingCount: 0,
+                email: '',
+                displayName: login,
+                avatar: ''
+            };
+
+            users.push(newAdmin);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            document.getElementById('newAdminLogin').value = '';
+            document.getElementById('newAdminPassword').value = '';
+            
+            showNotification(`✅ ${role} "${login}" создан!`, 'success');
+            
+            updateStats();
+            loadUsersTable();
         }
 
         // Технические уведомления
-        async function loadTechNotifications() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const notifications = await response.json();
-                    const container = document.getElementById('techNotificationsList');
-                    
-                    if (notifications.length === 0) {
-                        container.innerHTML = '<p style="color: #7f8c8d; text-align: center;">Технических уведомлений нет</p>';
-                        return;
-                    }
-                    
-                    container.innerHTML = notifications.map(notification => `
-                        <div class="notification-item">
-                            <div style="font-weight: 600;">${notification.message}</div>
-                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                                ${new Date(notification.timestamp).toLocaleString('ru-RU')}
-                                ${notification.sender ? ` • От: ${notification.sender}` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Ошибка при загрузке уведомлений:', error);
-                showNotification('❌ Ошибка загрузки уведомлений', 'error');
+        function loadTechNotifications() {
+            const notifications = JSON.parse(localStorage.getItem('techNotifications')) || [];
+            const container = document.getElementById('techNotificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<p style="color: #7f8c8d; text-align: center;">Технических уведомлений нет</p>';
+                return;
             }
+            
+            container.innerHTML = notifications.map(notification => `
+                <div class="notification-item">
+                    <div style="font-weight: 600;">${notification.message}</div>
+                    <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                        ${new Date(notification.timestamp).toLocaleString('ru-RU')}
+                        ${notification.sender ? ` • От: ${notification.sender}` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        async function sendTechNotification() {
+        function sendTechNotification() {
             if (!['Владелец', 'Совладелец'].includes(currentUser.role)) {
                 showNotification('❌ Только владелец и совладелец могут отправлять технические уведомления!', 'error');
                 return;
@@ -2134,29 +2009,22 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/notifications`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        message: message
-                    })
-                });
+            const notifications = JSON.parse(localStorage.getItem('techNotifications')) || [];
+            const newNotification = {
+                id: Date.now(),
+                message: message,
+                timestamp: new Date().toISOString(),
+                sender: currentUser.username
+            };
 
-                if (response.ok) {
-                    document.getElementById('techNotificationInput').value = '';
-                    showNotification('✅ Техническое уведомление отправлено!', 'success');
-                    loadTechNotifications();
-                } else {
-                    showNotification('❌ Ошибка отправки уведомления', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка при отправке уведомления:', error);
-                showNotification('❌ Ошибка отправки уведомления', 'error');
-            }
+            notifications.unshift(newNotification);
+            if (notifications.length > 50) notifications.length = 50; // Ограничение истории
+            
+            localStorage.setItem('techNotifications', JSON.stringify(notifications));
+            
+            document.getElementById('techNotificationInput').value = '';
+            showNotification('✅ Техническое уведомление отправлено!', 'success');
+            loadTechNotifications();
         }
 
         // Настройки профиля
@@ -2178,7 +2046,7 @@
             document.getElementById('settingsEmail').value = currentUser.email || '';
         }
 
-        async function updateProfileFromSettings() {
+        function updateProfileFromSettings() {
             const newUsername = document.getElementById('settingsUsername').value.trim();
             const newEmail = document.getElementById('settingsEmail').value.trim();
 
@@ -2187,34 +2055,36 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        displayName: newUsername,
-                        email: newEmail
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    currentUser = result.user;
-                    
-                    showNotification('✅ Профиль успешно обновлен!', 'success');
-                    
-                    updateSettingsProfile();
-                    document.getElementById('currentUserInfo').textContent = 
-                        `${currentUser.displayName} | ${currentUser.role}`;
-                } else {
-                    showNotification('❌ Ошибка обновления профиля', 'error');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex !== -1) {
+                if (newUsername !== currentUser.username && users.find(u => u.username === newUsername)) {
+                    showNotification('❌ Это имя пользователя уже занято!', 'error');
+                    return;
                 }
-            } catch (error) {
-                console.error('Ошибка при обновлении профиля:', error);
-                showNotification('❌ Ошибка обновления профиля', 'error');
+                
+                users[userIndex].displayName = newUsername;
+                users[userIndex].email = newEmail;
+                
+                if (newUsername !== currentUser.username) {
+                    users[userIndex].username = newUsername;
+                    
+                    const activeUser = JSON.parse(localStorage.getItem('activeUser'));
+                    activeUser.username = newUsername;
+                    localStorage.setItem('activeUser', JSON.stringify(activeUser));
+                    
+                    currentUser.username = newUsername;
+                }
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = users[userIndex];
+                
+                showNotification('✅ Профиль успешно обновлен!', 'success');
+                
+                updateSettingsProfile();
+                document.getElementById('currentUserInfo').textContent = 
+                    `${currentUser.displayName} | ${currentUser.role}`;
             }
         }
 
@@ -2282,7 +2152,7 @@
             document.getElementById('userSettingsEmail').value = currentUser.email || '';
         }
 
-        async function updateUserProfile() {
+        function updateUserProfile() {
             const newUsername = document.getElementById('userSettingsUsername').value.trim();
             const newEmail = document.getElementById('userSettingsEmail').value.trim();
 
@@ -2291,37 +2161,39 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        displayName: newUsername,
-                        email: newEmail
-                    })
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    currentUser = result.user;
-                    
-                    showNotification('✅ Профиль успешно обновлен!', 'success');
-                    
-                    updateUserProfileInfo();
-                    document.getElementById('userWelcome').textContent = 
-                        `Добро пожаловать, ${currentUser.displayName || currentUser.username}!`;
-                    
-                    // Возвращаемся к чатам
-                    showUserTab('chats');
-                } else {
-                    showNotification('❌ Ошибка обновления профиля', 'error');
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex !== -1) {
+                if (newUsername !== currentUser.username && users.find(u => u.username === newUsername)) {
+                    showNotification('❌ Это имя пользователя уже занято!', 'error');
+                    return;
                 }
-            } catch (error) {
-                console.error('Ошибка при обновлении профиля:', error);
-                showNotification('❌ Ошибка обновления профиля', 'error');
+                
+                users[userIndex].displayName = newUsername;
+                users[userIndex].email = newEmail;
+                
+                if (newUsername !== currentUser.username) {
+                    users[userIndex].username = newUsername;
+                    
+                    const activeUser = JSON.parse(localStorage.getItem('activeUser'));
+                    activeUser.username = newUsername;
+                    localStorage.setItem('activeUser', JSON.stringify(activeUser));
+                    
+                    currentUser.username = newUsername;
+                }
+                
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = users[userIndex];
+                
+                showNotification('✅ Профиль успешно обновлен!', 'success');
+                
+                updateUserProfileInfo();
+                document.getElementById('userWelcome').textContent = 
+                    `Добро пожаловать, ${currentUser.displayName || currentUser.username}!`;
+                
+                // Возвращаемся к чатам
+                showUserTab('chats');
             }
         }
 
@@ -2356,19 +2228,9 @@
         function changeTheme(themeName) {
             document.body.className = 'theme-' + themeName;
             
-            // Сохраняем тему в настройках пользователя
-            if (currentUser) {
-                fetch(`${API_BASE_URL}/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${getAuthToken()}`
-                    },
-                    body: JSON.stringify({
-                        theme: themeName
-                    })
-                });
-            }
+            const settings = JSON.parse(localStorage.getItem('settings'));
+            settings.currentTheme = themeName;
+            localStorage.setItem('settings', JSON.stringify(settings));
             
             document.querySelectorAll('.theme-card').forEach(card => {
                 card.classList.remove('active');
@@ -2389,13 +2251,14 @@
         }
 
         function logout() {
-            // Отправляем запрос на выход
-            fetch(`${API_BASE_URL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => u.username === currentUser.username);
+                if (user) {
+                    user.isOnline = false;
+                    localStorage.setItem('users', JSON.stringify(users));
                 }
-            });
+            }
             
             localStorage.removeItem('activeUser');
             currentUser = null;
@@ -2410,13 +2273,14 @@
         }
 
         function userLogout() {
-            // Отправляем запрос на выход
-            fetch(`${API_BASE_URL}/logout`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${getAuthToken()}`
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('users'));
+                const user = users.find(u => u.username === currentUser.username);
+                if (user) {
+                    user.isOnline = false;
+                    localStorage.setItem('users', JSON.stringify(users));
                 }
-            });
+            }
             
             localStorage.removeItem('activeUser');
             currentUser = null;
@@ -2466,16 +2330,6 @@
                     if (e.key === 'Enter') sendTechNotification();
                 });
             }
-        }
-
-        // Вспомогательные функции
-        function getAuthToken() {
-            const activeUser = localStorage.getItem('activeUser');
-            if (activeUser) {
-                const userData = JSON.parse(activeUser);
-                return userData.token;
-            }
-            return null;
         }
 
         // Инициализация при загрузке

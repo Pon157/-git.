@@ -18,7 +18,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Темная тема */
         .theme-dark {
             --primary-color: #3498db;
             --secondary-color: #34495e;
@@ -32,7 +31,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Светлая тема */
         .theme-light {
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
@@ -46,7 +44,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Контрастная тема */
         .theme-contrast {
             --primary-color: #ff6b6b;
             --secondary-color: #4ecdc4;
@@ -60,7 +57,6 @@
             --error-color: #ef476f;
         }
 
-        /* Фиолетовая тема */
         .theme-purple {
             --primary-color: #9b59b6;
             --secondary-color: #8e44ad;
@@ -74,7 +70,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Зеленая тема */
         .theme-green {
             --primary-color: #2ecc71;
             --secondary-color: #27ae60;
@@ -88,7 +83,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Оранжевая тема */
         .theme-orange {
             --primary-color: #e67e22;
             --secondary-color: #d35400;
@@ -102,7 +96,6 @@
             --error-color: #e74c3c;
         }
 
-        /* Синяя тема */
         .theme-blue {
             --primary-color: #3498db;
             --secondary-color: #2980b9;
@@ -380,7 +373,6 @@
             background: var(--primary-color);
         }
 
-        /* Стили для чатов */
         .chat-container {
             display: flex;
             height: 70vh;
@@ -500,7 +492,6 @@
             color: var(--warning-color);
         }
 
-        /* Стили для пользовательского интерфейса */
         .user-dashboard {
             max-width: 1200px;
             margin: 0 auto;
@@ -564,25 +555,22 @@
         }
 
         .theme-selector {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            z-index: 100;
-            max-width: 200px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
         }
 
         .theme-option {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin: 5px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             cursor: pointer;
             border: 2px solid transparent;
-            display: inline-block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
         .theme-option.active {
@@ -596,26 +584,32 @@
 
         .theme-dark-option {
             background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);
+            color: white;
         }
 
         .theme-contrast-option {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
         }
 
         .theme-purple-option {
             background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
         }
 
         .theme-green-option {
             background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
         }
 
         .theme-orange-option {
             background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
         }
 
         .theme-blue-option {
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
         }
 
         .hidden {
@@ -739,6 +733,10 @@
             border: 2px solid transparent;
             background-size: cover;
             background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
         }
 
         .avatar-option.selected {
@@ -765,6 +763,18 @@
 
         .pending-chat-item:hover {
             background: rgba(52, 152, 219, 0.1);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -821,7 +831,7 @@
                 <h1>Панель<br>управления</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserInfo">Мудрец | Владелец</span>
+                <span id="currentUserInfo">Владелец | Владелец</span>
             </div>
             <div class="nav-menu">
                 <div class="nav-item active" onclick="showTab('stats')">Статистика</div>
@@ -829,7 +839,6 @@
                 <div id="usersTabNav" class="nav-item" onclick="showTab('users')">Пользователи</div>
                 <div id="systemTabNav" class="nav-item" onclick="showTab('system')">Система</div>
                 <div class="nav-item" onclick="showTab('settings')">Настройки</div>
-                <div class="nav-item" onclick="showTab('profile')">Мой профиль</div>
                 <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">Выйти</div>
             </div>
         </div>
@@ -948,65 +957,70 @@
             <div id="settingsTab" class="tab-content" style="display: none;">
                 <div class="content-header">
                     <h2>Настройки системы</h2>
-                    <p>Внешний вид и параметры системы</p>
+                    <p>Управление профилем и внешним видом</p>
                 </div>
                 
-                <div class="content-card">
-                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Выбор темы</h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                        <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая"></div>
-                        <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная"></div>
-                        <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная"></div>
-                        <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая"></div>
-                        <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая"></div>
-                        <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая"></div>
-                        <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Вкладка Профиль -->
-            <div id="profileTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <h2>Мой профиль</h2>
-                    <p>Управление личными данными и настройками</p>
-                </div>
-                
-                <div class="content-card">
-                    <div class="profile-section">
-                        <div class="profile-avatar" id="profileAvatar" onclick="showAvatarModal()">
-                            М
+                <div class="settings-grid">
+                    <!-- Настройки профиля -->
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Настройки профиля</h3>
+                        
+                        <div class="profile-section">
+                            <div class="profile-avatar" id="settingsProfileAvatar" onclick="showAvatarModal()">
+                                В
+                            </div>
+                            <div class="profile-info">
+                                <div class="profile-name" id="settingsProfileName">Владелец</div>
+                                <div class="profile-role" id="settingsProfileRole">Владелец</div>
+                            </div>
                         </div>
-                        <div class="profile-info">
-                            <div class="profile-name" id="profileName">Мудрец</div>
-                            <div class="profile-role" id="profileRole">Владелец</div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Имя пользователя</label>
+                            <input type="text" class="form-input" id="settingsUsername" placeholder="Введите имя">
                         </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="showEditProfileModal()">
-                                Редактировать профиль
-                            </button>
-                            <button class="btn btn-secondary" onclick="showChangePasswordModal()">
-                                Сменить пароль
-                            </button>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="settingsEmail" placeholder="Введите email">
                         </div>
+                        
+                        <button class="btn btn-primary" onclick="updateProfileFromSettings()">
+                            Сохранить профиль
+                        </button>
+                        
+                        <button class="btn btn-secondary" onclick="showChangePasswordModal()" style="margin-top: 10px; width: 100%;">
+                            Сменить пароль
+                        </button>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="profileTotalChats">0</div>
-                            <div class="stat-label">Всего чатов</div>
+                    <!-- Настройки темы -->
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px; color: var(--text-color);">Настройки темы</h3>
+                        
+                        <div class="theme-selector">
+                            <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая">☀️</div>
+                            <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная">🌙</div>
+                            <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная">⚡</div>
+                            <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая">💜</div>
+                            <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая">💚</div>
+                            <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая">🧡</div>
+                            <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя">💙</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="profileRating">0</div>
-                            <div class="stat-label">Рейтинг</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="profileMessages">0</div>
-                            <div class="stat-label">Сообщений</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="profileRegistered">0</div>
-                            <div class="stat-label">Дней в системе</div>
+                        
+                        <div style="margin-top: 20px; padding: 15px; background: var(--border-color); border-radius: 8px;">
+                            <h4 style="margin-bottom: 10px;">Предпросмотр темы</h4>
+                            <p style="font-size: 14px; color: var(--text-color);">
+                                Текущая тема: <span id="currentThemeName">Светлая</span>
+                            </p>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <div style="padding: 8px 12px; background: var(--primary-color); color: white; border-radius: 4px; font-size: 12px;">
+                                    Основной цвет
+                                </div>
+                                <div style="padding: 8px 12px; background: var(--accent-color); color: white; border-radius: 4px; font-size: 12px;">
+                                    Акцентный цвет
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1072,27 +1086,6 @@
                     Начать случайный чат
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно редактирования профиля -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Редактирование профиля</h3>
-                <button class="close-modal" onclick="closeModal('editProfileModal')">&times;</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Новое имя пользователя</label>
-                <input type="text" class="form-input" id="editUsername" placeholder="Введите новое имя">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Email (опционально)</label>
-                <input type="email" class="form-input" id="editEmail" placeholder="Введите email">
-            </div>
-            <button class="btn btn-primary" onclick="updateProfile()" style="width: 100%;">
-                Сохранить изменения
-            </button>
         </div>
     </div>
 
@@ -1163,16 +1156,16 @@
             const defaults = {
                 users: [
                     {
-                        username: 'admin',
-                        password: 'admin123',
+                        username: 'owner',
+                        password: 'owner123',
                         role: 'Владелец',
                         isOnline: false,
                         registeredAt: new Date().toISOString(),
                         lastLogin: null,
                         rating: 5.0,
                         ratingCount: 1,
-                        email: '',
-                        displayName: 'Мудрец',
+                        email: 'owner@system.com',
+                        displayName: 'Владелец Системы',
                         avatar: ''
                     }
                 ],
@@ -1261,7 +1254,7 @@
             loadUsersTable();
             loadSystemLogs();
             loadChatsList();
-            updateProfileInfo();
+            updateSettingsProfile();
             
             // Показываем первую вкладку
             showTab('stats');
@@ -1397,11 +1390,11 @@
             showAuthTab('login');
         }
 
-        // Обновление информации профиля
-        function updateProfileInfo() {
+        // Обновление информации профиля в настройках
+        function updateSettingsProfile() {
             if (!currentUser) return;
             
-            const avatarElement = document.getElementById('profileAvatar');
+            const avatarElement = document.getElementById('settingsProfileAvatar');
             if (currentUser.avatar) {
                 avatarElement.style.backgroundImage = `url(${currentUser.avatar})`;
                 avatarElement.textContent = '';
@@ -1410,34 +1403,10 @@
                 avatarElement.textContent = (currentUser.displayName || currentUser.username).charAt(0).toUpperCase();
             }
             
-            document.getElementById('profileName').textContent = currentUser.displayName || currentUser.username;
-            document.getElementById('profileRole').textContent = currentUser.role;
-            
-            // Статистика профиля
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            let userChats = [];
-            
-            if (currentUser.role === 'Слушатель' || currentUser.role === 'Владелец') {
-                userChats = chats.filter(chat => chat.admin === currentUser.username);
-            } else if (currentUser.role === 'user') {
-                userChats = chats.filter(chat => chat.user === currentUser.username);
-            }
-            
-            const totalMessages = userChats.reduce((total, chat) => total + chat.messages.length, 0);
-            const registeredDate = new Date(currentUser.registeredAt);
-            const daysInSystem = Math.floor((new Date() - registeredDate) / (1000 * 60 * 60 * 24));
-            
-            document.getElementById('profileTotalChats').textContent = userChats.length;
-            document.getElementById('profileRating').textContent = currentUser.rating ? currentUser.rating.toFixed(1) : '0';
-            document.getElementById('profileMessages').textContent = totalMessages;
-            document.getElementById('profileRegistered').textContent = daysInSystem;
-        }
-
-        // Показать модальное окно редактирования профиля
-        function showEditProfileModal() {
-            document.getElementById('editUsername').value = currentUser.displayName || currentUser.username;
-            document.getElementById('editEmail').value = currentUser.email || '';
-            document.getElementById('editProfileModal').style.display = 'flex';
+            document.getElementById('settingsProfileName').textContent = currentUser.displayName || currentUser.username;
+            document.getElementById('settingsProfileRole').textContent = currentUser.role;
+            document.getElementById('settingsUsername').value = currentUser.displayName || currentUser.username;
+            document.getElementById('settingsEmail').value = currentUser.email || '';
         }
 
         // Показать модальное окно смены пароля
@@ -1476,7 +1445,7 @@
                 localStorage.setItem('users', JSON.stringify(users));
                 currentUser.avatar = avatar;
                 
-                updateProfileInfo();
+                updateSettingsProfile();
                 closeModal('avatarModal');
                 showNotification('✅ Аватарка обновлена!', 'success');
             }
@@ -1497,7 +1466,7 @@
                         localStorage.setItem('users', JSON.stringify(users));
                         currentUser.avatar = avatarData;
                         
-                        updateProfileInfo();
+                        updateSettingsProfile();
                         closeModal('avatarModal');
                         showNotification('✅ Аватарка загружена!', 'success');
                     }
@@ -1517,10 +1486,10 @@
             document.getElementById(modalId).style.display = 'none';
         }
 
-        // Обновление профиля
-        function updateProfile() {
-            const newUsername = document.getElementById('editUsername').value.trim();
-            const newEmail = document.getElementById('editEmail').value.trim();
+        // Обновление профиля из настроек
+        function updateProfileFromSettings() {
+            const newUsername = document.getElementById('settingsUsername').value.trim();
+            const newEmail = document.getElementById('settingsEmail').value.trim();
 
             if (!newUsername) {
                 showNotification('❌ Имя пользователя не может быть пустым!', 'error');
@@ -1560,11 +1529,9 @@
                 addSystemLog(`Пользователь ${currentUser.username} обновил профиль`, 'info');
                 
                 // Обновляем интерфейс
-                updateProfileInfo();
+                updateSettingsProfile();
                 document.getElementById('currentUserInfo').textContent = 
                     `${currentUser.displayName} | ${currentUser.role}`;
-                
-                closeModal('editProfileModal');
             }
         }
 
@@ -1654,10 +1621,8 @@
                 updateStats();
             } else if (tabName === 'chats') {
                 loadChatsList();
-            } else if (tabName === 'profile') {
-                updateProfileInfo();
             } else if (tabName === 'settings') {
-                // Ничего не делаем, темы уже загружены
+                updateSettingsProfile();
             }
         }
 
@@ -1890,12 +1855,8 @@
             const user = users.find(u => u.username === username);
             
             if (user) {
-                document.getElementById('editUsername').value = user.displayName || user.username;
-                document.getElementById('editEmail').value = user.email || '';
-                document.getElementById('editProfileModal').style.display = 'flex';
-                
-                // Сохраняем username для поиска при обновлении
-                document.getElementById('editProfileModal').dataset.editingUser = username;
+                // Реализуйте редактирование пользователя
+                showNotification('Функция редактирования в разработке', 'info');
             }
         }
 
@@ -2450,6 +2411,18 @@
                 option.classList.remove('active');
             });
             event.target.classList.add('active');
+            
+            // Обновляем название текущей темы
+            const themeNames = {
+                'light': 'Светлая',
+                'dark': 'Темная', 
+                'contrast': 'Контрастная',
+                'purple': 'Фиолетовая',
+                'green': 'Зеленая',
+                'orange': 'Оранжевая',
+                'blue': 'Синяя'
+            };
+            document.getElementById('currentThemeName').textContent = themeNames[themeName];
         }
 
         // Уведомления

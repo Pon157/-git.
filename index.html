@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -389,6 +389,29 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        .nav-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .admin-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
         @keyframes messageSlide {
             from {
                 opacity: 0;
@@ -629,8 +652,47 @@
         let currentUser = null;
         let currentChat = null;
 
+        // Основные функции навигации
+        function showScreen(screenId) {
+            console.log('Переход на экран:', screenId);
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showAdminTab(tabId) {
+            document.querySelectorAll('#adminPanel .tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('#adminPanel .tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
         // Инициализация системы
         function init() {
+            console.log('Инициализация системы...');
             initLocalDB();
             checkActiveSession();
             addSystemLog('Система инициализирована', 'info');
@@ -638,6 +700,7 @@
 
         // Инициализация базы данных
         function initLocalDB() {
+            console.log('Инициализация базы данных...');
             const defaults = {
                 users: [],
                 chats: [],
@@ -648,6 +711,7 @@
             Object.keys(defaults).forEach(key => {
                 if (!localStorage.getItem(key)) {
                     localStorage.setItem(key, JSON.stringify(defaults[key]));
+                    console.log('Создан ключ:', key);
                 }
             });
 
@@ -658,6 +722,7 @@
                 { username: 'user', password: 'user123', role: 'user' }
             ];
 
+            let createdAccounts = 0;
             testAccounts.forEach(acc => {
                 if (!users.find(u => u.username === acc.username)) {
                     users.push({
@@ -668,41 +733,54 @@
                         registeredAt: new Date().toISOString(),
                         lastLogin: null
                     });
+                    createdAccounts++;
+                    console.log('Создан аккаунт:', acc.username);
                 }
             });
 
-            localStorage.setItem('users', JSON.stringify(users));
+            if (createdAccounts > 0) {
+                localStorage.setItem('users', JSON.stringify(users));
+                console.log('Создано аккаунтов:', createdAccounts);
+            }
         }
 
         // Проверка активной сессии
         function checkActiveSession() {
+            console.log('Проверка активной сессии...');
             const activeUser = localStorage.getItem('activeUser');
             if (activeUser) {
-                const userData = JSON.parse(activeUser);
-                const users = JSON.parse(localStorage.getItem('users'));
-                const user = users.find(u => u.username === userData.username);
-                
-                if (user && user.password === userData.password) {
-                    currentUser = user;
+                try {
+                    const userData = JSON.parse(activeUser);
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    const user = users.find(u => u.username === userData.username);
                     
-                    user.isOnline = true;
-                    user.lastLogin = new Date().toISOString();
-                    localStorage.setItem('users', JSON.stringify(users));
-                    
-                    if (user.role !== 'user') {
-                        showAdminPanel();
-                    } else {
-                        showMainScreen();
+                    if (user && user.password === userData.password) {
+                        console.log('Найдена активная сессия для:', user.username);
+                        currentUser = user;
+                        
+                        user.isOnline = true;
+                        user.lastLogin = new Date().toISOString();
+                        localStorage.setItem('users', JSON.stringify(users));
+                        
+                        if (user.role !== 'user') {
+                            showAdminPanel();
+                        } else {
+                            showMainScreen();
+                        }
+                        addSystemLog(`Пользователь ${user.username} вошел в систему`, 'info');
+                        return true;
                     }
-                    addSystemLog(`Пользователь ${user.username} вошел в систему`, 'info');
-                    return true;
+                } catch (e) {
+                    console.error('Ошибка при проверке сессии:', e);
                 }
             }
+            console.log('Активная сессия не найдена');
             return false;
         }
 
         // Вход в систему
         function login() {
+            console.log('Попытка входа...');
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value.trim();
 
@@ -715,6 +793,7 @@
             const user = users.find(u => u.username === username && u.password === password);
 
             if (user) {
+                console.log('Успешный вход для:', username);
                 currentUser = user;
                 
                 // Сохраняем сессию
@@ -739,9 +818,10 @@
                     } else {
                         showMainScreen();
                     }
-                }, 500);
+                }, 100);
 
             } else {
+                console.log('Неудачный вход для:', username);
                 showNotification('❌ Неверный логин или пароль!', 'error');
                 addSystemLog(`Неудачная попытка входа: ${username}`, 'warning');
             }
@@ -794,54 +874,12 @@
             
             setTimeout(() => {
                 showMainScreen();
-            }, 500);
-        }
-
-        // Создание администратора
-        function createAdmin() {
-            if (currentUser.role !== 'Совладелец') {
-                showNotification('❌ Только совладелец может создавать администраторов!', 'error');
-                return;
-            }
-
-            const login = document.getElementById('newAdminLogin').value.trim();
-            const password = document.getElementById('newAdminPassword').value.trim();
-            const role = document.getElementById('newAdminRole').value;
-
-            if (!login || !password) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            const users = JSON.parse(localStorage.getItem('users'));
-            
-            if (users.find(u => u.username === login)) {
-                showNotification('❌ Этот логин уже занят!', 'error');
-                return;
-            }
-
-            const newAdmin = {
-                username: login,
-                password: password,
-                role: role,
-                isOnline: false,
-                registeredAt: new Date().toISOString(),
-                lastLogin: null
-            };
-
-            users.push(newAdmin);
-            localStorage.setItem('users', JSON.stringify(users));
-
-            document.getElementById('newAdminLogin').value = '';
-            document.getElementById('newAdminPassword').value = '';
-            
-            showNotification(`✅ ${role} "${login}" создан!`, 'success');
-            addSystemLog(`Создан новый ${role}: ${login}`, 'info');
-            loadUsersTable();
+            }, 100);
         }
 
         // Показать главный экран
         function showMainScreen() {
+            console.log('Показ главного экрана для пользователя:', currentUser.username);
             document.getElementById('currentUser').textContent = currentUser.username;
             loadChats();
             loadAdminsList();
@@ -852,6 +890,7 @@
 
         // Показать панель администратора
         function showAdminPanel() {
+            console.log('Показ панели администратора для:', currentUser.username);
             document.getElementById('adminName').textContent = currentUser.username;
             document.getElementById('adminRole').textContent = currentUser.role;
             loadAdminChats();
@@ -879,7 +918,7 @@
             
             localStorage.setItem('systemLogs', JSON.stringify(logs));
             
-            if (document.getElementById('adminSystemTab').classList.contains('active')) {
+            if (document.getElementById('adminSystemTab')?.classList.contains('active')) {
                 loadSystemLogs();
             }
         }
@@ -937,7 +976,7 @@
             localStorage.setItem('chats', JSON.stringify(chats));
 
             loadChats();
-            openChat(newChat);
+            openChat(chatId);
             addSystemLog(`Создан новый чат: ${currentUser.username} -> ${adminUsername}`, 'info');
         }
 
@@ -1019,241 +1058,3 @@
             if (chatIndex !== -1) {
                 chats[chatIndex] = currentChat;
                 localStorage.setItem('chats', JSON.stringify(chats));
-            }
-            
-            const messagesContainer = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message message-user`;
-            messageDiv.innerHTML = `
-                <div class="message-text">${text}</div>
-                <div class="message-time">${new Date().toLocaleTimeString()}</div>
-            `;
-            messagesContainer.appendChild(messageDiv);
-            
-            input.value = '';
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            // Имитация ответа
-            setTimeout(() => {
-                const responses = [
-                    "Спасибо за ваше сообщение! Я уже изучаю ваш вопрос.",
-                    "Понял вас. Давайте разберемся с этим вместе.",
-                    "Интересный вопрос! У меня есть несколько идей по решению."
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                
-                const adminMessage = {
-                    id: 'msg_' + Date.now(),
-                    sender: currentChat.participants.find(p => p !== currentUser.username),
-                    text: response,
-                    timestamp: new Date().toISOString(),
-                    read: false
-                };
-                
-                currentChat.messages.push(adminMessage);
-                chats[chatIndex] = currentChat;
-                localStorage.setItem('chats', JSON.stringify(chats));
-                
-                const adminMessageDiv = document.createElement('div');
-                adminMessageDiv.className = 'message message-admin';
-                adminMessageDiv.innerHTML = `
-                    <div class="message-text">${response}</div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                `;
-                messagesContainer.appendChild(adminMessageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }, 1000 + Math.random() * 2000);
-        }
-
-        function handleMessageKeypress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        function openSystemChat() {
-            const systemChat = {
-                id: 'system',
-                participants: [currentUser.username, 'system'],
-                messages: [{
-                    id: 'sys_1',
-                    sender: 'system',
-                    text: 'Добро пожаловать в системные уведомления! Здесь вы будете получать технические уведомления.',
-                    timestamp: new Date().toISOString(),
-                    read: true
-                }]
-            };
-            currentChat = systemChat;
-            document.getElementById('chatWithName').textContent = 'Системные уведомления';
-            document.getElementById('chatMessages').innerHTML = `
-                <div class="message message-system">
-                    <div class="message-text">Добро пожаловать в системные уведомления! Здесь вы будете получать технические уведомления.</div>
-                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                </div>
-            `;
-            showScreen('chatScreen');
-        }
-
-        function loadAdminsList() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const admins = users.filter(u => u.role !== 'user');
-            const container = document.getElementById('adminsList');
-            
-            if (admins.length === 0) {
-                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">Администраторы не найдены</p></div>';
-                return;
-            }
-            
-            container.innerHTML = admins.map(admin => `
-                <div class="chat-item">
-                    <div class="chat-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        ${admin.username.charAt(0).toUpperCase()}
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">${admin.username} <span style="font-size: 11px; color: var(--warning);">${admin.role}</span></div>
-                        <div class="chat-preview">${admin.isOnline ? '🟢 Online' : '🔴 Offline'}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function loadAdminChats() {
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            const adminChats = chats.filter(chat => 
-                chat.participants.includes(currentUser.username)
-            );
-            
-            const container = document.getElementById('adminChatsList');
-            if (adminChats.length === 0) {
-                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">У вас пока нет чатов</p></div>';
-                return;
-            }
-            
-            container.innerHTML = adminChats.map(chat => {
-                const partner = chat.participants.find(p => p !== currentUser.username);
-                const lastMessage = chat.messages[chat.messages.length - 1];
-                return `
-                    <div class="chat-item" onclick="openChat('${chat.id}')">
-                        <div class="chat-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">
-                            ${partner.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="chat-info">
-                            <div class="chat-name">${partner}</div>
-                            <div class="chat-preview">${lastMessage.text}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function loadUsersTable() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const container = document.getElementById('usersTable');
-            
-            container.innerHTML = users.map(user => `
-                <tr>
-                    <td style="padding: 8px;">${user.username}</td>
-                    <td style="padding: 8px;">${user.role}</td>
-                    <td style="padding: 8px;">${user.isOnline ? '🟢 Online' : '🔴 Offline'}</td>
-                </tr>
-            `).join('');
-        }
-
-        function loadAllChats() {
-            const chats = JSON.parse(localStorage.getItem('chats')) || [];
-            const container = document.getElementById('allChatsList');
-            
-            if (chats.length === 0) {
-                container.innerHTML = '<div class="card"><p style="text-align: center; color: var(--text-secondary);">Чатов нет</p></div>';
-                return;
-            }
-            
-            container.innerHTML = chats.map(chat => `
-                <div class="chat-item">
-                    <div class="chat-avatar" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-                        💬
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">${chat.participants.join(' ↔ ')}</div>
-                        <div class="chat-preview">${chat.messages.length} сообщений</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function updateOnlineStats() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const onlineUsers = users.filter(u => u.isOnline).length;
-            const onlineAdmins = users.filter(u => u.role !== 'user' && u.isOnline).length;
-            
-            document.getElementById('onlineUsers').textContent = onlineUsers;
-            document.getElementById('onlineAdmins').textContent = onlineAdmins;
-        }
-
-        function updateAdminStats() {
-            const users = JSON.parse(localStorage.getItem('users'));
-            const chats = JSON.parse(localStorage.getItem('chats'));
-            
-            document.getElementById('statTotalUsers').textContent = users.length;
-            document.getElementById('statActiveChats').textContent = chats ? chats.length : 0;
-            document.getElementById('statTotalMessages').textContent = chats ? 
-                chats.reduce((total, chat) => total + chat.messages.length, 0) : 0;
-        }
-
-        // Вспомогательные функции
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function showAdminTab(tabId) {
-            document.querySelectorAll('#adminPanel .tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('#adminPanel .tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `notification ${type} show`;
-            setTimeout(() => notification.classList.remove('show'), 3000);
-        }
-
-        function logout() {
-            if (currentUser) {
-                const users = JSON.parse(localStorage.getItem('users'));
-                const user = users.find(u => u.username === currentUser.username);
-                if (user) user.isOnline = false;
-                localStorage.setItem('users', JSON.stringify(users));
-                addSystemLog(`Пользователь ${currentUser.username} вышел из системы`, 'info');
-            }
-            
-            localStorage.removeItem('activeUser');
-            currentUser = null;
-            showScreen('authScreen');
-            showNotification('👋 До свидания!', 'info');
-        }
-
-        // Инициализация при загрузке
-        window.onload = init;
-    </script>
-</body>
-</html>

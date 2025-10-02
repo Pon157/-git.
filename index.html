@@ -554,6 +554,8 @@
             color: white;
             font-size: 32px;
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .admin-rating {
@@ -655,6 +657,9 @@
             color: white;
             font-size: 24px;
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
         }
 
         .profile-info {
@@ -701,7 +706,7 @@
 
         .modal-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -717,6 +722,49 @@
             font-size: 24px;
             cursor: pointer;
             color: var(--text-color);
+        }
+
+        .avatar-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .avatar-option {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .avatar-option.selected {
+            border-color: var(--primary-color);
+        }
+
+        .avatar-upload {
+            margin-top: 15px;
+        }
+
+        .pending-chats-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .pending-chat-item {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pending-chat-item:hover {
+            background: rgba(52, 152, 219, 0.1);
         }
     </style>
 </head>
@@ -759,13 +807,6 @@
                     <label class="form-label">Подтвердите пароль</label>
                     <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Роль</label>
-                    <select class="form-select" id="regRole">
-                        <option value="user">Пользователь</option>
-                        <option value="Слушатель">Слушатель</option>
-                    </select>
-                </div>
                 <button class="btn btn-primary" onclick="register()" style="width: 100%;">
                     Зарегистрироваться
                 </button>
@@ -787,6 +828,7 @@
                 <div class="nav-item" onclick="showTab('chats')">Чаты</div>
                 <div id="usersTabNav" class="nav-item" onclick="showTab('users')">Пользователи</div>
                 <div id="systemTabNav" class="nav-item" onclick="showTab('system')">Система</div>
+                <div class="nav-item" onclick="showTab('settings')">Настройки</div>
                 <div class="nav-item" onclick="showTab('profile')">Мой профиль</div>
                 <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">Выйти</div>
             </div>
@@ -810,6 +852,13 @@
                 <div class="content-header">
                     <h2>Мои чаты</h2>
                     <p>Управление беседами с пользователями</p>
+                </div>
+                
+                <div class="content-card" id="pendingChatsCard" style="display: none;">
+                    <h3 style="margin-bottom: 15px;">Непринятые чаты</h3>
+                    <div class="pending-chats-list" id="pendingChatsList">
+                        <!-- Список непринятых чатов -->
+                    </div>
                 </div>
                 
                 <div class="chat-container">
@@ -865,10 +914,10 @@
                 </div>
                 
                 <div class="content-card">
-                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Создание администратора</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Создание слушателя</h3>
                     
                     <div class="form-group">
-                        <label class="form-label">Логин нового админа</label>
+                        <label class="form-label">Логин нового слушателя</label>
                         <input type="text" class="form-input" id="newAdminLogin" placeholder="Введите логин">
                     </div>
                     
@@ -877,18 +926,8 @@
                         <input type="password" class="form-input" id="newAdminPassword" placeholder="Введите пароль">
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Роль</label>
-                        <select class="form-select" id="newAdminRole">
-                            <option value="Слушатель">Слушатель</option>
-                            <option value="Администратор">Администратор</option>
-                            <option value="Заместитель">Заместитель</option>
-                            <option value="Совладелец">Совладелец</option>
-                        </select>
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="createAdmin()">
-                        Создать администратора
+                    <button class="btn btn-primary" onclick="createListener()">
+                        Создать слушателя
                     </button>
                 </div>
 
@@ -905,6 +944,27 @@
                 </div>
             </div>
 
+            <!-- Вкладка Настройки -->
+            <div id="settingsTab" class="tab-content" style="display: none;">
+                <div class="content-header">
+                    <h2>Настройки системы</h2>
+                    <p>Внешний вид и параметры системы</p>
+                </div>
+                
+                <div class="content-card">
+                    <h3 style="margin-bottom: 20px; color: var(--text-color);">Выбор темы</h3>
+                    <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+                        <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая"></div>
+                        <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная"></div>
+                        <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная"></div>
+                        <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая"></div>
+                        <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая"></div>
+                        <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая"></div>
+                        <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Вкладка Профиль -->
             <div id="profileTab" class="tab-content" style="display: none;">
                 <div class="content-header">
@@ -914,7 +974,7 @@
                 
                 <div class="content-card">
                     <div class="profile-section">
-                        <div class="profile-avatar" id="profileAvatar">
+                        <div class="profile-avatar" id="profileAvatar" onclick="showAvatarModal()">
                             М
                         </div>
                         <div class="profile-info">
@@ -1061,17 +1121,20 @@
         </div>
     </div>
 
-    <!-- Селектор тем -->
-    <div class="theme-selector">
-        <div style="font-weight: 600; margin-bottom: 10px; text-align: center;">Темы</div>
-        <div>
-            <div class="theme-option theme-light-option active" onclick="changeTheme('light')" title="Светлая"></div>
-            <div class="theme-option theme-dark-option" onclick="changeTheme('dark')" title="Темная"></div>
-            <div class="theme-option theme-contrast-option" onclick="changeTheme('contrast')" title="Контрастная"></div>
-            <div class="theme-option theme-purple-option" onclick="changeTheme('purple')" title="Фиолетовая"></div>
-            <div class="theme-option theme-green-option" onclick="changeTheme('green')" title="Зеленая"></div>
-            <div class="theme-option theme-orange-option" onclick="changeTheme('orange')" title="Оранжевая"></div>
-            <div class="theme-option theme-blue-option" onclick="changeTheme('blue')" title="Синяя"></div>
+    <!-- Модальное окно выбора аватарки -->
+    <div id="avatarModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Выбор аватарки</h3>
+                <button class="close-modal" onclick="closeModal('avatarModal')">&times;</button>
+            </div>
+            <div class="avatar-options" id="avatarOptions">
+                <!-- Аватарки будут загружены через JavaScript -->
+            </div>
+            <div class="avatar-upload">
+                <label class="form-label">Или загрузите свою аватарку</label>
+                <input type="file" class="form-input" id="avatarUpload" accept="image/*" onchange="uploadAvatar(this)">
+            </div>
         </div>
     </div>
 
@@ -1100,8 +1163,8 @@
             const defaults = {
                 users: [
                     {
-                        username: 'Мудрец',
-                        password: 'Vitechek',
+                        username: 'admin',
+                        password: 'admin123',
                         role: 'Владелец',
                         isOnline: false,
                         registeredAt: new Date().toISOString(),
@@ -1109,19 +1172,8 @@
                         rating: 5.0,
                         ratingCount: 1,
                         email: '',
-                        displayName: 'Мудрец'
-                    },
-                    {
-                        username: 'listener1',
-                        password: 'listener123',
-                        role: 'Слушатель',
-                        isOnline: false,
-                        registeredAt: new Date().toISOString(),
-                        lastLogin: null,
-                        rating: 4.5,
-                        ratingCount: 10,
-                        email: '',
-                        displayName: 'listener1'
+                        displayName: 'Мудрец',
+                        avatar: ''
                     }
                 ],
                 chats: [],
@@ -1156,6 +1208,10 @@
                     if (user && user.password === userData.password) {
                         console.log('Найдена активная сессия для:', user.username);
                         currentUser = user;
+                        
+                        // Обновляем статус онлайн
+                        user.isOnline = true;
+                        localStorage.setItem('users', JSON.stringify(users));
                         
                         // Определяем, какой интерфейс показать
                         if (user.role === 'user') {
@@ -1252,17 +1308,17 @@
                 console.log('Успешный вход для:', username);
                 currentUser = user;
                 
+                // Обновляем статус онлайн
+                user.isOnline = true;
+                user.lastLogin = new Date().toISOString();
+                localStorage.setItem('users', JSON.stringify(users));
+                
                 // Сохраняем сессию
                 localStorage.setItem('activeUser', JSON.stringify({
                     username: username,
                     password: password,
                     loginTime: Date.now()
                 }));
-
-                // Обновляем статус
-                user.isOnline = true;
-                user.lastLogin = new Date().toISOString();
-                localStorage.setItem('users', JSON.stringify(users));
 
                 showNotification('✅ Вход выполнен успешно!', 'success');
                 addSystemLog(`Успешный вход: ${username}`, 'info');
@@ -1289,7 +1345,6 @@
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
             const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
-            const role = document.getElementById('regRole').value;
 
             if (!username || !password || !passwordConfirm) {
                 showNotification('❌ Заполните все поля!', 'error');
@@ -1316,14 +1371,15 @@
             const newUser = {
                 username: username,
                 password: password,
-                role: role,
+                role: 'user',
                 isOnline: false,
                 registeredAt: new Date().toISOString(),
                 lastLogin: null,
                 rating: 0,
                 ratingCount: 0,
                 email: '',
-                displayName: username
+                displayName: username,
+                avatar: ''
             };
 
             users.push(newUser);
@@ -1335,7 +1391,7 @@
             document.getElementById('regPasswordConfirm').value = '';
             
             showNotification(`✅ Пользователь "${username}" зарегистрирован!`, 'success');
-            addSystemLog(`Зарегистрирован новый пользователь: ${username} (${role})`, 'info');
+            addSystemLog(`Зарегистрирован новый пользователь: ${username}`, 'info');
             
             // Переключаемся на вкладку входа
             showAuthTab('login');
@@ -1345,7 +1401,15 @@
         function updateProfileInfo() {
             if (!currentUser) return;
             
-            document.getElementById('profileAvatar').textContent = (currentUser.displayName || currentUser.username).charAt(0).toUpperCase();
+            const avatarElement = document.getElementById('profileAvatar');
+            if (currentUser.avatar) {
+                avatarElement.style.backgroundImage = `url(${currentUser.avatar})`;
+                avatarElement.textContent = '';
+            } else {
+                avatarElement.style.backgroundImage = '';
+                avatarElement.textContent = (currentUser.displayName || currentUser.username).charAt(0).toUpperCase();
+            }
+            
             document.getElementById('profileName').textContent = currentUser.displayName || currentUser.username;
             document.getElementById('profileRole').textContent = currentUser.role;
             
@@ -1382,6 +1446,64 @@
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
             document.getElementById('changePasswordModal').style.display = 'flex';
+        }
+
+        // Показать модальное окно выбора аватарки
+        function showAvatarModal() {
+            const container = document.getElementById('avatarOptions');
+            const avatars = [
+                '👨', '👩', '👨‍💼', '👩‍💼', '👨‍🎓', '👩‍🎓', '👨‍⚕️', '👩‍⚕️',
+                '👨‍🔧', '👩‍🔧', '👨‍🍳', '👩‍🍳', '👨‍🌾', '👩‍🌾', '👨‍🚀', '👩‍🚀'
+            ];
+            
+            container.innerHTML = avatars.map(avatar => `
+                <div class="avatar-option ${currentUser.avatar === avatar ? 'selected' : ''}" 
+                     onclick="selectAvatar('${avatar}')" style="font-size: 30px; display: flex; align-items: center; justify-content: center;">
+                    ${avatar}
+                </div>
+            `).join('');
+            
+            document.getElementById('avatarModal').style.display = 'flex';
+        }
+
+        // Выбор аватарки
+        function selectAvatar(avatar) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === currentUser.username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].avatar = avatar;
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser.avatar = avatar;
+                
+                updateProfileInfo();
+                closeModal('avatarModal');
+                showNotification('✅ Аватарка обновлена!', 'success');
+            }
+        }
+
+        // Загрузка аватарки
+        function uploadAvatar(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarData = e.target.result;
+                    const users = JSON.parse(localStorage.getItem('users'));
+                    const userIndex = users.findIndex(u => u.username === currentUser.username);
+                    
+                    if (userIndex !== -1) {
+                        users[userIndex].avatar = avatarData;
+                        localStorage.setItem('users', JSON.stringify(users));
+                        currentUser.avatar = avatarData;
+                        
+                        updateProfileInfo();
+                        closeModal('avatarModal');
+                        showNotification('✅ Аватарка загружена!', 'success');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         // Показать модальное окно профиля для пользователя
@@ -1534,6 +1656,8 @@
                 loadChatsList();
             } else if (tabName === 'profile') {
                 updateProfileInfo();
+            } else if (tabName === 'settings') {
+                // Ничего не делаем, темы уже загружены
             }
         }
 
@@ -1603,7 +1727,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${users.filter(u => u.role !== 'user').length}</div>
-                        <div class="stat-label">Администраторов</div>
+                        <div class="stat-label">Слушателей</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${chats.length}</div>
@@ -1635,7 +1759,17 @@
             
             container.innerHTML = users.map(user => `
                 <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 12px;">${user.displayName || user.username}</td>
+                    <td style="padding: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${user.avatar ? 
+                                `<div style="width: 30px; height: 30px; border-radius: 50%; background-image: url(${user.avatar}); background-size: cover; background-position: center;"></div>` :
+                                `<div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
+                                    ${(user.displayName || user.username).charAt(0).toUpperCase()}
+                                </div>`
+                            }
+                            ${user.displayName || user.username}
+                        </div>
+                    </td>
                     <td style="padding: 12px;">
                         <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; 
                               background: ${getRoleColor(user.role)}; color: white;">
@@ -1651,12 +1785,16 @@
                         ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
                     </td>
                     <td style="padding: 12px;">
-                        ${user.role !== 'Владелец' ? `
+                        ${user.role !== 'Владелец' && user.role !== 'user' ? `
                             <button class="btn btn-warning" onclick="editUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
                                 Редактировать
                             </button>
                             <button class="btn btn-secondary" onclick="deleteUser('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
                                 Удалить
+                            </button>
+                        ` : user.role === 'user' ? `
+                            <button class="btn btn-warning" onclick="makeListener('${user.username}')" style="padding: 6px 12px; font-size: 12px;">
+                                Сделать слушателем
                             </button>
                         ` : '<span style="color: #7f8c8d;">Недоступно</span>'}
                     </td>
@@ -1668,25 +1806,21 @@
         function getRoleColor(role) {
             const colors = {
                 'Владелец': '#e74c3c',
-                'Совладелец': '#e74c3c',
-                'Заместитель': '#3498db',
-                'Администратор': '#9b59b6',
                 'Слушатель': '#f39c12',
                 'user': '#95a5a6'
             };
             return colors[role] || '#95a5a6';
         }
 
-        // Создание администратора
-        function createAdmin() {
-            if (!currentUser || (currentUser.role !== 'Владелец' && currentUser.role !== 'Совладелец')) {
-                showNotification('❌ Только владелец или совладелец может создавать администраторов!', 'error');
+        // Создание слушателя
+        function createListener() {
+            if (!currentUser || currentUser.role !== 'Владелец') {
+                showNotification('❌ Только владелец может создавать слушателей!', 'error');
                 return;
             }
 
             const login = document.getElementById('newAdminLogin').value.trim();
             const password = document.getElementById('newAdminPassword').value.trim();
-            const role = document.getElementById('newAdminRole').value;
 
             if (!login || !password) {
                 showNotification('❌ Заполните все поля!', 'error');
@@ -1705,32 +1839,49 @@
                 return;
             }
 
-            const newAdmin = {
+            const newListener = {
                 username: login,
                 password: password,
-                role: role,
+                role: 'Слушатель',
                 isOnline: false,
                 registeredAt: new Date().toISOString(),
                 lastLogin: null,
                 rating: 0,
                 ratingCount: 0,
                 email: '',
-                displayName: login
+                displayName: login,
+                avatar: ''
             };
 
-            users.push(newAdmin);
+            users.push(newListener);
             localStorage.setItem('users', JSON.stringify(users));
 
             // Очищаем форму
             document.getElementById('newAdminLogin').value = '';
             document.getElementById('newAdminPassword').value = '';
             
-            showNotification(`✅ ${role} "${login}" создан!`, 'success');
-            addSystemLog(`Создан новый ${role}: ${login}`, 'info');
+            showNotification(`✅ Слушатель "${login}" создан!`, 'success');
+            addSystemLog(`Создан новый слушатель: ${login}`, 'info');
             
             // Обновляем данные
             updateStats();
             loadUsersTable();
+        }
+
+        // Сделать пользователя слушателем
+        function makeListener(username) {
+            const users = JSON.parse(localStorage.getItem('users'));
+            const userIndex = users.findIndex(u => u.username === username);
+            
+            if (userIndex !== -1) {
+                users[userIndex].role = 'Слушатель';
+                localStorage.setItem('users', JSON.stringify(users));
+                
+                showNotification(`✅ Пользователь ${username} теперь слушатель!`, 'success');
+                addSystemLog(`Пользователь ${username} назначен слушателем`, 'info');
+                
+                loadUsersTable();
+            }
         }
 
         // Редактирование пользователя
@@ -1775,13 +1926,40 @@
         function loadChatsList() {
             const chats = JSON.parse(localStorage.getItem('chats')) || [];
             const container = document.getElementById('chatsList');
+            const pendingContainer = document.getElementById('pendingChatsCard');
+            const pendingList = document.getElementById('pendingChatsList');
             
             // Фильтруем чаты в зависимости от роли
             let userChats;
+            let pendingChats = [];
+            
             if (currentUser.role === 'Слушатель') {
-                userChats = chats.filter(chat => chat.admin === currentUser.username);
+                userChats = chats.filter(chat => chat.admin === currentUser.username && chat.status === 'active');
+                pendingChats = chats.filter(chat => !chat.admin && chat.status === 'pending');
             } else {
-                userChats = chats.filter(chat => chat.admin !== null);
+                userChats = chats.filter(chat => chat.admin && chat.status === 'active');
+                pendingChats = chats.filter(chat => !chat.admin && chat.status === 'pending');
+            }
+            
+            // Показываем/скрываем блок непринятых чатов
+            if (pendingChats.length > 0) {
+                pendingContainer.style.display = 'block';
+                pendingList.innerHTML = pendingChats.map(chat => `
+                    <div class="pending-chat-item" onclick="acceptPendingChat('${chat.id}')">
+                        <div style="font-weight: 600;">${chat.user}</div>
+                        <div style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">
+                            ${chat.messages.length > 0 ? 
+                              chat.messages[chat.messages.length-1].text.substring(0, 50) + 
+                              (chat.messages[chat.messages.length-1].text.length > 50 ? '...' : '') : 
+                              'Нет сообщений'}
+                        </div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            ${new Date(chat.createdAt).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                pendingContainer.style.display = 'none';
             }
             
             if (userChats.length === 0) {
@@ -1808,6 +1986,25 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Принять непринятый чат
+        function acceptPendingChat(chatId) {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            const chatIndex = chats.findIndex(chat => chat.id === chatId);
+            
+            if (chatIndex !== -1) {
+                chats[chatIndex].admin = currentUser.username;
+                chats[chatIndex].status = 'active';
+                localStorage.setItem('chats', JSON.stringify(chats));
+                
+                showNotification('✅ Чат принят!', 'success');
+                addSystemLog(`Слушатель ${currentUser.username} принял чат ${chatId}`, 'info');
+                
+                // Обновляем список чатов
+                loadChatsList();
+                selectChat(chatId);
+            }
         }
 
         // Выбор чата для администратора/слушателя
@@ -1913,7 +2110,7 @@
             container.innerHTML = userChats.map(chat => `
                 <div class="chat-item ${currentUserChat && currentUserChat.id === chat.id ? 'active' : ''}" 
                      onclick="selectUserChat('${chat.id}')">
-                    <div style="font-weight: 600;">${chat.admin || 'Слушатель'}</div>
+                    <div style="font-weight: 600;">${chat.admin || 'Ожидание слушателя...'}</div>
                     <div style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">
                         ${chat.messages.length > 0 ? 
                           chat.messages[chat.messages.length-1].text.substring(0, 30) + 
@@ -1940,9 +2137,10 @@
             // Загружаем сообщения
             loadUserChatMessages();
             
-            // Активируем поле ввода
-            document.getElementById('userMessageInput').disabled = false;
-            document.getElementById('userSendMessageBtn').disabled = false;
+            // Активируем поле ввода, если чат активен
+            const isActive = currentUserChat.status === 'active' || currentUserChat.status === 'pending';
+            document.getElementById('userMessageInput').disabled = !isActive;
+            document.getElementById('userSendMessageBtn').disabled = !isActive;
         }
 
         // Загрузка сообщений чата для пользователя
@@ -1970,7 +2168,7 @@
             `).join('');
             
             // Добавляем оценку, если чат завершен и еще не оценен
-            if (currentUserChat.status === 'closed' && !currentUserChat.rated) {
+            if (currentUserChat.status === 'closed' && !currentUserChat.rated && currentUserChat.admin) {
                 container.innerHTML += `
                     <div style="text-align: center; margin-top: 20px;">
                         <div style="margin-bottom: 10px;">Оцените слушателя:</div>
@@ -2033,25 +2231,57 @@
             if (listeners.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; color: #7f8c8d; padding: 20px;">
-                        Нет доступных слушателей
+                        Нет доступных слушателей. Ваше сообщение будет сохранено и слушатель ответит вам позже.
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = listeners.map(listener => `
-                <div class="admin-card" onclick="startChatWith('${listener.username}')">
-                    <div class="admin-avatar">${(listener.displayName || listener.username).charAt(0).toUpperCase()}</div>
-                    <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
-                    <div class="admin-rating">
-                        ${'★'.repeat(Math.floor(listener.rating))}${listener.rating % 1 >= 0.5 ? '½' : ''}
-                        <span style="color: var(--text-color);">(${listener.rating.toFixed(1)})</span>
+            // Обновляем статусы онлайн
+            const onlineListeners = listeners.filter(listener => listener.isOnline);
+            const offlineListeners = listeners.filter(listener => !listener.isOnline);
+            
+            let html = '';
+            
+            if (onlineListeners.length > 0) {
+                html += '<h3 style="margin-bottom: 15px; width: 100%;">🟢 Слушатели онлайн</h3>';
+                html += onlineListeners.map(listener => `
+                    <div class="admin-card" onclick="startChatWith('${listener.username}')">
+                        <div class="admin-avatar" style="${listener.avatar ? `background-image: url(${listener.avatar})` : `background: ${getRoleColor(listener.role)}`}">
+                            ${!listener.avatar ? (listener.displayName || listener.username).charAt(0).toUpperCase() : ''}
+                        </div>
+                        <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
+                        <div class="admin-rating">
+                            ${'★'.repeat(Math.floor(listener.rating || 0))}${(listener.rating || 0) % 1 >= 0.5 ? '½' : ''}
+                            <span style="color: var(--text-color);">(${(listener.rating || 0).toFixed(1)})</span>
+                        </div>
+                        <div style="font-size: 14px; color: #27ae60; margin-top: 5px;">
+                            🟢 Online
+                        </div>
                     </div>
-                    <div style="font-size: 14px; color: #7f8c8d; margin-top: 5px;">
-                        ${listener.isOnline ? '🟢 Online' : '🔴 Offline'}
+                `).join('');
+            }
+            
+            if (offlineListeners.length > 0) {
+                html += '<h3 style="margin-bottom: 15px; width: 100%; margin-top: 20px;">🔴 Слушатели оффлайн</h3>';
+                html += offlineListeners.map(listener => `
+                    <div class="admin-card" onclick="startChatWith('${listener.username}')">
+                        <div class="admin-avatar" style="${listener.avatar ? `background-image: url(${listener.avatar})` : `background: ${getRoleColor(listener.role)}`}">
+                            ${!listener.avatar ? (listener.displayName || listener.username).charAt(0).toUpperCase() : ''}
+                        </div>
+                        <div style="font-weight: 600;">${listener.displayName || listener.username}</div>
+                        <div class="admin-rating">
+                            ${'★'.repeat(Math.floor(listener.rating || 0))}${(listener.rating || 0) % 1 >= 0.5 ? '½' : ''}
+                            <span style="color: var(--text-color);">(${(listener.rating || 0).toFixed(1)})</span>
+                        </div>
+                        <div style="font-size: 14px; color: #95a5a6; margin-top: 5px;">
+                            🔴 Offline (сообщение будет сохранено)
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
+            
+            container.innerHTML = html;
         }
 
         // Начать чат с выбранным слушателем
@@ -2078,7 +2308,7 @@
                 id: Date.now().toString(),
                 user: currentUser.username,
                 admin: adminUsername,
-                status: 'active',
+                status: 'pending',
                 createdAt: new Date().toISOString(),
                 messages: [],
                 rated: false
@@ -2097,16 +2327,42 @@
         // Начать случайный чат
         function startRandomChat() {
             const users = JSON.parse(localStorage.getItem('users'));
-            const listeners = users.filter(user => user.role === 'Слушатель' && user.isOnline);
+            const listeners = users.filter(user => user.role === 'Слушатель');
             
             if (listeners.length === 0) {
-                showNotification('❌ Нет доступных слушателей онлайн', 'error');
+                // Если нет слушателей, создаем чат без назначенного слушателя
+                startPendingChat();
                 return;
             }
             
             // Выбираем случайного слушателя
             const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
             startChatWith(randomListener.username);
+        }
+
+        // Начать чат без назначенного слушателя
+        function startPendingChat() {
+            const chats = JSON.parse(localStorage.getItem('chats')) || [];
+            
+            // Создаем новый чат без назначенного слушателя
+            const newChat = {
+                id: Date.now().toString(),
+                user: currentUser.username,
+                admin: null,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+                messages: [],
+                rated: false
+            };
+            
+            chats.push(newChat);
+            localStorage.setItem('chats', JSON.stringify(chats));
+            
+            // Переходим к новому чату
+            showUserTab('chats');
+            selectUserChat(newChat.id);
+            showNotification('Чат создан! Слушатель ответит вам, как только появится онлайн.', 'success');
+            addSystemLog(`Создан новый непринятый чат: ${currentUser.username}`, 'info');
         }
 
         // Оценка чата пользователем
@@ -2193,7 +2449,7 @@
             document.querySelectorAll('.theme-option').forEach(option => {
                 option.classList.remove('active');
             });
-            document.querySelector(`.theme-${themeName}-option`).classList.add('active');
+            event.target.classList.add('active');
         }
 
         // Уведомления

@@ -87,7 +87,7 @@
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
             animation: slideUp 0.5s ease;
         }
 
@@ -99,11 +99,6 @@
         @keyframes slideUp {
             from { transform: translateY(30px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
         }
 
         .auth-title {
@@ -143,17 +138,6 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
-        .form-select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 15px;
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-        }
-
         .btn {
             padding: 14px 28px;
             border: none;
@@ -175,208 +159,26 @@
             box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
         }
 
-        .btn-secondary {
-            background: var(--secondary-color);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
-        }
-
-        .admin-panel {
-            display: flex;
-            min-height: 100vh;
-            animation: slideIn 0.3s ease;
-        }
-
-        .sidebar {
-            width: 280px;
-            background: var(--secondary-color);
-            color: white;
-            padding: 0;
-            transition: all 0.3s ease;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
-        }
-
-        .sidebar-header {
-            padding: 30px 25px;
-            background: var(--secondary-color);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed .sidebar-header {
-            padding: 20px 15px;
-        }
-
-        .sidebar-header h1 {
-            font-size: 20px;
-            font-weight: 600;
-            line-height: 1.4;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed .sidebar-header h1 {
-            font-size: 0;
-            opacity: 0;
-        }
-
-        .user-info {
-            padding: 20px 25px;
-            background: var(--secondary-color);
-            border-bottom: 1px solid var(--border-color);
-            font-size: 14px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed .user-info {
-            padding: 15px 10px;
-            font-size: 0;
-        }
-
-        .nav-menu {
-            padding: 20px 0;
-        }
-
-        .nav-item {
-            padding: 15px 25px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-left: 4px solid transparent;
-            font-size: 15px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .sidebar.collapsed .nav-item {
-            padding: 15px 20px;
-            justify-content: center;
-        }
-
-        .nav-item span {
-            transition: all 0.3s ease;
-        }
-
-        .sidebar.collapsed .nav-item span {
+        .hidden {
             display: none;
         }
 
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-            border-left-color: var(--primary-color);
-        }
-
-        .nav-item.active {
-            background: rgba(255,255,255,0.1);
-            border-left-color: var(--accent-color);
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px;
-            background: var(--bg-color);
-            transition: all 0.3s ease;
-            margin-left: 280px;
-        }
-
-        .main-content.fullscreen {
-            padding: 20px;
-            margin-left: 0;
-        }
-
-        .sidebar.collapsed + .main-content {
-            margin-left: 80px;
-        }
-
-        .content-header {
-            background: var(--card-bg);
-            padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            animation: slideUp 0.4s ease;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .content-header h2 {
-            font-size: 24px;
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary-color);
             font-weight: 600;
-            color: var(--text-color);
-            margin-bottom: 10px;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .content-card {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-            animation: slideUp 0.5s ease;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 8px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: var(--text-color);
-            opacity: 0.7;
-            font-weight: 500;
         }
 
         .notification {
@@ -388,18 +190,12 @@
             color: white;
             font-weight: 500;
             z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
             animation: slideInRight 0.3s ease;
         }
 
         @keyframes slideInRight {
             from { transform: translateX(400px); }
             to { transform: translateX(0); }
-        }
-
-        .notification.show {
-            transform: translateX(0);
         }
 
         .notification.success {
@@ -410,687 +206,13 @@
             background: var(--error-color);
         }
 
-        .notification.info {
-            background: var(--primary-color);
-        }
-
-        .chat-container {
-            display: flex;
-            height: 70vh;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            animation: slideUp 0.4s ease;
-        }
-
-        .chats-list {
-            width: 300px;
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-            background: var(--card-bg);
-        }
-
-        .chat-item {
-            padding: 15px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .chat-item:hover {
-            background: rgba(0,0,0,0.05);
-        }
-
-        .chat-item.active {
-            background: rgba(52, 152, 219, 0.1);
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .chat-messages {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: var(--card-bg);
-        }
-
-        .messages-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .message {
-            max-width: 70%;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            border-radius: 18px;
-            position: relative;
-            animation: messageSlide 0.3s ease;
-        }
-
-        @keyframes messageSlide {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background: var(--primary-color);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.admin {
-            align-self: flex-start;
-            background: var(--border-color);
-            color: var(--text-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-time {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 5px;
-            text-align: right;
-        }
-
-        .message-input-container {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-            background: var(--card-bg);
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            outline: none;
-            background: var(--card-bg);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-
-        .message-input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
-        }
-
-        .send-btn {
-            margin-left: 10px;
-            padding: 12px 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .send-btn:hover {
-            background: var(--accent-color);
-            transform: scale(1.05);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-            transition: all 0.3s ease;
-        }
-
-        .tab:hover {
-            background: rgba(0,0,0,0.05);
-        }
-
-        .tab.active {
-            border-bottom-color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            animation: slideUp 0.4s ease;
-        }
-
-        .profile-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .profile-avatar:hover {
-            transform: scale(1.1);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .profile-info {
-            flex: 1;
-        }
-
-        .profile-name {
-            font-weight: 600;
-            font-size: 18px;
-        }
-
-        .profile-role {
-            color: var(--text-color);
-            opacity: 0.7;
-            font-size: 14px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-
-        .close-modal:hover {
-            transform: rotate(90deg);
-            color: var(--accent-color);
-        }
-
-        .avatar-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .avatar-option {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .avatar-option:hover {
-            transform: scale(1.1);
-            border-color: var(--primary-color);
-        }
-
-        .avatar-option.selected {
-            border-color: var(--accent-color);
-            transform: scale(1.1);
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .theme-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border: 2px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-        }
-
-        .theme-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .theme-card.active {
-            border-color: var(--accent-color);
-            background: var(--border-color);
-            transform: scale(1.05);
-        }
-
-        .theme-preview {
-            width: 100%;
-            height: 80px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .user-dashboard {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            width: 100%;
-            animation: slideIn 0.3s ease;
-        }
-
-        .user-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .admin-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .admin-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            flex: 1;
-            min-width: 200px;
-            animation: slideUp 0.4s ease;
-        }
-
-        .admin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .admin-card.active {
-            border: 2px solid var(--primary-color);
-            transform: scale(1.02);
-        }
-
-        .admin-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 32px;
-            font-weight: bold;
-            background-size: cover;
-            background-position: center;
-            transition: all 0.3s ease;
-        }
-
-        .admin-avatar:hover {
-            transform: scale(1.1);
-        }
-
-        .admin-rating {
-            margin-top: 10px;
-            color: var(--warning-color);
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: white;
-            cursor: pointer;
-            padding: 10px;
-            transition: all 0.3s ease;
-            position: fixed;
-            top: 15px;
-            left: 15px;
-            z-index: 1001;
-            background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-        }
-
-        .mobile-menu-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .fullscreen-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .fullscreen-btn:hover {
-            background: var(--accent-color);
-            transform: translateY(-2px);
-        }
-
-        .collapse-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .collapse-btn:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .tech-notifications {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            animation: slideUp 0.4s ease;
-        }
-
-        .notification-item {
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            background: var(--bg-color);
-            transition: all 0.3s ease;
-        }
-
-        .notification-item:hover {
-            transform: translateX(5px);
-            border-color: var(--primary-color);
-        }
-
-        .notification-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .notification-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--card-bg);
-            color: var(--text-color);
-        }
-
-        .github-config {
-            margin-top: 25px;
-            padding: 20px;
-            background: var(--border-color);
-            border-radius: 12px;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .github-config h4 {
-            margin-bottom: 15px;
-            color: var(--text-color);
-        }
-
         .sync-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
+            margin-top: 20px;
             padding: 10px;
             border-radius: 8px;
-            background: var(--bg-color);
+            text-align: center;
+            background: var(--border-color);
             font-size: 14px;
-        }
-
-        .sync-status.online {
-            color: var(--success-color);
-            border: 1px solid var(--success-color);
-        }
-
-        .sync-status.offline {
-            color: var(--error-color);
-            border: 1px solid var(--error-color);
-        }
-
-        /* Адаптивность */
-        @media (max-width: 1024px) {
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .sidebar {
-                width: 250px;
-            }
-            
-            .main-content {
-                margin-left: 250px;
-            }
-            
-            .sidebar.collapsed + .main-content {
-                margin-left: 80px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-panel {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
-            
-            .sidebar.collapsed {
-                width: 100%;
-                height: 60px;
-                overflow: hidden;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-            }
-            
-            .nav-menu {
-                display: none;
-            }
-            
-            .sidebar:not(.collapsed) .nav-menu {
-                display: block;
-            }
-            
-            .user-info {
-                padding: 50px 25px 20px 25px;
-            }
-            
-            .main-content {
-                padding: 20px;
-                margin-left: 0 !important;
-            }
-            
-            .content-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .chat-container {
-                flex-direction: column;
-                height: 80vh;
-            }
-            
-            .chats-list {
-                width: 100%;
-                height: 200px;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-            
-            .user-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .auth-card {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .auth-card {
-                padding: 20px 15px;
-            }
-            
-            .content-card {
-                padding: 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-            
-            .theme-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .form-input {
-                padding: 12px 14px;
-                font-size: 16px;
-            }
-        }
-
-        @media (max-width: 768px) and (orientation: portrait) {
-            .auth-container {
-                padding: 10px;
-                align-items: flex-start;
-                padding-top: 20px;
-            }
-            
-            .auth-card {
-                max-width: 100%;
-                margin: 0;
-            }
-            
-            .form-input {
-                font-size: 16px;
-            }
-        }
-
-        @supports (-webkit-touch-callout: none) {
-            .auth-card {
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .form-input {
-                font-size: 16px;
-            }
         }
     </style>
 </head>
@@ -1100,8 +222,8 @@
         <div class="auth-card">
             <h2 class="auth-title">Спокойный рассвет</h2>
             <div class="tabs" style="margin-bottom: 20px;">
-                <div class="tab active" onclick="showAuthTab('login')">Вход</div>
-                <div class="tab" onclick="showAuthTab('register')">Регистрация</div>
+                <div class="tab active" data-tab="login">Вход</div>
+                <div class="tab" data-tab="register">Регистрация</div>
             </div>
             
             <!-- Форма входа -->
@@ -1123,433 +245,168 @@
             <div id="registerForm" class="hidden">
                 <div class="form-group">
                     <label class="form-label">Логин</label>
-                    <input type="text" class="form-input" id="regUsername" placeholder="Введите логин" pattern="[A-Za-z0-9_]+" title="Только латинские буквы, цифры и подчеркивание">
+                    <input type="text" class="form-input" id="regUsername" placeholder="Введите логин">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Пароль</label>
-                    <input type="password" class="form-input" id="regPassword" placeholder="Введите пароль (мин. 6 символов)" minlength="6">
+                    <input type="password" class="form-input" id="regPassword" placeholder="Введите пароль (мин. 6 символов)">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Подтвердите пароль</label>
-                    <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль" minlength="6">
+                    <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
                 <button class="btn btn-primary" onclick="register()" style="width: 100%;">
                     Зарегистрироваться
                 </button>
             </div>
 
-            <!-- Настройки GitHub -->
-            <div class="github-config">
-                <h4>Настройки GitHub для синхронизации</h4>
-                <div class="form-group">
-                    <label class="form-label">GitHub Token</label>
-                    <input type="password" class="form-input" id="githubToken" placeholder="Введите ваш GitHub Token">
-                    <small style="color: #7f8c8d; font-size: 12px;">
-                        Нужен для синхронизации данных между устройствами
-                    </small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Имя репозитория</label>
-                    <input type="text" class="form-input" id="repoName" placeholder="например: my-support-data" value="support-system-data">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">GitHub Username</label>
-                    <input type="text" class="form-input" id="githubOwner" placeholder="Ваш GitHub username">
-                </div>
-                <button class="btn btn-secondary" onclick="saveGitHubConfig()" style="width: 100%;">
-                    Сохранить настройки GitHub
-                </button>
-                <div id="syncStatus" class="sync-status offline">
-                    <span>⚪ Синхронизация отключена</span>
-                </div>
+            <div class="sync-status">
+                🟢 Данные синхронизируются между устройствами
             </div>
         </div>
     </div>
-
-    <!-- Остальная разметка остается без изменений -->
-    <!-- Панель администратора/слушателя -->
-    <div id="adminPanel" class="admin-panel" style="display: none;">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h1>Панель управления</h1>
-            </div>
-            <div class="user-info">
-                <span id="currentUserInfo">Владелец | Владелец</span>
-            </div>
-            <div class="nav-menu">
-                <div class="nav-item active" onclick="showTab('stats')">
-                    <span>📊</span>
-                    <span>Статистика</span>
-                </div>
-                <div class="nav-item" onclick="showTab('chats')">
-                    <span>💬</span>
-                    <span>Чаты</span>
-                </div>
-                <div class="nav-item" onclick="showTab('users')">
-                    <span>👥</span>
-                    <span>Пользователи</span>
-                </div>
-                <div id="createAdminNav" class="nav-item" onclick="showTab('createAdmin')">
-                    <span>➕</span>
-                    <span>Создать админа</span>
-                </div>
-                <div id="techNotificationsNav" class="nav-item" onclick="showTab('techNotifications')">
-                    <span>🔔</span>
-                    <span>Тех. уведомления</span>
-                </div>
-                <div class="nav-item" onclick="showTab('settings')">
-                    <span>⚙️</span>
-                    <span>Настройки</span>
-                </div>
-                <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">
-                    <span>🚪</span>
-                    <span>Выйти</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content" id="mainContent">
-            <!-- Вкладка Статистика -->
-            <div id="statsTab" class="tab-content">
-                <div class="content-header">
-                    <div>
-                        <h2>Статистика</h2>
-                        <p>Обзор активности и показателей</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="collapse-btn" onclick="toggleSidebar()">Свернуть меню</button>
-                        <button class="fullscreen-btn" onclick="toggleFullscreen()">Полный экран</button>
-                        <button class="btn btn-success" onclick="forceSync()">🔄 Синхронизировать</button>
-                    </div>
-                </div>
-                
-                <div class="stats-grid" id="statsGrid"></div>
-            </div>
-
-            <!-- Остальные вкладки остаются без изменений -->
-            <!-- ... -->
-
-        </div>
-    </div>
-
-    <!-- Интерфейс пользователя -->
-    <div id="userInterface" class="user-dashboard" style="display: none;">
-        <!-- ... остальной код пользовательского интерфейса ... -->
-    </div>
-
-    <!-- Модальные окна -->
-    <!-- ... остальные модальные окна ... -->
 
     <div class="notification" id="notification"></div>
 
     <script>
-        // Конфигурация GitHub
-        let GITHUB_OWNER = '';
-        let GITHUB_TOKEN = '';
-        let REPO_NAME = 'support-system-data';
-        const DATA_FILE = 'database.json';
-
         // Глобальные переменные
         let currentUser = null;
-        let currentChat = null;
-        let currentUserChat = null;
-        let isFullscreen = false;
+        const DB_NAME = 'supportSystemDB';
+        const DB_VERSION = 1;
 
-        // Инициализация системы
-        async function init() {
-            console.log('Инициализация системы...');
-            await loadGitHubConfig();
-            await initDatabase();
-            checkActiveSession();
-            setupEnterHandlers();
-            
-            window.addEventListener('orientationchange', function() {
-                setTimeout(adjustMobileLayout, 300);
-            });
-            
-            window.addEventListener('resize', adjustMobileLayout);
-        }
-
-        // Загрузка конфигурации GitHub
-        async function loadGitHubConfig() {
-            const savedToken = localStorage.getItem('githubToken');
-            const savedRepo = localStorage.getItem('repoName');
-            const savedOwner = localStorage.getItem('githubOwner');
-            
-            if (savedToken) {
-                GITHUB_TOKEN = savedToken;
-                document.getElementById('githubToken').value = savedToken;
-            }
-            
-            if (savedRepo) {
-                REPO_NAME = savedRepo;
-                document.getElementById('repoName').value = savedRepo;
-            }
-            
-            if (savedOwner) {
-                GITHUB_OWNER = savedOwner;
-                document.getElementById('githubOwner').value = savedOwner;
-            }
-            
-            updateSyncStatus();
-        }
-
-        // Сохранение конфигурации GitHub
-        async function saveGitHubConfig() {
-            const token = document.getElementById('githubToken').value.trim();
-            const repo = document.getElementById('repoName').value.trim();
-            const owner = document.getElementById('githubOwner').value.trim();
-            
-            if (!token) {
-                showNotification('❌ Введите GitHub Token!', 'error');
-                return;
-            }
-            
-            if (!repo) {
-                showNotification('❌ Введите имя репозитория!', 'error');
-                return;
-            }
-            
-            if (!owner) {
-                showNotification('❌ Введите GitHub username!', 'error');
-                return;
-            }
-            
-            GITHUB_TOKEN = token;
-            REPO_NAME = repo;
-            GITHUB_OWNER = owner;
-            
-            localStorage.setItem('githubToken', token);
-            localStorage.setItem('repoName', repo);
-            localStorage.setItem('githubOwner', owner);
-            
-            showNotification('✅ Настройки GitHub сохранены!', 'success');
-            updateSyncStatus();
-            
-            // Тестируем подключение
-            await testGitHubConnection();
-        }
-
-        // Обновление статуса синхронизации
-        function updateSyncStatus() {
-            const statusElement = document.getElementById('syncStatus');
-            if (GITHUB_TOKEN && GITHUB_OWNER) {
-                statusElement.className = 'sync-status online';
-                statusElement.innerHTML = '🟢 Синхронизация активна';
-            } else {
-                statusElement.className = 'sync-status offline';
-                statusElement.innerHTML = '⚪ Синхронизация отключена';
-            }
-        }
-
-        // Тестирование подключения к GitHub
-        async function testGitHubConnection() {
-            if (!GITHUB_TOKEN || !GITHUB_OWNER) return false;
-            
-            try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_OWNER}/${REPO_NAME}`,
-                    {
-                        headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
-                    }
-                );
+        // Инициализация IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
-                if (response.ok) {
-                    showNotification('✅ Подключение к GitHub успешно!', 'success');
-                    return true;
-                } else {
-                    showNotification('❌ Ошибка подключения к GitHub', 'error');
-                    return false;
-                }
-            } catch (error) {
-                showNotification('❌ Ошибка подключения к GitHub', 'error');
-                return false;
-            }
-        }
-
-        // Инициализация базы данных
-        async function initDatabase() {
-            console.log('Инициализация базы данных...');
-            
-            try {
-                // Пытаемся загрузить данные с GitHub
-                const remoteData = await loadFromGitHub();
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
                 
-                if (remoteData) {
-                    console.log('Данные загружены с GitHub');
-                    // Используем данные с GitHub
-                    Object.keys(remoteData).forEach(key => {
-                        localStorage.setItem(key, JSON.stringify(remoteData[key]));
-                    });
-                } else {
-                    console.log('Создание новой базы данных...');
-                    // Создаем новую базу данных
-                    const defaults = {
-                        users: [
-                            {
-                                username: 'admin',
-                                password: 'admin123',
-                                role: 'Владелец',
-                                isOnline: false,
-                                registeredAt: new Date().toISOString(),
-                                lastLogin: null,
-                                rating: 5.0,
-                                ratingCount: 1,
-                                email: 'admin@system.com',
-                                displayName: 'Владелец',
-                                avatar: ''
-                            }
-                        ],
-                        chats: [],
-                        systemLogs: [],
-                        techNotifications: [],
-                        settings: {
-                            currentTheme: 'sunrise'
-                        }
-                    };
-
-                    Object.keys(defaults).forEach(key => {
-                        if (!localStorage.getItem(key)) {
-                            localStorage.setItem(key, JSON.stringify(defaults[key]));
-                        }
-                    });
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
                     
-                    // Сохраняем новую базу на GitHub
-                    await saveToGitHub();
-                }
-                
-                const settings = JSON.parse(localStorage.getItem('settings'));
-                changeTheme(settings.currentTheme || 'sunrise');
-                
-            } catch (error) {
-                console.error('Ошибка инициализации базы данных:', error);
-                showNotification('⚠️ Используется локальная база данных', 'warning');
-            }
-        }
-
-        // GitHub API функции
-        async function loadFromGitHub() {
-            if (!GITHUB_TOKEN || !GITHUB_OWNER) {
-                console.log('GitHub не настроен');
-                return null;
-            }
-            
-            try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`,
-                    {
-                        headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json'
-                        }
+                    // Создаем хранилище для пользователей
+                    if (!db.objectStoreNames.contains('users')) {
+                        const usersStore = db.createObjectStore('users', { keyPath: 'username' });
+                        usersStore.createIndex('role', 'role', { unique: false });
+                        
+                        // Добавляем администратора по умолчанию
+                        usersStore.add({
+                            username: 'admin',
+                            password: 'admin123',
+                            role: 'Владелец',
+                            isOnline: false,
+                            registeredAt: new Date().toISOString(),
+                            lastLogin: null,
+                            displayName: 'Владелец'
+                        });
                     }
-                );
-                
-                if (response.status === 404) {
-                    console.log('Файл данных не найден на GitHub');
-                    return null;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`GitHub API error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                const content = JSON.parse(atob(data.content));
-                return content;
-                
-            } catch (error) {
-                console.error('Ошибка загрузки с GitHub:', error);
-                return null;
-            }
-        }
-
-        async function saveToGitHub() {
-            if (!GITHUB_TOKEN || !GITHUB_OWNER) {
-                console.log('GitHub не настроен, пропускаем сохранение');
-                return false;
-            }
-            
-            try {
-                // Собираем все данные из localStorage
-                const database = {
-                    users: JSON.parse(localStorage.getItem('users') || '[]'),
-                    chats: JSON.parse(localStorage.getItem('chats') || '[]'),
-                    systemLogs: JSON.parse(localStorage.getItem('systemLogs') || '[]'),
-                    techNotifications: JSON.parse(localStorage.getItem('techNotifications') || '[]'),
-                    settings: JSON.parse(localStorage.getItem('settings') || '{}')
+                    
+                    // Создаем хранилище для чатов
+                    if (!db.objectStoreNames.contains('chats')) {
+                        db.createObjectStore('chats', { keyPath: 'id', autoIncrement: true });
+                    }
+                    
+                    // Создаем хранилище для настроек
+                    if (!db.objectStoreNames.contains('settings')) {
+                        const settingsStore = db.createObjectStore('settings', { keyPath: 'id' });
+                        settingsStore.add({ id: 'theme', value: 'sunrise' });
+                    }
                 };
+            });
+        }
+
+        // Функции для работы с IndexedDB
+        function getDBData(storeName) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
-                // Получаем текущий SHA файла (если существует)
-                let sha = null;
-                try {
-                    const currentFile = await fetch(
-                        `https://api.github.com/repos/${GITHUB_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`,
-                        {
-                            headers: {
-                                'Authorization': `token ${GITHUB_TOKEN}`,
-                                'Accept': 'application/vnd.github.v3+json'
-                            }
-                        }
-                    );
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    const db = request.result;
+                    const transaction = db.transaction([storeName], 'readonly');
+                    const store = transaction.objectStore(storeName);
+                    const getAllRequest = store.getAll();
                     
-                    if (currentFile.ok) {
-                        const fileData = await currentFile.json();
-                        sha = fileData.sha;
-                    }
-                } catch (e) {
-                    // Файл не существует, это нормально
-                }
+                    getAllRequest.onerror = () => reject(getAllRequest.error);
+                    getAllRequest.onsuccess = () => resolve(getAllRequest.result);
+                };
+            });
+        }
+
+        function addDBData(storeName, data) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
-                const content = btoa(unescape(encodeURIComponent(JSON.stringify(database, null, 2))));
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    const db = request.result;
+                    const transaction = db.transaction([storeName], 'readwrite');
+                    const store = transaction.objectStore(storeName);
+                    const addRequest = store.add(data);
+                    
+                    addRequest.onerror = () => reject(addRequest.error);
+                    addRequest.onsuccess = () => resolve(addRequest.result);
+                };
+            });
+        }
+
+        function updateDBData(storeName, key, data) {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_OWNER}/${REPO_NAME}/contents/${DATA_FILE}`,
-                    {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
-                            'Accept': 'application/vnd.github.v3+json',
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: `Auto-sync: ${new Date().toISOString()}`,
-                            content: content,
-                            sha: sha
-                        })
-                    }
-                );
-                
-                if (!response.ok) {
-                    throw new Error(`GitHub API error: ${response.status}`);
-                }
-                
-                console.log('Данные сохранены на GitHub');
-                return true;
-                
-            } catch (error) {
-                console.error('Ошибка сохранения на GitHub:', error);
-                showNotification('❌ Ошибка синхронизации с GitHub', 'error');
-                return false;
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    const db = request.result;
+                    const transaction = db.transaction([storeName], 'readwrite');
+                    const store = transaction.objectStore(storeName);
+                    const getRequest = store.get(key);
+                    
+                    getRequest.onerror = () => reject(getRequest.error);
+                    getRequest.onsuccess = () => {
+                        const existingData = getRequest.result;
+                        const updatedData = { ...existingData, ...data };
+                        const putRequest = store.put(updatedData);
+                        
+                        putRequest.onerror = () => reject(putRequest.error);
+                        putRequest.onsuccess = () => resolve(putRequest.result);
+                    };
+                };
+            });
+        }
+
+        // Показать уведомление
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            setTimeout(() => {
+                notification.textContent = '';
+                notification.className = 'notification';
+            }, 4000);
+        }
+
+        // Переключение вкладок авторизации
+        function showAuthTab(tabName) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabs = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tabName === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
             }
         }
 
-        // Обновленные функции для работы с данными
-        async function saveData(key, data) {
-            // Сохраняем в localStorage
-            localStorage.setItem(key, JSON.stringify(data));
-            
-            // Синхронизируем с GitHub
-            await saveToGitHub();
-        }
-
-        // Остальные функции остаются прежними, но с добавлением await saveData()
+        // Вход в систему
         async function login() {
-            console.log('Попытка входа...');
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value.trim();
 
@@ -1558,73 +415,168 @@
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem('users'));
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                console.log('Успешный вход для:', username);
-                currentUser = user;
-                
-                user.isOnline = true;
-                user.lastLogin = new Date().toISOString();
-                await saveData('users', users);
-                
-                localStorage.setItem('activeUser', JSON.stringify({
-                    username: username,
-                    password: password,
-                    loginTime: Date.now()
-                }));
-
-                showNotification('✅ Вход выполнен успешно!', 'success');
-
-                setTimeout(() => {
-                    if (user.role === 'user') {
-                        showUserInterface();
-                    } else {
-                        showAdminPanel();
-                    }
-                }, 500);
-
-            } else {
-                console.log('Неудачный вход для:', username);
-                showNotification('❌ Неверный логин или пароль!', 'error');
-            }
-        }
-
-        async function register() {
-            // ... реализация регистрации с await saveData()
-        }
-
-        async function createAdmin() {
-            // ... реализация с await saveData()
-        }
-
-        async function forceSync() {
-            showNotification('🔄 Синхронизация...', 'info');
             try {
-                await initDatabase();
-                showNotification('✅ Данные синхронизированы!', 'success');
-                
-                // Обновляем интерфейс
-                if (currentUser) {
-                    if (currentUser.role === 'user') {
-                        loadUserChatsList();
-                    } else {
-                        updateStats();
-                        loadUsersTable();
-                        loadChatsList();
-                    }
+                const users = await getDBData('users');
+                const user = users.find(u => u.username === username && u.password === password);
+
+                if (user) {
+                    currentUser = user;
+                    
+                    // Обновляем статус пользователя
+                    await updateDBData('users', username, { 
+                        isOnline: true, 
+                        lastLogin: new Date().toISOString() 
+                    });
+
+                    showNotification('✅ Вход выполнен успешно!', 'success');
+                    
+                    // Сохраняем сессию
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        username: username,
+                        loginTime: Date.now()
+                    }));
+
+                    // Перенаправляем на админку или пользовательский интерфейс
+                    setTimeout(() => {
+                        if (user.role === 'user') {
+                            // showUserInterface(); - раскомментируйте когда добавите интерфейс пользователя
+                            showNotification('👋 Добро пожаловать!', 'success');
+                        } else {
+                            // showAdminPanel(); - раскомментируйте когда добавите админку
+                            showNotification('👋 Добро пожаловать в панель управления!', 'success');
+                        }
+                    }, 1000);
+
+                } else {
+                    showNotification('❌ Неверный логин или пароль!', 'error');
                 }
             } catch (error) {
-                showNotification('❌ Ошибка синхронизации', 'error');
+                console.error('Ошибка входа:', error);
+                showNotification('❌ Ошибка системы', 'error');
             }
         }
 
-        // Остальные функции остаются без изменений
-        // ... весь остальной JavaScript код ...
+        // Регистрация
+        async function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
+
+            if (!username || !password || !passwordConfirm) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showNotification('❌ Пароли не совпадают!', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+
+            try {
+                const users = await getDBData('users');
+                
+                if (users.find(u => u.username === username)) {
+                    showNotification('❌ Этот логин уже занят!', 'error');
+                    return;
+                }
+
+                const newUser = {
+                    username: username,
+                    password: password,
+                    role: 'user',
+                    isOnline: false,
+                    registeredAt: new Date().toISOString(),
+                    lastLogin: null,
+                    displayName: username
+                };
+
+                await addDBData('users', newUser);
+
+                // Очищаем форму
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regPasswordConfirm').value = '';
+                
+                showNotification(`✅ Пользователь "${username}" зарегистрирован!`, 'success');
+                
+                // Переключаем на вкладку входа
+                showAuthTab('login');
+                
+            } catch (error) {
+                console.error('Ошибка регистрации:', error);
+                showNotification('❌ Ошибка регистрации', 'error');
+            }
+        }
+
+        // Проверка активной сессии
+        async function checkActiveSession() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                try {
+                    const userData = JSON.parse(savedUser);
+                    const users = await getDBData('users');
+                    const user = users.find(u => u.username === userData.username);
+                    
+                    if (user) {
+                        currentUser = user;
+                        showNotification(`👋 С возвращением, ${user.username}!`, 'success');
+                        // Здесь можно автоматически перенаправить в систему
+                    }
+                } catch (error) {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+        }
+
+        // Выход из системы
+        function logout() {
+            if (currentUser) {
+                updateDBData('users', currentUser.username, { isOnline: false });
+            }
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showNotification('👋 До свидания!', 'success');
+        }
+
+        // Обработчики событий
+        function setupEventListeners() {
+            // Обработчики для вкладок
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    showAuthTab(this.getAttribute('data-tab'));
+                });
+            });
+
+            // Обработчики Enter в формах
+            document.getElementById('authPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+
+            document.getElementById('regPasswordConfirm').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') register();
+            });
+        }
 
         // Инициализация при загрузке
-        window.onload = init;
+        async function init() {
+            try {
+                await initDB();
+                setupEventListeners();
+                await checkActiveSession();
+                showNotification('✅ Система готова к работе', 'success');
+            } catch (error) {
+                console.error('Ошибка инициализации:', error);
+                showNotification('❌ Ошибка загрузки системы', 'error');
+            }
+        }
+
+        // Запуск при загрузке страницы
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>

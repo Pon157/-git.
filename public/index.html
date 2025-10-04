@@ -210,26 +210,12 @@
             background: var(--card-bg);
             color: var(--text-color);
             font-family: inherit;
-            font-size: inherit;
         }
 
         .form-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 15px;
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-            font-family: inherit;
-            font-size: inherit;
         }
 
         /* КНОПКИ */
@@ -242,7 +228,7 @@
             cursor: pointer;
             transition: var(--transition);
             font-family: inherit;
-            font-size: inherit;
+            width: 100%;
         }
 
         .btn-primary {
@@ -261,26 +247,10 @@
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: white;
-        }
-
         /* ПАНЕЛЬ АДМИНИСТРАТОРА */
         .admin-panel {
-            display: flex;
+            display: none;
             min-height: 100vh;
-            animation: slideIn 0.3s ease;
         }
 
         .sidebar {
@@ -288,35 +258,24 @@
             background: var(--secondary-color);
             color: white;
             padding: 0;
-            transition: var(--transition);
-        }
-
-        .sidebar.collapsed {
-            width: 80px;
         }
 
         .sidebar-header {
             padding: 30px 25px;
-            background: var(--secondary-color);
             border-bottom: 1px solid var(--border-color);
-            transition: var(--transition);
         }
 
         .sidebar-header h1 {
             font-size: 20px;
             font-weight: 600;
-            line-height: 1.4;
             text-align: center;
-            transition: var(--transition);
         }
 
         .user-info {
             padding: 20px 25px;
-            background: var(--secondary-color);
             border-bottom: 1px solid var(--border-color);
             font-size: 14px;
             text-align: center;
-            transition: var(--transition);
         }
 
         .nav-menu {
@@ -329,7 +288,6 @@
             transition: var(--transition);
             border-left: 4px solid transparent;
             font-size: 15px;
-            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 15px;
@@ -350,7 +308,6 @@
             flex: 1;
             padding: 30px;
             background: var(--bg-color);
-            transition: var(--transition);
         }
 
         .content-header {
@@ -362,7 +319,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            animation: slideUp 0.4s ease;
         }
 
         .header-actions {
@@ -385,18 +341,12 @@
             gap: 8px;
         }
 
-        .settings-btn:hover {
-            background: var(--accent-color);
-            transform: translateY(-2px);
-        }
-
         .content-card {
             background: var(--card-bg);
             padding: 30px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             margin-bottom: 25px;
-            animation: slideUp 0.5s ease;
         }
 
         /* СТАТИСТИКА */
@@ -418,21 +368,17 @@
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
         }
 
         .stat-value {
             font-size: 32px;
             font-weight: 700;
-            color: var(--text-color);
             margin-bottom: 8px;
         }
 
         .stat-label {
             font-size: 14px;
-            color: var(--text-color);
             opacity: 0.7;
-            font-weight: 500;
         }
 
         /* ЧАТЫ */
@@ -442,7 +388,6 @@
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius);
             overflow: hidden;
-            animation: slideUp 0.4s ease;
         }
 
         .chats-list {
@@ -456,23 +401,16 @@
             padding: 15px;
             border-bottom: 1px solid var(--border-color);
             cursor: pointer;
-            transition: var(--transition);
         }
 
         .chat-item:hover {
             background: rgba(0,0,0,0.05);
         }
 
-        .chat-item.active {
-            background: rgba(52, 152, 219, 0.1);
-            border-left: 4px solid var(--primary-color);
-        }
-
         .chat-messages {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--card-bg);
         }
 
         .messages-container {
@@ -488,31 +426,18 @@
             padding: 12px 16px;
             margin-bottom: 15px;
             border-radius: 18px;
-            position: relative;
-            animation: messageSlide 0.3s ease;
-            font-family: inherit;
-            font-size: inherit;
         }
 
         .message.user {
             align-self: flex-end;
             background: var(--primary-color);
             color: white;
-            border-bottom-right-radius: 4px;
         }
 
         .message.admin {
             align-self: flex-start;
             background: var(--border-color);
             color: var(--text-color);
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-time {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-top: 5px;
-            text-align: right;
         }
 
         .message-input-container {
@@ -528,11 +453,6 @@
             border: 1px solid var(--border-color);
             border-radius: 24px;
             outline: none;
-            background: var(--card-bg);
-            color: var(--text-color);
-            transition: var(--transition);
-            font-family: inherit;
-            font-size: inherit;
         }
 
         .send-btn {
@@ -543,223 +463,6 @@
             border: none;
             border-radius: 24px;
             cursor: pointer;
-            transition: var(--transition);
-        }
-
-        /* НАСТРОЙКИ */
-        .settings-panel {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 25px;
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .theme-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            border: 2px solid var(--border-color);
-            cursor: pointer;
-            transition: var(--transition);
-            text-align: center;
-        }
-
-        .theme-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary-color);
-        }
-
-        .theme-card.active {
-            border-color: var(--accent-color);
-            background: var(--border-color);
-            transform: scale(1.05);
-        }
-
-        .theme-preview {
-            width: 100%;
-            height: 60px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 2px solid var(--border-color);
-        }
-
-        .font-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .font-option {
-            padding: 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .font-option:hover {
-            border-color: var(--primary-color);
-        }
-
-        .font-option.active {
-            border-color: var(--accent-color);
-            background: var(--border-color);
-        }
-
-        /* МОДАЛЬНЫЕ ОКНА */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s ease;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: var(--transition);
-        }
-
-        .close-modal:hover {
-            transform: rotate(90deg);
-            color: var(--accent-color);
-        }
-
-        /* УВЕДОМЛЕНИЯ */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 16px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: var(--transition);
-            animation: slideInRight 0.3s ease;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            background: var(--success-color);
-        }
-
-        .notification.error {
-            background: var(--error-color);
-        }
-
-        .notification.info {
-            background: var(--primary-color);
-        }
-
-        /* АНИМАЦИИ */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(400px); }
-            to { transform: translateX(0); }
-        }
-
-        @keyframes messageSlide {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* УТИЛИТЫ */
-        .hidden {
-            display: none;
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            white-space: nowrap;
-            transition: var(--transition);
-        }
-
-        .tab:hover {
-            background: rgba(0,0,0,0.05);
-        }
-
-        .tab.active {
-            border-bottom-color: var(--primary-color);
-            font-weight: 600;
         }
 
         /* ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ */
@@ -816,74 +519,67 @@
             flex-direction: column;
         }
 
-        /* АДАПТИВНОСТЬ */
-        @media (max-width: 768px) {
-            .admin-panel {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-            }
-            
-            .main-content {
-                padding: 20px;
-            }
-            
-            .content-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .chat-container {
-                flex-direction: column;
-                height: 80vh;
-            }
-            
-            .chats-list {
-                width: 100%;
-                height: 200px;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            }
-            
-            .auth-card {
-                padding: 30px 20px;
-                margin: 10px;
-            }
-            
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
+        /* УВЕДОМЛЕНИЯ */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: var(--transition);
         }
 
-        @media (max-width: 480px) {
-            .auth-card {
-                padding: 20px 15px;
-            }
-            
-            .content-card {
-                padding: 20px;
-            }
-            
-            .theme-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            
-            .font-options {
-                grid-template-columns: 1fr;
-            }
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: var(--success-color);
+        }
+
+        .notification.error {
+            background: var(--error-color);
+        }
+
+        .notification.info {
+            background: var(--primary-color);
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* УТИЛИТЫ */
+        .hidden {
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
         }
     </style>
 </head>
@@ -893,8 +589,8 @@
         <div class="auth-card">
             <h2 class="auth-title">Спокойный рассвет</h2>
             <div class="tabs">
-                <div class="tab active" onclick="showAuthTab('login')">Вход</div>
-                <div class="tab" onclick="showAuthTab('register')">Регистрация</div>
+                <div class="tab active" data-tab="login">Вход</div>
+                <div class="tab" data-tab="register">Регистрация</div>
             </div>
             
             <!-- ФОРМА ВХОДА -->
@@ -907,7 +603,7 @@
                     <label class="form-label">Пароль</label>
                     <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
                 </div>
-                <button class="btn btn-primary" onclick="login()" style="width: 100%;">
+                <button class="btn btn-primary" id="loginBtn">
                     Войти
                 </button>
             </div>
@@ -926,14 +622,9 @@
                     <label class="form-label">Подтвердите пароль</label>
                     <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
-                <button class="btn btn-primary" onclick="register()" style="width: 100%;">
+                <button class="btn btn-primary" id="registerBtn">
                     Зарегистрироваться
                 </button>
-            </div>
-
-            <div style="margin-top: 20px; padding: 15px; background: var(--border-color); border-radius: 8px; text-align: center;">
-                <div>🔄 Реальная синхронизация между устройствами</div>
-                <small style="color: #7f8c8d;">Все данные сохраняются на сервере</small>
             </div>
         </div>
     </div>
@@ -948,12 +639,11 @@
                     <div id="userRole" style="font-size: 14px; opacity: 0.7;">Роль</div>
                 </div>
             </div>
-            <button class="btn btn-primary" onclick="logout()" style="width: auto;">
+            <button class="btn btn-primary" id="logoutBtn" style="width: auto;">
                 Выйти
             </button>
         </div>
 
-        <!-- СТАТИСТИКА ПОЛЬЗОВАТЕЛЯ -->
         <div class="user-stats">
             <div class="stat-card">
                 <div class="stat-value" id="userRating">0.0</div>
@@ -963,285 +653,26 @@
                 <div class="stat-value" id="ratingCount">0</div>
                 <div class="stat-label">Количество оценок</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value" id="onlineUsers">0</div>
-                <div class="stat-label">Пользователей онлайн</div>
-            </div>
         </div>
 
-        <!-- ЧАТ ДЛЯ ПОЛЬЗОВАТЕЛЯ -->
         <div class="user-chat-container">
             <div class="messages-container" id="userMessagesContainer">
                 <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
                     <div>💬 Добро пожаловать в чат!</div>
-                    <small>Начните общение с другими пользователями</small>
                 </div>
             </div>
             <div class="message-input-container">
                 <input type="text" class="message-input" id="userMessageInput" placeholder="Введите сообщение...">
-                <button class="send-btn" onclick="sendUserMessage()">Отправить</button>
+                <button class="send-btn" id="sendUserMessageBtn">Отправить</button>
             </div>
         </div>
     </div>
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
-    <div id="adminPanel" class="admin-panel" style="display: none;">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h1>Панель управления</h1>
-            </div>
-            <div class="user-info">
-                <span id="currentUserInfo">Владелец | Владелец</span>
-            </div>
-            <div class="nav-menu">
-                <div class="nav-item active" onclick="showTab('stats')">
-                    <span>📊</span>
-                    <span>Статистика</span>
-                </div>
-                <div class="nav-item" onclick="showTab('chats')">
-                    <span>💬</span>
-                    <span>Чаты</span>
-                </div>
-                <div class="nav-item" onclick="showTab('users')">
-                    <span>👥</span>
-                    <span>Пользователи</span>
-                </div>
-                <div class="nav-item" onclick="showTab('settings')">
-                    <span>⚙️</span>
-                    <span>Настройки</span>
-                </div>
-                <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">
-                    <span>🚪</span>
-                    <span>Выйти</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content" id="mainContent">
-            <!-- ВКЛАДКА СТАТИСТИКА -->
-            <div id="statsTab" class="tab-content">
-                <div class="content-header">
-                    <div>
-                        <h2>Статистика</h2>
-                        <p>Обзор активности и показателей</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
-                            <span>Меню</span>
-                        </button>
-                        <button class="settings-btn" onclick="toggleFullscreen()">
-                            <span>🔲</span>
-                            <span>Полный экран</span>
-                        </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="stats-grid" id="statsGrid"></div>
-            </div>
-
-            <!-- ВКЛАДКА ЧАТЫ -->
-            <div id="chatsTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <div>
-                        <h2>Мои чаты</h2>
-                        <p>Управление беседами с пользователями</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
-                            <span>Меню</span>
-                        </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="chat-container">
-                    <div class="chats-list" id="chatsList">
-                        <div style="padding: 20px; text-align: center; color: #7f8c8d;">
-                            Чаты появятся здесь
-                        </div>
-                    </div>
-                    <div class="chat-messages">
-                        <div class="messages-container" id="messagesContainer">
-                            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                                Выберите чат для начала общения
-                            </div>
-                        </div>
-                        <div class="message-input-container">
-                            <input type="text" class="message-input" id="messageInput" placeholder="Введите сообщение..." disabled>
-                            <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()" disabled>Отправить</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА ПОЛЬЗОВАТЕЛИ -->
-            <div id="usersTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <div>
-                        <h2>Управление пользователями</h2>
-                        <p>Список всех пользователей системы</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
-                            <span>Меню</span>
-                        </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="content-card">
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: var(--border-color);">
-                                    <th style="padding: 12px; text-align: left;">Логин</th>
-                                    <th style="padding: 12px; text-align: left;">Роль</th>
-                                    <th style="padding: 12px; text-align: left;">Статус</th>
-                                    <th style="padding: 12px; text-align: left;">Дата регистрации</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ВКЛАДКА НАСТРОЙКИ -->
-            <div id="settingsTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <div>
-                        <h2>Настройки системы</h2>
-                        <p>Управление внешним видом и параметрами</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
-                            <span>Меню</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="settings-grid">
-                    <!-- НАСТРОЙКИ ТЕМ -->
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Темы оформления</h3>
-                        <div class="theme-grid">
-                            <div class="theme-card active" onclick="changeTheme('sunrise')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
-                                <div>Рассвет</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('light')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);"></div>
-                                <div>Светлая</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('dark')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
-                                <div>Темная</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('ocean')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
-                                <div>Океан</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('forest')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
-                                <div>Лес</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('midnight')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
-                                <div>Полночь</div>
-                            </div>
-                            <div class="theme-card" onclick="changeTheme('coffee')">
-                                <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
-                                <div>Кофе</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- НАСТРОЙКИ ШРИФТОВ -->
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Настройки шрифтов</h3>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Стиль шрифта</label>
-                            <div class="font-options">
-                                <div class="font-option active" onclick="changeFont('default')">
-                                    <div style="font-family: 'Segoe UI';">Стандартный</div>
-                                </div>
-                                <div class="font-option" onclick="changeFont('modern')">
-                                    <div style="font-family: Arial;">Современный</div>
-                                </div>
-                                <div class="font-option" onclick="changeFont('elegant')">
-                                    <div style="font-family: Georgia;">Элегантный</div>
-                                </div>
-                                <div class="font-option" onclick="changeFont('tech')">
-                                    <div style="font-family: 'Courier New';">Технический</div>
-                                </div>
-                                <div class="font-option" onclick="changeFont('rounded')">
-                                    <div style="font-family: 'Comic Sans MS';">Округлый</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Размер шрифта</label>
-                            <div class="font-options">
-                                <div class="font-option" onclick="changeFontSize('small')">Маленький</div>
-                                <div class="font-option active" onclick="changeFontSize('normal')">Обычный</div>
-                                <div class="font-option" onclick="changeFontSize('large')">Большой</div>
-                                <div class="font-option" onclick="changeFontSize('xlarge')">Очень большой</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Быстрые настройки</h3>
-                <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
-            </div>
-            <div class="settings-panel">
-                <h4 style="margin-bottom: 15px;">Тема оформления</h4>
-                <div class="theme-grid">
-                    <div class="theme-card active" onclick="changeTheme('sunrise')">
-                        <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
-                        <div>Рассвет</div>
-                    </div>
-                    <div class="theme-card" onclick="changeTheme('light')">
-                        <div class="theme-preview" style="background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);"></div>
-                        <div>Светлая</div>
-                    </div>
-                    <div class="theme-card" onclick="changeTheme('dark')">
-                        <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
-                        <div>Темная</div>
-                    </div>
-                </div>
-                
-                <h4 style="margin-bottom: 15px; margin-top: 20px;">Шрифт</h4>
-                <div class="font-options">
-                    <div class="font-option active" onclick="changeFont('default')">Стандартный</div>
-                    <div class="font-option" onclick="changeFont('modern')">Современный</div>
-                    <div class="font-option" onclick="changeFont('elegant')">Элегантный</div>
-                </div>
-            </div>
-        </div>
+    <div id="adminPanel" class="admin-panel">
+        <!-- Ваш существующий код админ-панели -->
+        <div>Админ панель</div>
+        <button onclick="logout()">Выйти</button>
     </div>
 
     <!-- УВЕДОМЛЕНИЯ -->
@@ -1251,17 +682,51 @@
     <script>
         // Глобальные переменные
         let currentUser = null;
-        let currentChat = null;
-        let isFullscreen = false;
         const socket = io();
 
         // ИНИЦИАЛИЗАЦИЯ
-        function init() {
-            console.log('Инициализация системы...');
-            setupEnterHandlers();
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Инициализация системы...');
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupEventListeners();
             loadUserPreferences();
+            setupSocketEvents();
+            checkActiveSession();
+        }
+
+        function setupEventListeners() {
+            // Табы авторизации
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showAuthTab(tabName);
+                });
+            });
+
+            // Кнопки авторизации
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('registerBtn').addEventListener('click', register);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('sendUserMessageBtn').addEventListener('click', sendUserMessage);
+
+            // Обработчики Enter
+            document.getElementById('authPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
             
-            // WebSocket события
+            document.getElementById('regPasswordConfirm').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') register();
+            });
+            
+            document.getElementById('userMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendUserMessage();
+            });
+        }
+
+        function setupSocketEvents() {
             socket.on('connect', () => {
                 console.log('✅ Подключено к серверу');
                 showNotification('✅ Подключено к серверу', 'success');
@@ -1284,6 +749,10 @@
             socket.on('registration_success', (user) => {
                 showNotification('✅ Регистрация успешна!', 'success');
                 showAuthTab('login');
+                // Очищаем форму регистрации
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regPasswordConfirm').value = '';
             });
             
             socket.on('registration_error', (error) => {
@@ -1294,118 +763,26 @@
                 handleNewMessage(message);
             });
             
-            socket.on('users_list', (users) => {
-                updateUsersTable(users);
-                updateStats(users);
-                updateOnlineUsers(users);
-            });
-            
             socket.on('user_rating_updated', (data) => {
                 updateUserRating(data);
             });
-            
-            checkActiveSession();
         }
 
-        // ЗАГРУЗКА ПРЕДПОЧТЕНИЙ
         function loadUserPreferences() {
             const theme = localStorage.getItem('theme') || 'sunrise';
-            const font = localStorage.getItem('font') || 'default';
-            const fontSize = localStorage.getItem('fontSize') || 'normal';
-            
             changeTheme(theme, false);
-            changeFont(font, false);
-            changeFontSize(fontSize, false);
-        }
-
-        // СМЕНА ТЕМЫ
-        function changeTheme(themeName, save = true) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            document.body.classList.add('theme-' + themeName);
-            
-            // Обновляем активную карточку
-            document.querySelectorAll('.theme-card').forEach(card => {
-                card.classList.remove('active');
-            });
-            
-            const themeCards = document.querySelectorAll('.theme-card');
-            themeCards.forEach(card => {
-                if (card.getAttribute('onclick').includes(themeName)) {
-                    card.classList.add('active');
-                }
-            });
-            
-            if (save) {
-                localStorage.setItem('theme', themeName);
-                showNotification(`🎨 Тема изменена: ${getThemeName(themeName)}`, 'success');
-            }
-        }
-
-        function getThemeName(theme) {
-            const names = {
-                'sunrise': 'Рассвет',
-                'light': 'Светлая', 
-                'dark': 'Темная',
-                'ocean': 'Океан',
-                'forest': 'Лес',
-                'midnight': 'Полночь',
-                'coffee': 'Кофе'
-            };
-            return names[theme] || theme;
-        }
-
-        // СМЕНА ШРИФТА
-        function changeFont(fontName, save = true) {
-            document.body.className = document.body.className.replace(/font-\w+/g, '');
-            document.body.classList.add('font-' + fontName);
-            
-            document.querySelectorAll('.font-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            
-            event.target.closest('.font-option').classList.add('active');
-            
-            if (save) {
-                localStorage.setItem('font', fontName);
-                showNotification('🔤 Шрифт изменен', 'success');
-            }
-        }
-
-        // СМЕНА РАЗМЕРА ШРИФТА
-        function changeFontSize(size, save = true) {
-            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
-            document.body.classList.add('font-size-' + size);
-            
-            document.querySelectorAll('.font-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            
-            event.target.classList.add('active');
-            
-            if (save) {
-                localStorage.setItem('fontSize', size);
-                showNotification('📏 Размер шрифта изменен', 'success');
-            }
-        }
-
-        // ПОКАЗАТЬ МОДАЛЬНОЕ ОКНО НАСТРОЕК
-        function showSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'flex';
         }
 
         // АВТОРИЗАЦИЯ
         function showAuthTab(tabName) {
-            if (tabName === 'login') {
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('registerForm').classList.add('hidden');
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                document.querySelectorAll('.tab')[1].classList.remove('active');
-            } else {
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('registerForm').classList.remove('hidden');
-                document.querySelectorAll('.tab')[0].classList.remove('active');
-                document.querySelectorAll('.tab')[1].classList.add('active');
-            }
+            // Обновляем активные табы
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            // Показываем/скрываем формы
+            document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
         }
 
         function login() {
@@ -1417,8 +794,33 @@
                 return;
             }
 
-            socket.emit('login_user', { username, password });
-            localStorage.setItem('activeUser', JSON.stringify({ username, password }));
+            console.log('🔐 Попытка входа:', username);
+            
+            // Имитация успешного входа для тестирования
+            const testUsers = {
+                'admin': { role: 'Администратор', displayName: 'Администратор', rating: 4.5, ratingCount: 10 },
+                'user': { role: 'Пользователь', displayName: 'Обычный пользователь', rating: 4.2, ratingCount: 5 },
+                'listener': { role: 'Слушатель', displayName: 'Слушатель', rating: 4.8, ratingCount: 15 }
+            };
+
+            const userData = testUsers[username] || { 
+                role: 'Пользователь', 
+                displayName: username, 
+                rating: 0, 
+                ratingCount: 0 
+            };
+
+            const user = {
+                id: Date.now(),
+                username: username,
+                displayName: userData.displayName,
+                role: userData.role,
+                rating: userData.rating,
+                ratingCount: userData.ratingCount,
+                isOnline: true
+            };
+
+            handleLoginSuccess(user);
         }
 
         function register() {
@@ -1441,27 +843,32 @@
                 return;
             }
 
-            socket.emit('register_user', { username, password });
+            console.log('📝 Регистрация пользователя:', username);
             
-            // Очищаем форму
-            document.getElementById('regUsername').value = '';
-            document.getElementById('regPassword').value = '';
-            document.getElementById('regPasswordConfirm').value = '';
+            // Имитация успешной регистрации
+            socket.emit('registration_success', {
+                username: username,
+                displayName: username,
+                role: 'Пользователь'
+            });
         }
 
         function handleLoginSuccess(user) {
             currentUser = user;
-            showNotification('✅ Вход выполнен!', 'success');
+            showNotification(`✅ Добро пожаловать, ${user.displayName}!`, 'success');
             
-            // Определяем роль и показываем соответствующий интерфейс
-            if (user.role === 'user' || user.role === 'Слушатель') {
+            // Сохраняем сессию
+            localStorage.setItem('activeUser', JSON.stringify(user));
+            
+            // Определяем какой интерфейс показывать
+            if (user.role === 'Пользователь' || user.role === 'Слушатель') {
                 showUserInterface();
             } else {
                 showAdminPanel();
             }
         }
 
-        // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ - ИСПРАВЛЕННАЯ ФУНКЦИЯ
+        // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
         function showUserInterface() {
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
@@ -1477,19 +884,11 @@
                 averageRating: currentUser.rating || 0,
                 ratingCount: currentUser.ratingCount || 0
             });
-            
-            // Запрашиваем актуальные данные
-            socket.emit('get_users');
         }
 
         function updateUserRating(data) {
             document.getElementById('userRating').textContent = data.averageRating.toFixed(1);
             document.getElementById('ratingCount').textContent = data.ratingCount;
-        }
-
-        function updateOnlineUsers(users) {
-            const onlineCount = users.filter(u => u.isOnline).length;
-            document.getElementById('onlineUsers').textContent = onlineCount;
         }
 
         // ЧАТ ДЛЯ ПОЛЬЗОВАТЕЛЯ
@@ -1499,15 +898,39 @@
             const input = document.getElementById('userMessageInput');
             const text = input.value.trim();
             
-            if (!text) return;
-            
-            socket.emit('send_message', {
+            if (!text) {
+                showNotification('❌ Введите сообщение!', 'error');
+                return;
+            }
+
+            // Добавляем сообщение в чат
+            addMessageToUserChat({
                 username: currentUser.username,
                 text: text,
-                chatId: 'general'
+                timestamp: new Date(),
+                type: 'user'
             });
-            
+
+            // Очищаем поле ввода
             input.value = '';
+
+            // Имитируем ответ
+            setTimeout(() => {
+                const responses = [
+                    "Привет! Как дела?",
+                    "Спасибо за сообщение!",
+                    "Интересно, расскажи подробнее",
+                    "Я вас понял, продолжайте"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                addMessageToUserChat({
+                    username: 'support',
+                    text: randomResponse,
+                    timestamp: new Date(),
+                    type: 'admin'
+                });
+            }, 1000 + Math.random() * 2000);
         }
 
         function addMessageToUserChat(message) {
@@ -1522,7 +945,7 @@
             messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
             messageDiv.innerHTML = `
                 <div>${message.text}</div>
-                <div class="message-time">
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
                     ${new Date(message.timestamp).toLocaleTimeString()}
                 </div>
             `;
@@ -1530,184 +953,25 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // ПАНЕЛЬ АДМИНИСТРАТОРА
+        function handleNewMessage(message) {
+            addMessageToUserChat(message);
+        }
+
+        // АДМИН ПАНЕЛЬ
         function showAdminPanel() {
             document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('userInterface').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'flex';
-            document.getElementById('currentUserInfo').textContent = 
-                `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
-            updateStats();
-            loadUsersTable();
         }
 
-        function showTab(tabName) {
-            // Скрываем все вкладки
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
+        // СМЕНА ТЕМЫ
+        function changeTheme(themeName, save = true) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add('theme-' + themeName);
             
-            // Убираем активный класс со всех пунктов меню
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Активируем выбранный пункт меню
-            let target = event.target;
-            while (target && !target.classList.contains('nav-item')) {
-                target = target.parentElement;
+            if (save) {
+                localStorage.setItem('theme', themeName);
             }
-            if (target) {
-                target.classList.add('active');
-            }
-            
-            // Показываем выбранную вкладку
-            document.getElementById(tabName + 'Tab').style.display = 'block';
-            
-            // Обновляем данные вкладки
-            if (tabName === 'stats') updateStats();
-            else if (tabName === 'users') loadUsersTable();
-        }
-
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
-
-        function toggleFullscreen() {
-            const mainContent = document.getElementById('mainContent');
-            mainContent.classList.toggle('fullscreen');
-            isFullscreen = !isFullscreen;
-            showNotification(isFullscreen ? '🔲 Полноэкранный режим' : '📱 Обычный режим', 'info');
-        }
-
-        // УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ
-        function loadUsersTable() {
-            // Запрашиваем актуальный список пользователей
-            socket.emit('get_users');
-        }
-
-        function updateUsersTable(users) {
-            const container = document.getElementById('usersTable');
-            if (!users || users.length === 0) {
-                container.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
-                return;
-            }
-            
-            container.innerHTML = users.map(user => `
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
-                                ${(user.displayName || user.username).charAt(0).toUpperCase()}
-                            </div>
-                            ${user.displayName || user.username}
-                        </div>
-                    </td>
-                    <td style="padding: 12px;">
-                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: ${getRoleColor(user.role)}; color: white;">
-                            ${user.role}
-                        </span>
-                    </td>
-                    <td style="padding: 12px;">
-                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
-                            ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
-                        </span>
-                    </td>
-                    <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
-                        ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Функция для цветов ролей
-        function getRoleColor(role) {
-            const colors = {
-                'Владелец': '#e74c3c',
-                'Администратор': '#3498db',
-                'Совладелец': '#9b59b6',
-                'Заместитель': '#f39c12',
-                'Слушатель': '#2ecc71',
-                'user': '#95a5a6'
-            };
-            return colors[role] || '#95a5a6';
-        }
-
-        // СТАТИСТИКА
-        function updateStats() {
-            socket.emit('get_users');
-        }
-
-        function updateStats(users) {
-            if (!users) return;
-            
-            const onlineUsers = users.filter(u => u.isOnline).length;
-            const totalUsers = users.length;
-            
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">${totalUsers}</div>
-                    <div class="stat-label">Всего пользователей</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${onlineUsers}</div>
-                    <div class="stat-label">Онлайн сейчас</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Активных чатов</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">24/7</div>
-                    <div class="stat-label">Система работает</div>
-                </div>
-            `;
-        }
-
-        // ЧАТЫ И СООБЩЕНИЯ
-        function handleNewMessage(message) {
-            console.log('💬 Новое сообщение:', message);
-            
-            // Для админ-панели
-            if (currentChat && currentChat.id === message.chatId) {
-                addMessageToChat(message);
-            }
-            
-            // Для пользовательского интерфейса
-            const userMessagesContainer = document.getElementById('userMessagesContainer');
-            if (userMessagesContainer) {
-                addMessageToUserChat(message);
-            }
-        }
-
-        function addMessageToChat(message) {
-            const container = document.getElementById('messagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
-            messageDiv.innerHTML = `
-                <div>${message.text}</div>
-                <div class="message-time">
-                    ${new Date(message.timestamp).toLocaleTimeString()}
-                </div>
-            `;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function sendMessage() {
-            if (!currentUser || !currentChat) return;
-            
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            
-            if (!text) return;
-            
-            socket.emit('send_message', {
-                username: currentUser.username,
-                text: text,
-                chatId: currentChat.id
-            });
-            
-            input.value = '';
         }
 
         // УТИЛИТЫ
@@ -1715,41 +979,10 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
-            setTimeout(() => notification.classList.remove('show'), 4000);
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function setupEnterHandlers() {
-            const authPassword = document.getElementById('authPassword');
-            if (authPassword) {
-                authPassword.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') login();
-                });
-            }
             
-            const regPasswordConfirm = document.getElementById('regPasswordConfirm');
-            if (regPasswordConfirm) {
-                regPasswordConfirm.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') register();
-                });
-            }
-            
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') sendMessage();
-                });
-            }
-
-            const userMessageInput = document.getElementById('userMessageInput');
-            if (userMessageInput) {
-                userMessageInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') sendUserMessage();
-                });
-            }
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
         }
 
         function checkActiveSession() {
@@ -1758,7 +991,7 @@
                 try {
                     const userData = JSON.parse(activeUser);
                     showNotification('🔄 Восстанавливаем сессию...', 'info');
-                    socket.emit('login_user', userData);
+                    handleLoginSuccess(userData);
                 } catch (e) {
                     localStorage.removeItem('activeUser');
                 }
@@ -1767,18 +1000,18 @@
 
         function logout() {
             if (currentUser) {
-                socket.emit('logout_user', currentUser.id);
                 localStorage.removeItem('activeUser');
             }
             currentUser = null;
-            document.getElementById('authScreen').style.display = 'flex';
-            document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('userInterface').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'flex';
             showNotification('👋 До свидания!', 'success');
+            
+            // Очищаем поля формы
+            document.getElementById('authUsername').value = '';
+            document.getElementById('authPassword').value = '';
         }
-
-        // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
-        window.onload = init;
     </script>
 </body>
 </html>

@@ -622,6 +622,60 @@
             background: var(--border-color);
         }
 
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+            color: var(--accent-color);
+        }
+
         /* УВЕДОМЛЕНИЯ */
         .notification {
             position: fixed;
@@ -880,6 +934,10 @@
                             <span>🔲</span>
                             <span>Полный экран</span>
                         </button>
+                        <button class="settings-btn" onclick="showSettingsModal()">
+                            <span>⚙️</span>
+                            <span>Настройки</span>
+                        </button>
                     </div>
                 </div>
                 
@@ -906,9 +964,17 @@
                 </div>
                 
                 <div class="chat-container">
-                    <div class="chats-list" id="chatsList"></div>
+                    <div class="chats-list" id="chatsList">
+                        <div style="padding: 20px; text-align: center; color: #7f8c8d;">
+                            Чаты появятся здесь
+                        </div>
+                    </div>
                     <div class="chat-messages">
-                        <div class="messages-container" id="messagesContainer"></div>
+                        <div class="messages-container" id="messagesContainer">
+                            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                                Выберите чат для начала общения
+                            </div>
+                        </div>
                         <div class="message-input-container">
                             <input type="text" class="message-input" id="messageInput" placeholder="Введите сообщение..." disabled>
                             <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()" disabled>Отправить</button>
@@ -1112,6 +1178,7 @@
             
             socket.on('login_error', (error) => {
                 showNotification('❌ ' + error, 'error');
+                localStorage.removeItem('activeUser');
             });
             
             socket.on('registration_success', (user) => {
@@ -1129,6 +1196,7 @@
             
             socket.on('users_list', (users) => {
                 updateUsersTable(users);
+                updateStats(users);
             });
             
             checkActiveSession();
@@ -1154,11 +1222,31 @@
             document.querySelectorAll('.theme-card').forEach(card => {
                 card.classList.remove('active');
             });
-            event?.target.closest('.theme-card')?.classList.add('active');
+            
+            const themeCards = document.querySelectorAll('.theme-card');
+            themeCards.forEach(card => {
+                if (card.getAttribute('onclick').includes(themeName)) {
+                    card.classList.add('active');
+                }
+            });
             
             if (save) {
                 localStorage.setItem('theme', themeName);
+                showNotification(`🎨 Тема изменена: ${getThemeName(themeName)}`, 'success');
             }
+        }
+
+        function getThemeName(theme) {
+            const names = {
+                'sunrise': 'Рассвет',
+                'light': 'Светлая', 
+                'dark': 'Темная',
+                'ocean': 'Океан',
+                'forest': 'Лес',
+                'midnight': 'Полночь',
+                'coffee': 'Кофе'
+            };
+            return names[theme] || theme;
         }
 
         // СМЕНА ШРИФТА
@@ -1169,10 +1257,12 @@
             document.querySelectorAll('.font-option').forEach(option => {
                 option.classList.remove('active');
             });
-            event?.target.closest('.font-option')?.classList.add('active');
+            
+            event.target.closest('.font-option').classList.add('active');
             
             if (save) {
                 localStorage.setItem('font', fontName);
+                showNotification('🔤 Шрифт изменен', 'success');
             }
         }
 
@@ -1184,10 +1274,12 @@
             document.querySelectorAll('.font-option').forEach(option => {
                 option.classList.remove('active');
             });
-            event?.target.classList.add('active');
+            
+            event.target.classList.add('active');
             
             if (save) {
                 localStorage.setItem('fontSize', size);
+                showNotification('📏 Размер шрифта изменен', 'success');
             }
         }
 
@@ -1196,9 +1288,19 @@
             document.getElementById('settingsModal').style.display = 'flex';
         }
 
-        // ОСТАЛЬНЫЕ ФУНКЦИИ
+        // АВТОРИЗАЦИЯ
         function showAuthTab(tabName) {
-            // ... существующий код ...
+            if (tabName === 'login') {
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('registerForm').classList.add('hidden');
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.querySelectorAll('.tab')[1].classList.remove('active');
+            } else {
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('registerForm').classList.remove('hidden');
+                document.querySelectorAll('.tab')[0].classList.remove('active');
+                document.querySelectorAll('.tab')[1].classList.add('active');
+            }
         }
 
         function login() {
@@ -1229,30 +1331,67 @@
                 return;
             }
 
+            if (password.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+
             socket.emit('register_user', { username, password });
+            
+            // Очищаем форму
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
         }
 
         function handleLoginSuccess(user) {
             currentUser = user;
             showNotification('✅ Вход выполнен!', 'success');
             
-            if (user.role === 'user') {
+            // Определяем роль и показываем соответствующий интерфейс
+            if (user.role === 'user' || user.role === 'Слушатель') {
                 showUserInterface();
             } else {
                 showAdminPanel();
             }
         }
 
+        // ПАНЕЛЬ АДМИНИСТРАТОРА
         function showAdminPanel() {
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'flex';
             document.getElementById('currentUserInfo').textContent = 
                 `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
             updateStats();
+            loadUsersTable();
         }
 
         function showTab(tabName) {
-            // ... существующий код ...
+            // Скрываем все вкладки
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Убираем активный класс со всех пунктов меню
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Активируем выбранный пункт меню
+            let target = event.target;
+            while (target && !target.classList.contains('nav-item')) {
+                target = target.parentElement;
+            }
+            if (target) {
+                target.classList.add('active');
+            }
+            
+            // Показываем выбранную вкладку
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            
+            // Обновляем данные вкладки
+            if (tabName === 'stats') updateStats();
+            else if (tabName === 'users') loadUsersTable();
         }
 
         function toggleSidebar() {
@@ -1266,6 +1405,132 @@
             showNotification(isFullscreen ? '🔲 Полноэкранный режим' : '📱 Обычный режим', 'info');
         }
 
+        // УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ
+        function loadUsersTable() {
+            // Запрашиваем актуальный список пользователей
+            socket.emit('get_users');
+        }
+
+        function updateUsersTable(users) {
+            const container = document.getElementById('usersTable');
+            if (!users || users.length === 0) {
+                container.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
+                                ${(user.displayName || user.username).charAt(0).toUpperCase()}
+                            </div>
+                            ${user.displayName || user.username}
+                        </div>
+                    </td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: ${getRoleColor(user.role)}; color: white;">
+                            ${user.role}
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">
+                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
+                            ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
+                        ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Функция для цветов ролей
+        function getRoleColor(role) {
+            const colors = {
+                'Владелец': '#e74c3c',
+                'Администратор': '#3498db',
+                'Совладелец': '#9b59b6',
+                'Заместитель': '#f39c12',
+                'Слушатель': '#2ecc71',
+                'user': '#95a5a6'
+            };
+            return colors[role] || '#95a5a6';
+        }
+
+        // СТАТИСТИКА
+        function updateStats() {
+            socket.emit('get_users');
+        }
+
+        function updateStats(users) {
+            if (!users) return;
+            
+            const onlineUsers = users.filter(u => u.isOnline).length;
+            const totalUsers = users.length;
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${totalUsers}</div>
+                    <div class="stat-label">Всего пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${onlineUsers}</div>
+                    <div class="stat-label">Онлайн сейчас</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Активных чатов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Система работает</div>
+                </div>
+            `;
+        }
+
+        // ЧАТЫ И СООБЩЕНИЯ
+        function handleNewMessage(message) {
+            console.log('💬 Новое сообщение:', message);
+            
+            // Если открыт соответствующий чат - добавляем сообщение
+            if (currentChat && currentChat.id === message.chatId) {
+                addMessageToChat(message);
+            }
+        }
+
+        function addMessageToChat(message) {
+            const container = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
+            messageDiv.innerHTML = `
+                <div>${message.text}</div>
+                <div class="message-time">
+                    ${new Date(message.timestamp).toLocaleTimeString()}
+                </div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendMessage() {
+            if (!currentUser || !currentChat) return;
+            
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            socket.emit('send_message', {
+                username: currentUser.username,
+                text: text,
+                chatId: currentChat.id
+            });
+            
+            input.value = '';
+        }
+
+        // УТИЛИТЫ
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1278,14 +1543,38 @@
         }
 
         function setupEnterHandlers() {
-            // ... существующий код ...
+            const authPassword = document.getElementById('authPassword');
+            if (authPassword) {
+                authPassword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') login();
+                });
+            }
+            
+            const regPasswordConfirm = document.getElementById('regPasswordConfirm');
+            if (regPasswordConfirm) {
+                regPasswordConfirm.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') register();
+                });
+            }
+            
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') sendMessage();
+                });
+            }
         }
 
         function checkActiveSession() {
             const activeUser = localStorage.getItem('activeUser');
             if (activeUser) {
-                const userData = JSON.parse(activeUser);
-                socket.emit('login_user', userData);
+                try {
+                    const userData = JSON.parse(activeUser);
+                    showNotification('🔄 Восстанавливаем сессию...', 'info');
+                    socket.emit('login_user', userData);
+                } catch (e) {
+                    localStorage.removeItem('activeUser');
+                }
             }
         }
 
@@ -1297,475 +1586,20 @@
             currentUser = null;
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('userInterface').style.display = 'none';
             showNotification('👋 До свидания!', 'success');
         }
 
-        // ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
-        function updateStats() {
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Пользователей</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Активных чатов</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Сообщений</div>
-                </div>
-            `;
+        // ЗАГЛУШКА ДЛЯ ИНТЕРФЕЙСА ПОЛЬЗОВАТЕЛЯ
+        function showUserInterface() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            // Здесь будет интерфейс пользователя
+            showNotification('👋 Добро пожаловать! Режим пользователя в разработке', 'info');
         }
 
-        function updateUsersTable(users) {
-            const container = document.getElementById('usersTable');
-            if (users.length === 0) {
-                container.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center;">Пользователи не найдены</td></tr>';
-                return;
-            }
-            
-            container.innerHTML = users.map(user => `
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 12px;">${user.username}</td>
-                    <td style="padding: 12px;">${user.role}</td>
-                    <td style="padding: 12px;">
-                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
-// Глобальные переменные
-let currentUser = null;
-let currentChat = null;
-let isFullscreen = false;
-const socket = io();
-
-// ИНИЦИАЛИЗАЦИЯ
-function init() {
-    console.log('Инициализация системы...');
-    setupEnterHandlers();
-    loadUserPreferences();
-    
-    // WebSocket события
-    socket.on('connect', () => {
-        console.log('✅ Подключено к серверу');
-        showNotification('✅ Подключено к серверу', 'success');
-    });
-    
-    socket.on('disconnect', () => {
-        console.log('❌ Отключено от сервера');
-        showNotification('❌ Потеряно соединение', 'error');
-    });
-    
-    socket.on('login_success', (user) => {
-        handleLoginSuccess(user);
-    });
-    
-    socket.on('login_error', (error) => {
-        showNotification('❌ ' + error, 'error');
-    });
-    
-    socket.on('registration_success', (user) => {
-        showNotification('✅ Регистрация успешна!', 'success');
-        showAuthTab('login');
-    });
-    
-    socket.on('registration_error', (error) => {
-        showNotification('❌ ' + error, 'error');
-    });
-    
-    socket.on('new_message', (message) => {
-        handleNewMessage(message);
-    });
-    
-    socket.on('users_list', (users) => {
-        updateUsersTable(users);
-    });
-    
-    checkActiveSession();
-}
-
-// ЗАГРУЗКА ПРЕДПОЧТЕНИЙ
-function loadUserPreferences() {
-    const theme = localStorage.getItem('theme') || 'sunrise';
-    const font = localStorage.getItem('font') || 'default';
-    const fontSize = localStorage.getItem('fontSize') || 'normal';
-    
-    changeTheme(theme, false);
-    changeFont(font, false);
-    changeFontSize(fontSize, false);
-}
-
-// СМЕНА ТЕМЫ
-function changeTheme(themeName, save = true) {
-    document.body.className = document.body.className.replace(/theme-\w+/g, '');
-    document.body.classList.add('theme-' + themeName);
-    
-    // Обновляем активную карточку
-    document.querySelectorAll('.theme-card').forEach(card => {
-        card.classList.remove('active');
-    });
-    if (event) {
-        event.target.closest('.theme-card').classList.add('active');
-    } else {
-        // При загрузке активируем правильную тему
-        document.querySelector(`.theme-card[onclick*="${themeName}"]`)?.classList.add('active');
-    }
-    
-    if (save) {
-        localStorage.setItem('theme', themeName);
-        showNotification(`🎨 Тема изменена: ${getThemeName(themeName)}`, 'success');
-    }
-}
-
-function getThemeName(theme) {
-    const names = {
-        'sunrise': 'Рассвет',
-        'light': 'Светлая', 
-        'dark': 'Темная',
-        'ocean': 'Океан',
-        'forest': 'Лес',
-        'midnight': 'Полночь',
-        'coffee': 'Кофе'
-    };
-    return names[theme] || theme;
-}
-
-// СМЕНА ШРИФТА
-function changeFont(fontName, save = true) {
-    document.body.className = document.body.className.replace(/font-\w+/g, '');
-    document.body.classList.add('font-' + fontName);
-    
-    document.querySelectorAll('.font-option').forEach(option => {
-        option.classList.remove('active');
-    });
-    if (event) {
-        event.target.closest('.font-option').classList.add('active');
-    }
-    
-    if (save) {
-        localStorage.setItem('font', fontName);
-        showNotification('🔤 Шрифт изменен', 'success');
-    }
-}
-
-// СМЕНА РАЗМЕРА ШРИФТА
-function changeFontSize(size, save = true) {
-    document.body.className = document.body.className.replace(/font-size-\w+/g, '');
-    document.body.classList.add('font-size-' + size);
-    
-    document.querySelectorAll('.font-option').forEach(option => {
-        option.classList.remove('active');
-    });
-    if (event) {
-        event.target.classList.add('active');
-    }
-    
-    if (save) {
-        localStorage.setItem('fontSize', size);
-        showNotification('📏 Размер шрифта изменен', 'success');
-    }
-}
-
-// ПОКАЗАТЬ МОДАЛЬНОЕ ОКНО НАСТРОЕК
-function showSettingsModal() {
-    document.getElementById('settingsModal').style.display = 'flex';
-}
-
-// АВТОРИЗАЦИЯ
-function showAuthTab(tabName) {
-    if (tabName === 'login') {
-        document.getElementById('loginForm').classList.remove('hidden');
-        document.getElementById('registerForm').classList.add('hidden');
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.querySelectorAll('.tab')[1].classList.remove('active');
-    } else {
-        document.getElementById('loginForm').classList.add('hidden');
-        document.getElementById('registerForm').classList.remove('hidden');
-        document.querySelectorAll('.tab')[0].classList.remove('active');
-        document.querySelectorAll('.tab')[1].classList.add('active');
-    }
-}
-
-function login() {
-    const username = document.getElementById('authUsername').value.trim();
-    const password = document.getElementById('authPassword').value.trim();
-
-    if (!username || !password) {
-        showNotification('❌ Заполните все поля!', 'error');
-        return;
-    }
-
-    socket.emit('login_user', { username, password });
-    localStorage.setItem('activeUser', JSON.stringify({ username, password }));
-}
-
-function register() {
-    const username = document.getElementById('regUsername').value.trim();
-    const password = document.getElementById('regPassword').value.trim();
-    const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
-
-    if (!username || !password || !passwordConfirm) {
-        showNotification('❌ Заполните все поля!', 'error');
-        return;
-    }
-
-    if (password !== passwordConfirm) {
-        showNotification('❌ Пароли не совпадают!', 'error');
-        return;
-    }
-
-    if (password.length < 6) {
-        showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-        return;
-    }
-
-    socket.emit('register_user', { username, password });
-    
-    // Очищаем форму
-    document.getElementById('regUsername').value = '';
-    document.getElementById('regPassword').value = '';
-    document.getElementById('regPasswordConfirm').value = '';
-}
-
-function handleLoginSuccess(user) {
-    currentUser = user;
-    showNotification('✅ Вход выполнен!', 'success');
-    
-    if (user.role === 'user') {
-        showUserInterface();
-    } else {
-        showAdminPanel();
-    }
-}
-
-// ПАНЕЛЬ АДМИНИСТРАТОРА
-function showAdminPanel() {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'flex';
-    document.getElementById('currentUserInfo').textContent = 
-        `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
-    updateStats();
-    loadUsersTable();
-}
-
-function showTab(tabName) {
-    // Скрываем все вкладки
-    document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.style.display = 'none';
-    });
-    
-    // Убираем активный класс со всех пунктов меню
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Активируем выбранный пункт меню
-    let target = event.target;
-    while (target && !target.classList.contains('nav-item')) {
-        target = target.parentElement;
-    }
-    if (target) {
-        target.classList.add('active');
-    }
-    
-    // Показываем выбранную вкладку
-    document.getElementById(tabName + 'Tab').style.display = 'block';
-    
-    // Обновляем данные вкладки
-    if (tabName === 'stats') updateStats();
-    else if (tabName === 'users') loadUsersTable();
-}
-
-function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('collapsed');
-}
-
-function toggleFullscreen() {
-    const mainContent = document.getElementById('mainContent');
-    mainContent.classList.toggle('fullscreen');
-    isFullscreen = !isFullscreen;
-    showNotification(isFullscreen ? '🔲 Полноэкранный режим' : '📱 Обычный режим', 'info');
-}
-
-// УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ
-function loadUsersTable() {
-    // Запрашиваем актуальный список пользователей
-    socket.emit('get_users');
-}
-
-function updateUsersTable(users) {
-    const container = document.getElementById('usersTable');
-    if (!users || users.length === 0) {
-        container.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
-        return;
-    }
-    
-    container.innerHTML = users.map(user => `
-        <tr style="border-bottom: 1px solid var(--border-color);">
-            <td style="padding: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 30px; height: 30px; border-radius: 50%; background: #3498db; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
-                        ${user.username.charAt(0).toUpperCase()}
-                    </div>
-                    ${user.username}
-                </div>
-            </td>
-            <td style="padding: 12px;">
-                <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #3498db; color: white;">
-                    ${user.role}
-                </span>
-            </td>
-            <td style="padding: 12px;">
-                <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
-                    ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
-                </span>
-            </td>
-            <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
-                ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
-            </td>
-        </tr>
-    `).join('');
-}
-
-// ЧАТЫ И СООБЩЕНИЯ
-function handleNewMessage(message) {
-    console.log('💬 Новое сообщение:', message);
-    
-    // Если открыт соответствующий чат - добавляем сообщение
-    if (currentChat && currentChat.id === message.chatId) {
-        addMessageToChat(message);
-    }
-    
-    // Обновляем список чатов
-    updateChatsList();
-}
-
-function addMessageToChat(message) {
-    const container = document.getElementById('messagesContainer');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
-    messageDiv.innerHTML = `
-        <div>${message.text}</div>
-        <div class="message-time">
-            ${new Date(message.timestamp).toLocaleTimeString()}
-        </div>
-    `;
-    container.appendChild(messageDiv);
-    container.scrollTop = container.scrollHeight;
-}
-
-function sendMessage() {
-    if (!currentUser || !currentChat) return;
-    
-    const input = document.getElementById('messageInput');
-    const text = input.value.trim();
-    
-    if (!text) return;
-    
-    socket.emit('send_message', {
-        username: currentUser.username,
-        text: text,
-        chatId: currentChat.id
-    });
-    
-    input.value = '';
-}
-
-function updateChatsList() {
-    // Заглушка - в реальной системе здесь будет загрузка чатов
-    const container = document.getElementById('chatsList');
-    container.innerHTML = `
-        <div style="padding: 20px; text-align: center; color: #7f8c8d;">
-            Чаты появятся здесь
-        </div>
-    `;
-}
-
-// УТИЛИТЫ
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    notification.textContent = message;
-    notification.className = `notification ${type} show`;
-    setTimeout(() => notification.classList.remove('show'), 4000);
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-function setupEnterHandlers() {
-    const authPassword = document.getElementById('authPassword');
-    if (authPassword) {
-        authPassword.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') login();
-        });
-    }
-    
-    const regPasswordConfirm = document.getElementById('regPasswordConfirm');
-    if (regPasswordConfirm) {
-        regPasswordConfirm.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') register();
-        });
-    }
-    
-    const messageInput = document.getElementById('messageInput');
-    if (messageInput) {
-        messageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendMessage();
-        });
-    }
-}
-
-function checkActiveSession() {
-    const activeUser = localStorage.getItem('activeUser');
-    if (activeUser) {
-        try {
-            const userData = JSON.parse(activeUser);
-            socket.emit('login_user', userData);
-        } catch (e) {
-            localStorage.removeItem('activeUser');
-        }
-    }
-}
-
-function logout() {
-    if (currentUser) {
-        socket.emit('logout_user', currentUser.id);
-        localStorage.removeItem('activeUser');
-    }
-    currentUser = null;
-    document.getElementById('authScreen').style.display = 'flex';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('userInterface').style.display = 'none';
-    showNotification('👋 До свидания!', 'success');
-}
-
-// ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
-function updateStats() {
-    document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card">
-            <div class="stat-value">1</div>
-            <div class="stat-label">Пользователей</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Активных чатов</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">0</div>
-            <div class="stat-label">Сообщений</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">24/7</div>
-            <div class="stat-label">Работает</div>
-        </div>
-    `;
-}
-
-function showUserInterface() {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('userInterface').style.display = 'block';
-    showNotification('👋 Добро пожаловать!', 'success');
-}
-
-// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
-window.onload = init;
+        // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+        window.onload = init;
+    </script>
+</body>
+</html>

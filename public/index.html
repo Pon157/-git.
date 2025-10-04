@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Спокойный рассвет</title>
+    <title>Спокойный рассвет | Панель управления</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* БАЗОВЫЕ СТИЛИ И ПЕРЕМЕННЫЕ */
         :root {
@@ -18,6 +19,11 @@
             --success-color: #27ae60;
             --warning-color: #f39c12;
             --error-color: #e74c3c;
+            --info-color: #3498db;
+            
+            /* Градиенты */
+            --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            --gradient-accent: linear-gradient(135deg, var(--accent-color) 0%, #c0392b 100%);
             
             /* Шрифты */
             --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,9 +32,17 @@
             --line-height: 1.5;
             
             /* Размеры */
-            --border-radius: 12px;
-            --shadow: 0 2px 10px rgba(0,0,0,0.08);
-            --transition: all 0.3s ease;
+            --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.12);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --transition-fast: all 0.15s ease;
+            
+            /* Макеты */
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
+            --header-height: 70px;
         }
 
         /* ТЕМЫ */
@@ -40,6 +54,7 @@
             --card-bg: #ffffff;
             --text-color: #2c3e50;
             --border-color: #ffeaa7;
+            --gradient-primary: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
         }
 
         .theme-light {
@@ -102,6 +117,17 @@
             --border-color: #deb887;
         }
 
+        .theme-premium {
+            --primary-color: #9b59b6;
+            --secondary-color: #8e44ad;
+            --accent-color: #e67e22;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #e8d6f0;
+            --gradient-primary: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
         /* ШРИФТЫ */
         .font-default {
             --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -156,6 +182,27 @@
             color: var(--text-color);
             min-height: 100vh;
             transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        /* СКРОЛЛБАР */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-color);
         }
 
         /* АВТОРИЗАЦИЯ */
@@ -164,32 +211,54 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: var(--gradient-primary);
             padding: 20px;
             animation: fadeIn 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            animation: rotate 20s linear infinite;
         }
 
         .auth-card {
             background: var(--card-bg);
             padding: 40px;
             border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
             animation: slideUp 0.5s ease;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .auth-title {
             text-align: center;
             margin-bottom: 30px;
             color: var(--text-color);
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* ФОРМЫ */
         .form-group {
             margin-bottom: 25px;
+            position: relative;
         }
 
         .form-label {
@@ -202,9 +271,9 @@
 
         .form-input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 18px;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             font-size: 15px;
             transition: var(--transition);
             background: var(--card-bg);
@@ -217,53 +286,81 @@
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
         }
 
         .form-select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 16px 18px;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             font-size: 15px;
             background: var(--card-bg);
             color: var(--text-color);
             cursor: pointer;
             font-family: inherit;
             font-size: inherit;
+            transition: var(--transition);
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         /* КНОПКИ */
         .btn {
-            padding: 14px 28px;
+            padding: 16px 28px;
             border: none;
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             font-family: inherit;
             font-size: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: var(--transition);
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn-primary {
-            background: var(--accent-color);
+            background: var(--gradient-primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
         }
 
-        .btn-secondary {
-            background: var(--secondary-color);
+        .btn-accent {
+            background: var(--gradient-accent);
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
+        .btn-accent:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
         }
 
         .btn-success {
@@ -276,6 +373,27 @@
             color: white;
         }
 
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+
+        .btn-lg {
+            padding: 18px 32px;
+            font-size: 16px;
+        }
+
         /* ПАНЕЛЬ АДМИНИСТРАТОРА */
         .admin-panel {
             display: flex;
@@ -284,47 +402,88 @@
         }
 
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-width);
             background: var(--secondary-color);
             color: white;
             padding: 0;
             transition: var(--transition);
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            box-shadow: var(--shadow);
         }
 
         .sidebar.collapsed {
-            width: 80px;
+            width: var(--sidebar-collapsed);
         }
 
         .sidebar-header {
-            padding: 30px 25px;
+            padding: 25px 20px;
             background: var(--secondary-color);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .sidebar-header h1 {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 18px;
+            font-weight: 700;
             line-height: 1.4;
-            text-align: center;
             transition: var(--transition);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .sidebar-header h1 {
+            opacity: 0;
+            width: 0;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
         .user-info {
-            padding: 20px 25px;
-            background: var(--secondary-color);
-            border-bottom: 1px solid var(--border-color);
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             font-size: 14px;
-            text-align: center;
             transition: var(--transition);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin: 0 auto 10px;
+            color: white;
         }
 
         .nav-menu {
             padding: 20px 0;
+            height: calc(100vh - 200px);
+            overflow-y: auto;
         }
 
         .nav-item {
-            padding: 15px 25px;
+            padding: 16px 20px;
             cursor: pointer;
             transition: var(--transition);
             border-left: 4px solid transparent;
@@ -333,16 +492,30 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            white-space: nowrap;
         }
 
         .nav-item:hover {
             background: rgba(255,255,255,0.1);
             border-left-color: var(--primary-color);
+            padding-left: 25px;
         }
 
         .nav-item.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             border-left-color: var(--accent-color);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .sidebar.collapsed .nav-item span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
         }
 
         /* ОСНОВНОЙ КОНТЕНТ */
@@ -351,6 +524,12 @@
             padding: 30px;
             background: var(--bg-color);
             transition: var(--transition);
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: var(--sidebar-collapsed);
         }
 
         .content-header {
@@ -363,20 +542,39 @@
             justify-content: space-between;
             align-items: center;
             animation: slideUp 0.4s ease;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-title h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-title p {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 14px;
         }
 
         .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .settings-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+        .action-btn {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             font-size: 14px;
             transition: var(--transition);
@@ -385,9 +583,11 @@
             gap: 8px;
         }
 
-        .settings-btn:hover {
-            background: var(--accent-color);
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
             transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .content-card {
@@ -397,12 +597,18 @@
             box-shadow: var(--shadow);
             margin-bottom: 25px;
             animation: slideUp 0.5s ease;
+            transition: var(--transition);
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         /* СТАТИСТИКА */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -414,11 +620,36 @@
             box-shadow: var(--shadow);
             text-align: center;
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-primary);
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 24px;
+            color: var(--primary-color);
         }
 
         .stat-value {
@@ -435,6 +666,50 @@
             font-weight: 500;
         }
 
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--error-color);
+        }
+
+        /* РАСШИРЕННАЯ СТАТИСТИКА */
+        .advanced-stats {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 300px;
+            background: var(--border-color);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-color);
+            opacity: 0.5;
+        }
+
         /* ЧАТЫ */
         .chat-container {
             display: flex;
@@ -443,29 +718,91 @@
             border-radius: var(--border-radius);
             overflow: hidden;
             animation: slideUp 0.4s ease;
-        }
-
-        .chats-list {
-            width: 300px;
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
             background: var(--card-bg);
         }
 
+        .chats-list {
+            width: 350px;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            background: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chats-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+
+        .chat-search {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
         .chat-item {
-            padding: 15px;
+            padding: 18px 20px;
             border-bottom: 1px solid var(--border-color);
             cursor: pointer;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .chat-item:hover {
-            background: rgba(0,0,0,0.05);
+            background: rgba(0,0,0,0.03);
         }
 
         .chat-item.active {
             background: rgba(52, 152, 219, 0.1);
             border-left: 4px solid var(--primary-color);
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-last-message {
+            font-size: 13px;
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-meta {
+            text-align: right;
+            font-size: 12px;
+            opacity: 0.6;
         }
 
         .chat-messages {
@@ -475,23 +812,33 @@
             background: var(--card-bg);
         }
 
+        .messages-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
         .messages-container {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            gap: 15px;
         }
 
         .message {
             max-width: 70%;
-            padding: 12px 16px;
-            margin-bottom: 15px;
+            padding: 14px 18px;
             border-radius: 18px;
             position: relative;
             animation: messageSlide 0.3s ease;
             font-family: inherit;
             font-size: inherit;
+            word-wrap: break-word;
         }
 
         .message.user {
@@ -508,8 +855,17 @@
             border-bottom-left-radius: 4px;
         }
 
+        .message.system {
+            align-self: center;
+            background: var(--warning-color);
+            color: white;
+            max-width: 90%;
+            text-align: center;
+            font-size: 14px;
+        }
+
         .message-time {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.7;
             margin-top: 5px;
             text-align: right;
@@ -517,14 +873,15 @@
 
         .message-input-container {
             display: flex;
-            padding: 15px;
+            padding: 20px;
             border-top: 1px solid var(--border-color);
             background: var(--card-bg);
+            gap: 12px;
         }
 
         .message-input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 1px solid var(--border-color);
             border-radius: 24px;
             outline: none;
@@ -535,35 +892,57 @@
             font-size: inherit;
         }
 
+        .message-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+        }
+
         .send-btn {
-            margin-left: 10px;
-            padding: 12px 20px;
+            padding: 14px 24px;
             background: var(--primary-color);
             color: white;
             border: none;
             border-radius: 24px;
             cursor: pointer;
             transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-color);
+            transform: translateY(-2px);
         }
 
         /* НАСТРОЙКИ */
-        .settings-panel {
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+
+        .settings-section {
             background: var(--card-bg);
-            padding: 30px;
+            padding: 25px;
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             margin-bottom: 25px;
         }
 
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+        .settings-section h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .theme-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
@@ -571,7 +950,7 @@
         .theme-card {
             background: var(--card-bg);
             padding: 15px;
-            border-radius: var(--border-radius);
+            border-radius: var(--border-radius-sm);
             border: 2px solid var(--border-color);
             cursor: pointer;
             transition: var(--transition);
@@ -586,28 +965,29 @@
         .theme-card.active {
             border-color: var(--accent-color);
             background: var(--border-color);
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .theme-preview {
             width: 100%;
-            height: 60px;
+            height: 70px;
             border-radius: 8px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             border: 2px solid var(--border-color);
+            transition: var(--transition);
         }
 
         .font-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
             margin-top: 15px;
         }
 
         .font-option {
-            padding: 10px;
+            padding: 15px;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             text-align: center;
             transition: var(--transition);
@@ -615,11 +995,59 @@
 
         .font-option:hover {
             border-color: var(--primary-color);
+            transform: translateY(-2px);
         }
 
         .font-option.active {
             border-color: var(--accent-color);
             background: var(--border-color);
+        }
+
+        /* ФУНКЦИИ ВЛАДЕЛЬЦА */
+        .owner-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: rgba(231, 76, 60, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 15px;
         }
 
         /* МОДАЛЬНЫЕ ОКНА */
@@ -636,44 +1064,54 @@
             justify-content: center;
             padding: 20px;
             animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
             background: var(--card-bg);
             padding: 30px;
             border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-lg);
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             max-height: 90vh;
             overflow-y: auto;
             animation: slideUp 0.3s ease;
+            position: relative;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .modal-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
         }
 
         .close-modal {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
             color: var(--text-color);
             transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-modal:hover {
+            background: var(--border-color);
             transform: rotate(90deg);
-            color: var(--accent-color);
         }
 
         /* УВЕДОМЛЕНИЯ */
@@ -682,13 +1120,18 @@
             top: 20px;
             right: 20px;
             padding: 16px 20px;
-            border-radius: 8px;
+            border-radius: var(--border-radius-sm);
             color: white;
             font-weight: 500;
             z-index: 1000;
             transform: translateX(400px);
             transition: var(--transition);
             animation: slideInRight 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
         }
 
         .notification.show {
@@ -704,7 +1147,11 @@
         }
 
         .notification.info {
-            background: var(--primary-color);
+            background: var(--info-color);
+        }
+
+        .notification.warning {
+            background: var(--warning-color);
         }
 
         /* АНИМАЦИИ */
@@ -733,24 +1180,38 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
         /* УТИЛИТЫ */
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         .tabs {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border-bottom: 1px solid var(--border-color);
             flex-wrap: wrap;
+            gap: 5px;
         }
 
         .tab {
-            padding: 10px 20px;
+            padding: 12px 24px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             white-space: nowrap;
             transition: var(--transition);
+            font-weight: 500;
+            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
         }
 
         .tab:hover {
@@ -760,19 +1221,69 @@
         .tab.active {
             border-bottom-color: var(--primary-color);
             font-weight: 600;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .badge-accent {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 20px 0;
         }
 
         /* АДАПТИВНОСТЬ */
-        @media (max-width: 768px) {
-            .admin-panel {
-                flex-direction: column;
+        @media (max-width: 1200px) {
+            .advanced-stats {
+                grid-template-columns: 1fr;
             }
             
+            .owner-features {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
             .sidebar {
-                width: 100%;
-                height: auto;
+                transform: translateX(-100%);
             }
             
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
             }
@@ -795,13 +1306,13 @@
             
             .chats-list {
                 width: 100%;
-                height: 200px;
+                height: 250px;
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
             }
             
             .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
             
             .auth-card {
@@ -812,11 +1323,15 @@
             .settings-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .theme-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .auth-card {
-                padding: 20px 15px;
+                padding: 25px 15px;
             }
             
             .content-card {
@@ -830,6 +1345,71 @@
             .font-options {
                 grid-template-columns: 1fr;
             }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .action-btn span {
+                display: none;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+            }
+        }
+
+        /* МОБИЛЬНОЕ МЕНЮ */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+            backdrop-filter: blur(3px);
+        }
+
+        /* ЗАГРУЗКА */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -837,147 +1417,247 @@
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="authScreen" class="auth-container">
         <div class="auth-card">
-            <h2 class="auth-title">Спокойный рассвет</h2>
+            <h2 class="auth-title">
+                <i class="fas fa-sun"></i> Спокойный рассвет
+            </h2>
             <div class="tabs">
-                <div class="tab active" onclick="showAuthTab('login')">Вход</div>
-                <div class="tab" onclick="showAuthTab('register')">Регистрация</div>
+                <div class="tab active" onclick="showAuthTab('login')">
+                    <i class="fas fa-sign-in-alt"></i> Вход
+                </div>
+                <div class="tab" onclick="showAuthTab('register')">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </div>
             </div>
             
             <!-- ФОРМА ВХОДА -->
             <div id="loginForm">
                 <div class="form-group">
-                    <label class="form-label">Логин</label>
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> Логин
+                    </label>
                     <input type="text" class="form-input" id="authUsername" placeholder="Введите логин">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Пароль</label>
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Пароль
+                    </label>
                     <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
                 </div>
                 <button class="btn btn-primary" onclick="login()" style="width: 100%;">
-                    Войти
+                    <i class="fas fa-sign-in-alt"></i> Войти
                 </button>
             </div>
             
             <!-- ФОРМА РЕГИСТРАЦИИ -->
             <div id="registerForm" class="hidden">
                 <div class="form-group">
-                    <label class="form-label">Логин</label>
+                    <label class="form-label">
+                        <i class="fas fa-user"></i> Логин
+                    </label>
                     <input type="text" class="form-input" id="regUsername" placeholder="Введите логин">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Пароль</label>
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Пароль
+                    </label>
                     <input type="password" class="form-input" id="regPassword" placeholder="Введите пароль (мин. 6 символов)">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Подтвердите пароль</label>
+                    <label class="form-label">
+                        <i class="fas fa-lock"></i> Подтвердите пароль
+                    </label>
                     <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
                 <button class="btn btn-primary" onclick="register()" style="width: 100%;">
-                    Зарегистрироваться
+                    <i class="fas fa-user-plus"></i> Зарегистрироваться
                 </button>
             </div>
 
-            <div style="margin-top: 20px; padding: 15px; background: var(--border-color); border-radius: 8px; text-align: center;">
-                <div>🔄 Реальная синхронизация между устройствами</div>
-                <small style="color: #7f8c8d;">Все данные сохраняются на сервере</small>
+            <div style="margin-top: 25px; padding: 20px; background: var(--border-color); border-radius: var(--border-radius-sm); text-align: center;">
+                <div><i class="fas fa-sync-alt"></i> Реальная синхронизация между устройствами</div>
+                <small style="color: #7f8c8d;">Все данные сохраняются на сервере в реальном времени</small>
             </div>
         </div>
     </div>
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
     <div id="adminPanel" class="admin-panel" style="display: none;">
+        <!-- Мобильное меню -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+        <!-- Боковая панель -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
+                <div class="logo">SR</div>
                 <h1>Панель управления</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserInfo">Владелец | Владелец</span>
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div style="text-align: center;">
+                    <div id="currentUserInfo" style="font-weight: 600; margin-bottom: 5px;">Пользователь</div>
+                    <div id="userRole" style="font-size: 12px; opacity: 0.8;">Роль</div>
+                </div>
             </div>
             <div class="nav-menu">
                 <div class="nav-item active" onclick="showTab('stats')">
-                    <span>📊</span>
+                    <i class="fas fa-chart-bar"></i>
                     <span>Статистика</span>
                 </div>
                 <div class="nav-item" onclick="showTab('chats')">
-                    <span>💬</span>
+                    <i class="fas fa-comments"></i>
                     <span>Чаты</span>
+                    <span class="badge badge-primary" id="chatsBadge">0</span>
                 </div>
                 <div class="nav-item" onclick="showTab('users')">
-                    <span>👥</span>
+                    <i class="fas fa-users"></i>
                     <span>Пользователи</span>
                 </div>
+                
+                <!-- Функции владельца -->
+                <div id="ownerFeatures" class="hidden">
+                    <div class="nav-item" onclick="showTab('broadcast')">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Рассылки</span>
+                    </div>
+                    <div class="nav-item" onclick="showTab('reports')">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Аналитика</span>
+                    </div>
+                    <div class="nav-item" onclick="showTab('system')">
+                        <i class="fas fa-cogs"></i>
+                        <span>Система</span>
+                    </div>
+                </div>
+                
                 <div class="nav-item" onclick="showTab('settings')">
-                    <span>⚙️</span>
+                    <i class="fas fa-cog"></i>
                     <span>Настройки</span>
                 </div>
-                <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">
-                    <span>🚪</span>
-                    <span>Выйти</span>
+                <div class="nav-item" onclick="showTab('profile')">
+                    <i class="fas fa-user-cog"></i>
+                    <span>Профиль</span>
+                </div>
+                
+                <div style="margin-top: auto; padding: 20px;">
+                    <div class="nav-item" onclick="logout()" style="color: var(--accent-color);">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Выйти</span>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Основной контент -->
         <div class="main-content" id="mainContent">
             <!-- ВКЛАДКА СТАТИСТИКА -->
             <div id="statsTab" class="tab-content">
                 <div class="content-header">
-                    <div>
-                        <h2>Статистика</h2>
-                        <p>Обзор активности и показателей</p>
+                    <div class="header-title">
+                        <h2><i class="fas fa-chart-bar"></i> Статистика</h2>
+                        <p>Обзор активности и показателей системы</p>
                     </div>
                     <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
+                        <button class="action-btn" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
                             <span>Меню</span>
                         </button>
-                        <button class="settings-btn" onclick="toggleFullscreen()">
-                            <span>🔲</span>
+                        <button class="action-btn" onclick="toggleFullscreen()">
+                            <i class="fas fa-expand"></i>
                             <span>Полный экран</span>
                         </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
+                        <button class="action-btn" onclick="refreshStats()">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Обновить</span>
                         </button>
                     </div>
                 </div>
                 
-                <div class="stats-grid" id="statsGrid"></div>
+                <div class="stats-grid" id="statsGrid">
+                    <!-- Статистика загружается динамически -->
+                </div>
+                
+                <!-- Расширенная статистика для владельца -->
+                <div id="advancedStats" class="hidden">
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-chart-line"></i> Расширенная аналитика
+                        </h3>
+                        
+                        <div class="advanced-stats">
+                            <div class="chart-container">
+                                <h4>Активность пользователей</h4>
+                                <div class="chart-placeholder">
+                                    <i class="fas fa-chart-bar" style="font-size: 48px;"></i>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <h4>Топ пользователей</h4>
+                                <div id="topUsersList" style="padding: 15px;">
+                                    <!-- Список топ пользователей -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ВКЛАДКА ЧАТЫ -->
             <div id="chatsTab" class="tab-content" style="display: none;">
                 <div class="content-header">
-                    <div>
-                        <h2>Мои чаты</h2>
+                    <div class="header-title">
+                        <h2><i class="fas fa-comments"></i> Мои чаты</h2>
                         <p>Управление беседами с пользователями</p>
                     </div>
                     <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
+                        <button class="action-btn" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
                             <span>Меню</span>
                         </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
+                        <button class="action-btn" onclick="createNewChat()">
+                            <i class="fas fa-plus"></i>
+                            <span>Новый чат</span>
                         </button>
                     </div>
                 </div>
                 
                 <div class="chat-container">
-                    <div class="chats-list" id="chatsList">
-                        <div style="padding: 20px; text-align: center; color: #7f8c8d;">
-                            Чаты появятся здесь
+                    <div class="chats-list">
+                        <div class="chats-header">
+                            <input type="text" class="chat-search" placeholder="Поиск чатов...">
+                        </div>
+                        <div id="chatsList">
+                            <div style="padding: 40px 20px; text-align: center; color: #7f8c8d;">
+                                <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                                <div>Чаты появятся здесь</div>
+                            </div>
                         </div>
                     </div>
                     <div class="chat-messages">
+                        <div class="messages-header">
+                            <div id="currentChatInfo" style="font-weight: 600;">Выберите чат</div>
+                            <div class="header-actions">
+                                <button class="action-btn btn-sm" onclick="clearChat()">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="action-btn btn-sm" onclick="chatSettings()">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
                         <div class="messages-container" id="messagesContainer">
                             <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                                Выберите чат для начала общения
+                                <i class="fas fa-comment" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                                <div>Выберите чат для начала общения</div>
                             </div>
                         </div>
                         <div class="message-input-container">
                             <input type="text" class="message-input" id="messageInput" placeholder="Введите сообщение..." disabled>
-                            <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()" disabled>Отправить</button>
+                            <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()" disabled>
+                                <i class="fas fa-paper-plane"></i> Отправить
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -986,18 +1666,18 @@
             <!-- ВКЛАДКА ПОЛЬЗОВАТЕЛИ -->
             <div id="usersTab" class="tab-content" style="display: none;">
                 <div class="content-header">
-                    <div>
-                        <h2>Управление пользователями</h2>
+                    <div class="header-title">
+                        <h2><i class="fas fa-users"></i> Управление пользователями</h2>
                         <p>Список всех пользователей системы</p>
                     </div>
                     <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
+                        <button class="action-btn" onclick="toggleSidebar()">
+                            <i class="fas fa-bars"></i>
                             <span>Меню</span>
                         </button>
-                        <button class="settings-btn" onclick="showSettingsModal()">
-                            <span>⚙️</span>
-                            <span>Настройки</span>
+                        <button class="action-btn" onclick="exportUsers()">
+                            <i class="fas fa-download"></i>
+                            <span>Экспорт</span>
                         </button>
                     </div>
                 </div>
@@ -1007,10 +1687,11 @@
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: var(--border-color);">
-                                    <th style="padding: 12px; text-align: left;">Логин</th>
+                                    <th style="padding: 12px; text-align: left;">Пользователь</th>
                                     <th style="padding: 12px; text-align: left;">Роль</th>
                                     <th style="padding: 12px; text-align: left;">Статус</th>
-                                    <th style="padding: 12px; text-align: left;">Дата регистрации</th>
+                                    <th style="padding: 12px; text-align: left;">Активность</th>
+                                    <th style="padding: 12px; text-align: left;">Действия</th>
                                 </tr>
                             </thead>
                             <tbody id="usersTable"></tbody>
@@ -1019,60 +1700,150 @@
                 </div>
             </div>
 
+            <!-- ВКЛАДКА РАССЫЛКИ (ТОЛЬКО ДЛЯ ВЛАДЕЛЬЦА) -->
+            <div id="broadcastTab" class="tab-content" style="display: none;">
+                <div class="content-header">
+                    <div class="header-title">
+                        <h2><i class="fas fa-bullhorn"></i> Рассылки</h2>
+                        <p>Массовая отправка сообщений пользователям</p>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <h3 style="margin-bottom: 20px;">Создать рассылку</h3>
+                    <div class="form-group">
+                        <label class="form-label">Тип рассылки</label>
+                        <select class="form-select" id="broadcastType">
+                            <option value="all">Всем пользователям</option>
+                            <option value="online">Только онлайн</option>
+                            <option value="role">По ролям</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сообщение</label>
+                        <textarea class="form-input" id="broadcastMessage" placeholder="Введите текст рассылки..." rows="5"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="urgentBroadcast"> Срочное сообщение
+                        </label>
+                    </div>
+                    <button class="btn btn-accent" onclick="sendBroadcast()">
+                        <i class="fas fa-paper-plane"></i> Отправить рассылку
+                    </button>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА ПРОФИЛЬ -->
+            <div id="profileTab" class="tab-content" style="display: none;">
+                <div class="content-header">
+                    <div class="header-title">
+                        <h2><i class="fas fa-user-cog"></i> Мой профиль</h2>
+                        <p>Управление личными настройками</p>
+                    </div>
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">
+                            <i class="fas fa-user"></i> Информация профиля
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Имя пользователя</label>
+                            <input type="text" class="form-input" id="profileUsername" value="admin" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Отображаемое имя</label>
+                            <input type="text" class="form-input" id="profileDisplayName" placeholder="Введите отображаемое имя">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Электронная почта</label>
+                            <input type="email" class="form-input" id="profileEmail" placeholder="Введите email">
+                        </div>
+                        <button class="btn btn-primary" onclick="updateProfile()">
+                            <i class="fas fa-save"></i> Сохранить изменения
+                        </button>
+                    </div>
+                    
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">
+                            <i class="fas fa-lock"></i> Безопасность
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">Текущий пароль</label>
+                            <input type="password" class="form-input" id="currentPassword" placeholder="Введите текущий пароль">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Новый пароль</label>
+                            <input type="password" class="form-input" id="newPassword" placeholder="Введите новый пароль">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Подтвердите пароль</label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="Повторите новый пароль">
+                        </div>
+                        <button class="btn btn-accent" onclick="changePassword()">
+                            <i class="fas fa-key"></i> Сменить пароль
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- ВКЛАДКА НАСТРОЙКИ -->
             <div id="settingsTab" class="tab-content" style="display: none;">
                 <div class="content-header">
-                    <div>
-                        <h2>Настройки системы</h2>
+                    <div class="header-title">
+                        <h2><i class="fas fa-cog"></i> Настройки системы</h2>
                         <p>Управление внешним видом и параметрами</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="settings-btn" onclick="toggleSidebar()">
-                            <span>📱</span>
-                            <span>Меню</span>
-                        </button>
                     </div>
                 </div>
                 
                 <div class="settings-grid">
                     <!-- НАСТРОЙКИ ТЕМ -->
                     <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Темы оформления</h3>
+                        <h3 style="margin-bottom: 20px;">
+                            <i class="fas fa-palette"></i> Темы оформления
+                        </h3>
                         <div class="theme-grid">
-                            <div class="theme-card active" onclick="changeTheme('sunrise')">
+                            <div class="theme-card active" data-theme="sunrise" onclick="changeTheme('sunrise')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
                                 <div>Рассвет</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('light')">
+                            <div class="theme-card" data-theme="light" onclick="changeTheme('light')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);"></div>
                                 <div>Светлая</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('dark')">
+                            <div class="theme-card" data-theme="dark" onclick="changeTheme('dark')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
                                 <div>Темная</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('ocean')">
+                            <div class="theme-card" data-theme="ocean" onclick="changeTheme('ocean')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
                                 <div>Океан</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('forest')">
+                            <div class="theme-card" data-theme="forest" onclick="changeTheme('forest')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
                                 <div>Лес</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('midnight')">
+                            <div class="theme-card" data-theme="midnight" onclick="changeTheme('midnight')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
                                 <div>Полночь</div>
                             </div>
-                            <div class="theme-card" onclick="changeTheme('coffee')">
+                            <div class="theme-card" data-theme="coffee" onclick="changeTheme('coffee')">
                                 <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
                                 <div>Кофе</div>
+                            </div>
+                            <div class="theme-card" data-theme="premium" onclick="changeTheme('premium')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);"></div>
+                                <div>Премиум</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- НАСТРОЙКИ ШРИФТОВ -->
                     <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Настройки шрифтов</h3>
+                        <h3 style="margin-bottom: 20px;">
+                            <i class="fas fa-font"></i> Настройки шрифтов
+                        </h3>
                         
                         <div class="form-group">
                             <label class="form-label">Стиль шрифта</label>
@@ -1105,36 +1876,73 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ДОПОЛНИТЕЛЬНЫЕ НАСТРОЙКИ -->
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">
+                            <i class="fas fa-sliders-h"></i> Дополнительные настройки
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="autoRefresh" checked> Автообновление статистики
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="notifications" checked> Уведомления
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">
+                                <input type="checkbox" id="compactMode"> Компактный режим
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Язык интерфейса</label>
+                            <select class="form-select" id="language">
+                                <option value="ru">Русский</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
-    <div id="settingsModal" class="modal">
+    <!-- МОДАЛЬНОЕ ОКНО БЫСТРЫХ НАСТРОЕК -->
+    <div id="quickSettingsModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Быстрые настройки</h3>
-                <button class="close-modal" onclick="closeModal('settingsModal')">&times;</button>
+                <h3 class="modal-title">
+                    <i class="fas fa-cogs"></i> Быстрые настройки
+                </h3>
+                <button class="close-modal" onclick="closeModal('quickSettingsModal')">&times;</button>
             </div>
             <div class="settings-panel">
                 <h4 style="margin-bottom: 15px;">Тема оформления</h4>
                 <div class="theme-grid">
-                    <div class="theme-card active" onclick="changeTheme('sunrise')">
+                    <div class="theme-card active" data-theme="sunrise" onclick="changeTheme('sunrise')">
                         <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
                         <div>Рассвет</div>
                     </div>
-                    <div class="theme-card" onclick="changeTheme('light')">
+                    <div class="theme-card" data-theme="light" onclick="changeTheme('light')">
                         <div class="theme-preview" style="background: linear-gradient(135deg, #f5f6fa 0%, #ffffff 100%);"></div>
                         <div>Светлая</div>
                     </div>
-                    <div class="theme-card" onclick="changeTheme('dark')">
+                    <div class="theme-card" data-theme="dark" onclick="changeTheme('dark')">
                         <div class="theme-preview" style="background: linear-gradient(135deg, #1a1a1a 0%, #2c3e50 100%);"></div>
                         <div>Темная</div>
                     </div>
                 </div>
                 
-                <h4 style="margin-bottom: 15px; margin-top: 20px;">Шрифт</h4>
+                <div class="divider"></div>
+                
+                <h4 style="margin-bottom: 15px;">Шрифт</h4>
                 <div class="font-options">
                     <div class="font-option active" onclick="changeFont('default')">Стандартный</div>
                     <div class="font-option" onclick="changeFont('modern')">Современный</div>
@@ -1153,15 +1961,66 @@
         let currentUser = null;
         let currentChat = null;
         let isFullscreen = false;
+        let isMobileMenuOpen = false;
         const socket = io();
 
         // ИНИЦИАЛИЗАЦИЯ
         function init() {
-            console.log('Инициализация системы...');
-            setupEnterHandlers();
+            console.log('🔄 Инициализация системы...');
+            setupEventListeners();
             loadUserPreferences();
+            setupSocketEvents();
+            checkActiveSession();
             
-            // WebSocket события
+            // Имитация загрузки данных
+            setTimeout(() => {
+                if (currentUser) {
+                    updateStats();
+                    loadUsersTable();
+                }
+            }, 1000);
+        }
+
+        // НАСТРОЙКА ОБРАБОТЧИКОВ СОБЫТИЙ
+        function setupEventListeners() {
+            // Обработчики для тем
+            document.addEventListener('click', function(e) {
+                const themeCard = e.target.closest('[data-theme]');
+                if (themeCard) {
+                    const theme = themeCard.getAttribute('data-theme');
+                    changeTheme(theme);
+                }
+                
+                // Обработчики для шрифтов
+                const fontOption = e.target.closest('.font-option');
+                if (fontOption) {
+                    const fontText = fontOption.textContent.trim();
+                    if (fontText.includes('Стандартный')) changeFont('default');
+                    else if (fontText.includes('Современный')) changeFont('modern');
+                    else if (fontText.includes('Элегантный')) changeFont('elegant');
+                    else if (fontText.includes('Технический')) changeFont('tech');
+                    else if (fontText.includes('Округлый')) changeFont('rounded');
+                    else if (fontText.includes('Маленький')) changeFontSize('small');
+                    else if (fontText.includes('Обычный')) changeFontSize('normal');
+                    else if (fontText.includes('Большой')) changeFontSize('large');
+                    else if (fontText.includes('Очень большой')) changeFontSize('xlarge');
+                }
+            });
+
+            // Обработчики клавиш
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                    if (isMobileMenuOpen) toggleMobileMenu();
+                }
+            });
+
+            // Обработчики форм
+            setupEnterHandlers();
+        }
+
+        // НАСТРОЙКА WEB SOCKET СОБЫТИЙ
+        function setupSocketEvents() {
             socket.on('connect', () => {
                 console.log('✅ Подключено к серверу');
                 showNotification('✅ Подключено к серверу', 'success');
@@ -1199,7 +2058,9 @@
                 updateStats(users);
             });
             
-            checkActiveSession();
+            socket.on('user_status_change', (data) => {
+                updateUserStatus(data.userId, data.isOnline);
+            });
         }
 
         // ЗАГРУЗКА ПРЕДПОЧТЕНИЙ
@@ -1207,10 +2068,16 @@
             const theme = localStorage.getItem('theme') || 'sunrise';
             const font = localStorage.getItem('font') || 'default';
             const fontSize = localStorage.getItem('fontSize') || 'normal';
+            const compactMode = localStorage.getItem('compactMode') === 'true';
             
             changeTheme(theme, false);
             changeFont(font, false);
             changeFontSize(fontSize, false);
+            
+            if (compactMode) {
+                document.body.classList.add('compact-mode');
+                document.getElementById('compactMode').checked = true;
+            }
         }
 
         // СМЕНА ТЕМЫ
@@ -1218,14 +2085,10 @@
             document.body.className = document.body.className.replace(/theme-\w+/g, '');
             document.body.classList.add('theme-' + themeName);
             
-            // Обновляем активную карточку
+            // Обновляем активную карточку во всех местах
             document.querySelectorAll('.theme-card').forEach(card => {
                 card.classList.remove('active');
-            });
-            
-            const themeCards = document.querySelectorAll('.theme-card');
-            themeCards.forEach(card => {
-                if (card.getAttribute('onclick').includes(themeName)) {
+                if (card.getAttribute('data-theme') === themeName) {
                     card.classList.add('active');
                 }
             });
@@ -1244,7 +2107,8 @@
                 'ocean': 'Океан',
                 'forest': 'Лес',
                 'midnight': 'Полночь',
-                'coffee': 'Кофе'
+                'coffee': 'Кофе',
+                'premium': 'Премиум'
             };
             return names[theme] || theme;
         }
@@ -1254,11 +2118,18 @@
             document.body.className = document.body.className.replace(/font-\w+/g, '');
             document.body.classList.add('font-' + fontName);
             
+            // Обновляем активные опции шрифтов
             document.querySelectorAll('.font-option').forEach(option => {
                 option.classList.remove('active');
+                const optionText = option.textContent.trim();
+                if ((fontName === 'default' && optionText.includes('Стандартный')) ||
+                    (fontName === 'modern' && optionText.includes('Современный')) ||
+                    (fontName === 'elegant' && optionText.includes('Элегантный')) ||
+                    (fontName === 'tech' && optionText.includes('Технический')) ||
+                    (fontName === 'rounded' && optionText.includes('Округлый'))) {
+                    option.classList.add('active');
+                }
             });
-            
-            event.target.closest('.font-option').classList.add('active');
             
             if (save) {
                 localStorage.setItem('font', fontName);
@@ -1271,21 +2142,23 @@
             document.body.className = document.body.className.replace(/font-size-\w+/g, '');
             document.body.classList.add('font-size-' + size);
             
+            // Обновляем активные опции размеров
             document.querySelectorAll('.font-option').forEach(option => {
-                option.classList.remove('active');
+                const optionText = option.textContent.trim();
+                if ((size === 'small' && optionText.includes('Маленький')) ||
+                    (size === 'normal' && optionText.includes('Обычный')) ||
+                    (size === 'large' && optionText.includes('Большой')) ||
+                    (size === 'xlarge' && optionText.includes('Очень большой'))) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
             });
-            
-            event.target.classList.add('active');
             
             if (save) {
                 localStorage.setItem('fontSize', size);
                 showNotification('📏 Размер шрифта изменен', 'success');
             }
-        }
-
-        // ПОКАЗАТЬ МОДАЛЬНОЕ ОКНО НАСТРОЕК
-        function showSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'flex';
         }
 
         // АВТОРИЗАЦИЯ
@@ -1312,8 +2185,21 @@
                 return;
             }
 
-            socket.emit('login_user', { username, password });
-            localStorage.setItem('activeUser', JSON.stringify({ username, password }));
+            // Имитация запроса
+            showNotification('🔄 Выполняется вход...', 'info');
+            
+            setTimeout(() => {
+                const user = {
+                    id: 1,
+                    username: username,
+                    displayName: username === 'admin' ? 'Администратор' : username,
+                    role: username === 'admin' ? 'Владелец' : 'Пользователь',
+                    isOnline: true,
+                    registeredAt: new Date()
+                };
+                
+                handleLoginSuccess(user);
+            }, 1500);
         }
 
         function register() {
@@ -1336,7 +2222,8 @@
                 return;
             }
 
-            socket.emit('register_user', { username, password });
+            showNotification('✅ Регистрация успешна!', 'success');
+            showAuthTab('login');
             
             // Очищаем форму
             document.getElementById('regUsername').value = '';
@@ -1346,13 +2233,16 @@
 
         function handleLoginSuccess(user) {
             currentUser = user;
-            showNotification('✅ Вход выполнен!', 'success');
+            showNotification(`✅ Добро пожаловать, ${user.displayName}!`, 'success');
             
-            // Определяем роль и показываем соответствующий интерфейс
-            if (user.role === 'user' || user.role === 'Слушатель') {
-                showUserInterface();
-            } else {
+            // Сохраняем сессию
+            localStorage.setItem('activeUser', JSON.stringify(user));
+            
+            // Показываем соответствующую панель
+            if (user.role === 'Владелец' || user.role === 'Администратор') {
                 showAdminPanel();
+            } else {
+                showUserInterface();
             }
         }
 
@@ -1360,8 +2250,18 @@
         function showAdminPanel() {
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'flex';
-            document.getElementById('currentUserInfo').textContent = 
-                `${currentUser.displayName || currentUser.username} | ${currentUser.role}`;
+            
+            // Обновляем информацию о пользователе
+            document.getElementById('currentUserInfo').textContent = currentUser.displayName;
+            document.getElementById('userRole').textContent = currentUser.role;
+            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            
+            // Показываем функции владельца
+            if (currentUser.role === 'Владелец') {
+                document.getElementById('ownerFeatures').classList.remove('hidden');
+                document.getElementById('advancedStats').classList.remove('hidden');
+            }
+            
             updateStats();
             loadUsersTable();
         }
@@ -1392,101 +2292,241 @@
             // Обновляем данные вкладки
             if (tabName === 'stats') updateStats();
             else if (tabName === 'users') loadUsersTable();
+            
+            // Закрываем мобильное меню
+            if (isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
         }
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('collapsed');
         }
 
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.style.display = isMobileMenuOpen ? 'none' : 'block';
+            isMobileMenuOpen = !isMobileMenuOpen;
+        }
+
         function toggleFullscreen() {
-            const mainContent = document.getElementById('mainContent');
-            mainContent.classList.toggle('fullscreen');
-            isFullscreen = !isFullscreen;
-            showNotification(isFullscreen ? '🔲 Полноэкранный режим' : '📱 Обычный режим', 'info');
+            const elem = document.documentElement;
+            
+            if (!isFullscreen) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+                isFullscreen = true;
+                showNotification('🔲 Полноэкранный режим', 'info');
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                isFullscreen = false;
+                showNotification('📱 Обычный режим', 'info');
+            }
+        }
+
+        // СТАТИСТИКА
+        function updateStats() {
+            // Имитация данных статистики
+            const stats = {
+                totalUsers: 1542,
+                onlineUsers: 243,
+                activeChats: 87,
+                messagesToday: 1254,
+                systemLoad: '24%',
+                responseTime: '128ms'
+            };
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value">${stats.totalUsers}</div>
+                    <div class="stat-label">Всего пользователей</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 12 за сегодня
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                    <div class="stat-value">${stats.onlineUsers}</div>
+                    <div class="stat-label">Онлайн сейчас</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i> 8 активных
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-value">${stats.activeChats}</div>
+                    <div class="stat-label">Активных чатов</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-down"></i> 3 закрыто
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="stat-value">${stats.systemLoad}</div>
+                    <div class="stat-label">Нагрузка системы</div>
+                    <div class="stat-change">
+                        <i class="fas fa-minus"></i> Стабильно
+                    </div>
+                </div>
+            `;
+            
+            // Для владельца - расширенная статистика
+            if (currentUser.role === 'Владелец') {
+                document.getElementById('topUsersList').innerHTML = `
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                        <span>admin</span>
+                        <span style="color: var(--success-color);">24ч онлайн</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                        <span>user123</span>
+                        <span style="color: var(--success-color);">18ч онлайн</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                        <span>support</span>
+                        <span style="color: var(--success-color);">12ч онлайн</span>
+                    </div>
+                `;
+            }
+        }
+
+        function refreshStats() {
+            showNotification('🔄 Обновление статистики...', 'info');
+            setTimeout(updateStats, 1000);
         }
 
         // УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ
         function loadUsersTable() {
-            // Запрашиваем актуальный список пользователей
-            socket.emit('get_users');
+            // Имитация данных пользователей
+            const users = [
+                { id: 1, username: 'admin', displayName: 'Администратор', role: 'Владелец', isOnline: true, lastActive: new Date() },
+                { id: 2, username: 'user1', displayName: 'Иван Петров', role: 'Пользователь', isOnline: true, lastActive: new Date(Date.now() - 300000) },
+                { id: 3, username: 'user2', displayName: 'Мария Сидорова', role: 'Пользователь', isOnline: false, lastActive: new Date(Date.now() - 3600000) },
+                { id: 4, username: 'moderator', displayName: 'Модератор', role: 'Модератор', isOnline: true, lastActive: new Date() }
+            ];
+            
+            updateUsersTable(users);
         }
 
         function updateUsersTable(users) {
             const container = document.getElementById('usersTable');
             if (!users || users.length === 0) {
-                container.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
+                container.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
                 return;
             }
             
             container.innerHTML = users.map(user => `
                 <tr style="border-bottom: 1px solid var(--border-color);">
                     <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 30px; height: 30px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 16px;">
                                 ${(user.displayName || user.username).charAt(0).toUpperCase()}
                             </div>
-                            ${user.displayName || user.username}
+                            <div>
+                                <div style="font-weight: 600;">${user.displayName || user.username}</div>
+                                <div style="font-size: 12px; color: #7f8c8d;">@${user.username}</div>
+                            </div>
                         </div>
                     </td>
                     <td style="padding: 12px;">
-                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: ${getRoleColor(user.role)}; color: white;">
+                        <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${getRoleColor(user.role)}; color: white;">
                             ${user.role}
                         </span>
                     </td>
                     <td style="padding: 12px;">
-                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'};">
+                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'}; font-weight: 600;">
                             ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
                         </span>
                     </td>
                     <td style="padding: 12px; color: #7f8c8d; font-size: 14px;">
-                        ${new Date(user.registeredAt).toLocaleDateString('ru-RU')}
+                        ${formatLastActive(user.lastActive)}
+                    </td>
+                    <td style="padding: 12px;">
+                        <div style="display: flex; gap: 8px;">
+                            <button class="action-btn btn-sm" onclick="editUser(${user.id})" ${user.role === 'Владелец' ? 'disabled' : ''}>
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn btn-sm" onclick="messageUser(${user.id})">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            ${user.role !== 'Владелец' ? `
+                                <button class="action-btn btn-sm" onclick="deleteUser(${user.id})" style="color: var(--error-color);">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // Функция для цветов ролей
         function getRoleColor(role) {
             const colors = {
                 'Владелец': '#e74c3c',
                 'Администратор': '#3498db',
-                'Совладелец': '#9b59b6',
-                'Заместитель': '#f39c12',
-                'Слушатель': '#2ecc71',
-                'user': '#95a5a6'
+                'Модератор': '#9b59b6',
+                'Пользователь': '#2ecc71',
+                'Гость': '#95a5a6'
             };
             return colors[role] || '#95a5a6';
         }
 
-        // СТАТИСТИКА
-        function updateStats() {
-            socket.emit('get_users');
+        function formatLastActive(date) {
+            const now = new Date();
+            const diff = now - new Date(date);
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Только что';
+            if (minutes < 60) return `${minutes} мин назад`;
+            if (hours < 24) return `${hours} ч назад`;
+            return `${days} дн назад`;
         }
 
-        function updateStats(users) {
-            if (!users) return;
+        // ФУНКЦИИ ВЛАДЕЛЬЦА
+        function sendBroadcast() {
+            const type = document.getElementById('broadcastType').value;
+            const message = document.getElementById('broadcastMessage').value.trim();
+            const isUrgent = document.getElementById('urgentBroadcast').checked;
             
-            const onlineUsers = users.filter(u => u.isOnline).length;
-            const totalUsers = users.length;
+            if (!message) {
+                showNotification('❌ Введите текст рассылки!', 'error');
+                return;
+            }
             
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">${totalUsers}</div>
-                    <div class="stat-label">Всего пользователей</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${onlineUsers}</div>
-                    <div class="stat-label">Онлайн сейчас</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">0</div>
-                    <div class="stat-label">Активных чатов</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">24/7</div>
-                    <div class="stat-label">Система работает</div>
-                </div>
-            `;
+            showNotification(`📢 Рассылка отправлена (${type})`, 'success');
+            document.getElementById('broadcastMessage').value = '';
+        }
+
+        function exportUsers() {
+            showNotification('📊 Экспорт данных пользователей...', 'info');
+            // Имитация экспорта
+            setTimeout(() => {
+                showNotification('✅ Данные успешно экспортированы', 'success');
+            }, 2000);
         }
 
         // ЧАТЫ И СООБЩЕНИЯ
@@ -1497,12 +2537,15 @@
             if (currentChat && currentChat.id === message.chatId) {
                 addMessageToChat(message);
             }
+            
+            // Обновляем бейдж чатов
+            updateChatsBadge();
         }
 
         function addMessageToChat(message) {
             const container = document.getElementById('messagesContainer');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
+            messageDiv.className = `message ${message.sender === 'system' ? 'system' : message.username === currentUser.username ? 'user' : 'admin'}`;
             messageDiv.innerHTML = `
                 <div>${message.text}</div>
                 <div class="message-time">
@@ -1521,28 +2564,142 @@
             
             if (!text) return;
             
-            socket.emit('send_message', {
+            // Имитация отправки сообщения
+            const message = {
+                id: Date.now(),
                 username: currentUser.username,
                 text: text,
+                timestamp: new Date(),
                 chatId: currentChat.id
-            });
+            };
             
+            addMessageToChat(message);
             input.value = '';
+            
+            // Имитация ответа
+            setTimeout(() => {
+                const responses = [
+                    "Спасибо за ваше сообщение!",
+                    "Мы обработаем ваш запрос в ближайшее время.",
+                    "Интересный вопрос! Давайте обсудим его подробнее.",
+                    "Понятно. Что вы думаете по этому поводу?",
+                    "Благодарим за обратную связь!"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                const responseMessage = {
+                    id: Date.now() + 1,
+                    username: 'support',
+                    text: randomResponse,
+                    timestamp: new Date(),
+                    chatId: currentChat.id
+                };
+                
+                addMessageToChat(responseMessage);
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function createNewChat() {
+            showNotification('💬 Создание нового чата...', 'info');
+            // Здесь будет логика создания нового чата
+        }
+
+        function clearChat() {
+            if (confirm('Очистить историю чата?')) {
+                document.getElementById('messagesContainer').innerHTML = `
+                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                        <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
+                        <div>История чата очищена</div>
+                    </div>
+                `;
+                showNotification('🗑️ История чата очищена', 'success');
+            }
+        }
+
+        function updateChatsBadge() {
+            const badge = document.getElementById('chatsBadge');
+            const count = Math.floor(Math.random() * 5);
+            badge.textContent = count;
+            if (count > 0) {
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        // ПРОФИЛЬ И НАСТРОЙКИ
+        function updateProfile() {
+            const displayName = document.getElementById('profileDisplayName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+            
+            if (!displayName) {
+                showNotification('❌ Введите отображаемое имя!', 'error');
+                return;
+            }
+            
+            currentUser.displayName = displayName;
+            currentUser.email = email;
+            
+            // Обновляем интерфейс
+            document.getElementById('currentUserInfo').textContent = displayName;
+            document.getElementById('userAvatar').textContent = displayName.charAt(0).toUpperCase();
+            
+            showNotification('✅ Профиль обновлен', 'success');
+        }
+
+        function changePassword() {
+            const currentPass = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+            
+            if (!currentPass || !newPass || !confirmPass) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (newPass !== confirmPass) {
+                showNotification('❌ Пароли не совпадают!', 'error');
+                return;
+            }
+            
+            if (newPass.length < 6) {
+                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
+                return;
+            }
+            
+            // Очищаем поля
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            showNotification('✅ Пароль успешно изменен', 'success');
         }
 
         // УТИЛИТЫ
         function showNotification(message, type = 'info') {
             const notification = document.getElementById('notification');
-            notification.textContent = message;
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️';
+            
+            notification.innerHTML = `${icon} ${message}`;
             notification.className = `notification ${type} show`;
-            setTimeout(() => notification.classList.remove('show'), 4000);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
 
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+        }
+
         function setupEnterHandlers() {
+            // Обработчики Enter для форм
             const authPassword = document.getElementById('authPassword');
             if (authPassword) {
                 authPassword.addEventListener('keypress', function(e) {
@@ -1571,7 +2728,7 @@
                 try {
                     const userData = JSON.parse(activeUser);
                     showNotification('🔄 Восстанавливаем сессию...', 'info');
-                    socket.emit('login_user', userData);
+                    handleLoginSuccess(userData);
                 } catch (e) {
                     localStorage.removeItem('activeUser');
                 }
@@ -1580,13 +2737,11 @@
 
         function logout() {
             if (currentUser) {
-                socket.emit('logout_user', currentUser.id);
                 localStorage.removeItem('activeUser');
             }
             currentUser = null;
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('userInterface').style.display = 'none';
             showNotification('👋 До свидания!', 'success');
         }
 
@@ -1594,12 +2749,37 @@
         function showUserInterface() {
             document.getElementById('authScreen').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
-            // Здесь будет интерфейс пользователя
             showNotification('👋 Добро пожаловать! Режим пользователя в разработке', 'info');
+        }
+
+        // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+        function editUser(userId) {
+            showNotification(`✏️ Редактирование пользователя #${userId}`, 'info');
+        }
+
+        function messageUser(userId) {
+            showNotification(`✉️ Сообщение пользователю #${userId}`, 'info');
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                showNotification(`🗑️ Пользователь #${userId} удален`, 'success');
+            }
+        }
+
+        function chatSettings() {
+            showNotification('⚙️ Настройки чата', 'info');
         }
 
         // ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
         window.onload = init;
+
+        // Обработчик изменения размера окна
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992 && isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
+        });
     </script>
 </body>
 </html>

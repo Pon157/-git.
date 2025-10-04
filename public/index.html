@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -6,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Спокойный рассвет</title>
     <style>
-        /* БАЗОВЫЕ СТИЛИ */
+        /* БАЗОВЫЕ СТИЛИ И ПЕРЕМЕННЫЕ */
         :root {
+            /* Цветовые темы */
             --primary-color: #3498db;
             --secondary-color: #2c3e50;
             --accent-color: #e74c3c;
@@ -16,8 +16,131 @@
             --text-color: #2c3e50;
             --border-color: #e8ecef;
             --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --error-color: #e74c3c;
+            
+            /* Шрифты */
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-size: 16px;
+            --font-weight: normal;
+            --line-height: 1.5;
+            
+            /* Размеры */
+            --border-radius: 12px;
+            --shadow: 0 2px 10px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
         }
 
+        /* ТЕМЫ */
+        .theme-sunrise {
+            --primary-color: #ff7e5f;
+            --secondary-color: #feb47b;
+            --accent-color: #ff6b6b;
+            --bg-color: #fffaf0;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #ffeaa7;
+        }
+
+        .theme-light {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --bg-color: #f5f6fa;
+            --card-bg: white;
+            --text-color: #2c3e50;
+            --border-color: #e8ecef;
+        }
+
+        .theme-dark {
+            --primary-color: #3498db;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --bg-color: #1a1a1a;
+            --card-bg: #2c3e50;
+            --text-color: #ecf0f1;
+            --border-color: #4a5f7a;
+        }
+
+        .theme-ocean {
+            --primary-color: #1e90ff;
+            --secondary-color: #00ced1;
+            --accent-color: #ff6347;
+            --bg-color: #f0f8ff;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #b0e0e6;
+        }
+
+        .theme-forest {
+            --primary-color: #228b22;
+            --secondary-color: #32cd32;
+            --accent-color: #ff4500;
+            --bg-color: #f0fff0;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #98fb98;
+        }
+
+        .theme-midnight {
+            --primary-color: #8a2be2;
+            --secondary-color: #4b0082;
+            --accent-color: #ff69b4;
+            --bg-color: #0a0a0a;
+            --card-bg: #1a1a2e;
+            --text-color: #e6e6fa;
+            --border-color: #483d8b;
+        }
+
+        .theme-coffee {
+            --primary-color: #8b4513;
+            --secondary-color: #d2691e;
+            --accent-color: #a0522d;
+            --bg-color: #f5f5dc;
+            --card-bg: #fff8dc;
+            --text-color: #3e2723;
+            --border-color: #deb887;
+        }
+
+        /* ШРИФТЫ */
+        .font-default {
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .font-modern {
+            --font-family: 'Arial', 'Helvetica Neue', sans-serif;
+        }
+
+        .font-elegant {
+            --font-family: 'Georgia', 'Times New Roman', serif;
+        }
+
+        .font-tech {
+            --font-family: 'Courier New', 'Monaco', monospace;
+        }
+
+        .font-rounded {
+            --font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+        }
+
+        /* РАЗМЕРЫ ШРИФТОВ */
+        .font-size-small {
+            --font-size: 14px;
+        }
+
+        .font-size-normal {
+            --font-size: 16px;
+        }
+
+        .font-size-large {
+            --font-size: 18px;
+        }
+
+        .font-size-xlarge {
+            --font-size: 20px;
+        }
+
+        /* ОСНОВНЫЕ СТИЛИ */
         * {
             margin: 0;
             padding: 0;
@@ -25,14 +148,14 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            font-weight: var(--font-weight);
+            line-height: var(--line-height);
             background-color: var(--bg-color);
             color: var(--text-color);
             min-height: 100vh;
-        }
-
-        .hidden {
-            display: none !important;
+            transition: var(--transition);
         }
 
         /* АВТОРИЗАЦИЯ */
@@ -43,51 +166,68 @@
             min-height: 100vh;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             padding: 20px;
+            animation: fadeIn 0.5s ease;
         }
 
         .auth-card {
             background: var(--card-bg);
             padding: 40px;
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 400px;
+            animation: slideUp 0.5s ease;
         }
 
         .auth-title {
             text-align: center;
             margin-bottom: 30px;
+            color: var(--text-color);
             font-size: 24px;
             font-weight: 600;
         }
 
+        /* ФОРМЫ */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
+            color: var(--text-color);
+            font-size: 14px;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 15px;
+            transition: var(--transition);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-family: inherit;
         }
 
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* КНОПКИ */
         .btn {
-            padding: 12px 24px;
+            padding: 14px 28px;
             border: none;
             border-radius: 8px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            transition: var(--transition);
+            font-family: inherit;
         }
 
         .btn-primary {
@@ -97,6 +237,8 @@
 
         .btn-primary:hover {
             background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
         }
 
         .btn-secondary {
@@ -104,247 +246,14 @@
             color: white;
         }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab.active {
-            border-bottom-color: var(--primary-color);
-            font-weight: 600;
-        }
-
-        /* ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ */
-        .user-interface {
-            min-height: 100vh;
-            background: var(--bg-color);
-            display: none;
-        }
-
-        .user-header {
-            background: var(--card-bg);
-            padding: 20px 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        /* ВЫБОР СЛУШАТЕЛЯ */
-        .listener-selection {
-            padding: 30px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .selection-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .listener-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .listener-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .listener-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary-color);
-        }
-
-        .listener-card.selected {
-            border-color: var(--accent-color);
-            background: rgba(231, 76, 60, 0.05);
-        }
-
-        .listener-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .listener-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-        }
-
-        .listener-info {
-            flex: 1;
-        }
-
-        .listener-name {
-            font-weight: 600;
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        .listener-rating {
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-
-        .listener-status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-online {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .status-offline {
-            background: #95a5a6;
-            color: white;
-        }
-
-        .listener-description {
-            color: #7f8c8d;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .random-btn {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        /* ЧАТ */
-        .chat-container {
-            background: var(--card-bg);
-            margin: 0 30px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            height: 500px;
-            display: flex;
-            flex-direction: column;
-            display: none;
-        }
-
-        .chat-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .current-chat-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .messages-container {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-        }
-
-        .message.user {
-            align-self: flex-end;
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .message.listener {
-            align-self: flex-start;
-            background: var(--border-color);
-            color: var(--text-color);
-        }
-
-        .message-input-container {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid var(--border-color);
-            gap: 10px;
-        }
-
-        .message-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            outline: none;
-        }
-
-        .send-btn {
-            padding: 12px 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 24px;
-            cursor: pointer;
-        }
-
         /* ПАНЕЛЬ АДМИНИСТРАТОРА */
         .admin-panel {
             display: none;
+            min-height: 100vh;
+        }
+
+        .admin-container {
+            display: flex;
             min-height: 100vh;
         }
 
@@ -366,9 +275,10 @@
             text-align: center;
         }
 
-        .user-info-panel {
+        .user-info {
             padding: 20px 25px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
             text-align: center;
         }
 
@@ -379,7 +289,9 @@
         .nav-item {
             padding: 15px 25px;
             cursor: pointer;
+            transition: var(--transition);
             border-left: 4px solid transparent;
+            font-size: 15px;
             display: flex;
             align-items: center;
             gap: 15px;
@@ -395,17 +307,19 @@
             border-left-color: var(--accent-color);
         }
 
+        /* ОСНОВНОЙ КОНТЕНТ */
         .main-content {
             flex: 1;
             padding: 30px;
             background: var(--bg-color);
+            overflow-y: auto;
         }
 
         .content-header {
             background: var(--card-bg);
             padding: 25px 30px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
@@ -415,26 +329,299 @@
         .header-actions {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
-        .action-btn {
+        .settings-btn {
             background: var(--primary-color);
             color: white;
             border: none;
             padding: 10px 15px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
+        .settings-btn:hover {
+            background: var(--accent-color);
+        }
+
         .content-card {
             background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             margin-bottom: 25px;
+        }
+
+        /* СТАТИСТИКА */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* ЧАТЫ */
+        .chat-container {
+            display: flex;
+            height: 70vh;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .chats-list {
+            width: 300px;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            background: var(--card-bg);
+        }
+
+        .chat-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .chat-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .message.admin {
+            align-self: flex-start;
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .message-input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            outline: none;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+
+        .send-btn {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            background: var(--accent-color);
+        }
+
+        /* ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ */
+        .user-interface {
+            min-height: 100vh;
+            background: var(--bg-color);
+            display: none;
+        }
+
+        .user-header {
+            background: var(--card-bg);
+            padding: 20px 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 0 30px;
+        }
+
+        .user-chat-container {
+            background: var(--card-bg);
+            margin: 0 30px 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* НАСТРОЙКИ */
+        .settings-panel {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .theme-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .theme-option {
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .theme-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .theme-option.active {
+            border-color: var(--accent-color);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .theme-preview {
+            width: 100%;
+            height: 40px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .font-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .font-option {
+            padding: 10px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .font-option:hover {
+            border-color: var(--primary-color);
+        }
+
+        .font-option.active {
+            border-color: var(--accent-color);
+            background: rgba(231, 76, 60, 0.1);
         }
 
         /* УВЕДОМЛЕНИЯ */
@@ -448,7 +635,7 @@
             font-weight: 500;
             z-index: 1000;
             transform: translateX(400px);
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .notification.show {
@@ -463,54 +650,73 @@
             background: var(--error-color);
         }
 
-        /* МОДАЛЬНЫЕ ОКНА */
-        .modal {
+        .notification.info {
+            background: var(--primary-color);
+        }
+
+        /* АНИМАЦИИ */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* УТИЛИТЫ */
+        .hidden {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
 
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .modal-header {
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
+        .tab {
+            padding: 10px 20px;
             cursor: pointer;
-            color: var(--text-color);
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .w-full {
+            width: 100%;
         }
     </style>
 </head>
-<body>
+<body class="theme-sunrise font-default font-size-normal">
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="authScreen" class="auth-container">
         <div class="auth-card">
             <h2 class="auth-title">Спокойный рассвет</h2>
             <div class="tabs">
-                <div class="tab active" onclick="showAuthTab('login')">Вход</div>
-                <div class="tab" onclick="showAuthTab('register')">Регистрация</div>
+                <div class="tab active" data-tab="login">Вход</div>
+                <div class="tab" data-tab="register">Регистрация</div>
             </div>
             
             <!-- ФОРМА ВХОДА -->
@@ -523,7 +729,7 @@
                     <label class="form-label">Пароль</label>
                     <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
                 </div>
-                <button class="btn btn-primary" onclick="login()">
+                <button class="btn btn-primary w-full" id="loginBtn">
                     Войти
                 </button>
             </div>
@@ -542,7 +748,7 @@
                     <label class="form-label">Подтвердите пароль</label>
                     <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
-                <button class="btn btn-primary" onclick="register()">
+                <button class="btn btn-primary w-full" id="registerBtn">
                     Зарегистрироваться
                 </button>
             </div>
@@ -555,267 +761,210 @@
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">U</div>
                 <div>
-                    <div id="userDisplayName" style="font-weight: 600;">Пользователь</div>
-                    <div style="font-size: 14px; opacity: 0.7;">Пользователь</div>
+                    <div id="userDisplayName" style="font-weight: 600; font-size: 18px;">Пользователь</div>
+                    <div id="userRole" style="font-size: 14px; opacity: 0.7;">Роль</div>
                 </div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" onclick="showEditProfileModal()" style="width: auto;">
-                    Изменить профиль
-                </button>
-                <button class="btn btn-primary" onclick="logout()" style="width: auto;">
-                    Выйти
-                </button>
+            <button class="btn btn-primary" id="logoutBtn">
+                Выйти
+            </button>
+        </div>
+
+        <div class="user-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="userRating">0.0</div>
+                <div class="stat-label">Мой рейтинг</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="ratingCount">0</div>
+                <div class="stat-label">Количество оценок</div>
             </div>
         </div>
 
-        <!-- ВЫБОР СЛУШАТЕЛЯ -->
-        <div id="listenerSelection" class="listener-selection">
-            <div class="selection-header">
-                <h2>Выберите слушателя</h2>
-                <p style="color: #7f8c8d; margin-top: 10px;">Выберите с кем хотите пообщаться</p>
-            </div>
-
-            <div class="listener-grid" id="listenerGrid">
-                <!-- Слушатели загружаются динамически -->
-            </div>
-
-            <div class="random-btn">
-                <button class="btn btn-secondary" onclick="selectRandomListener()" style="width: auto;">
-                    🎲 Выбрать случайного слушателя
-                </button>
-            </div>
-        </div>
-
-        <!-- ЧАТ -->
-        <div id="chatContainer" class="chat-container">
-            <div class="chat-header">
-                <div class="current-chat-info">
-                    <div class="user-avatar" id="currentListenerAvatar">L</div>
-                    <div>
-                        <div id="currentListenerName" style="font-weight: 600;">Слушатель</div>
-                        <div id="currentListenerStatus" class="status-online" style="font-size: 12px;">Online</div>
-                    </div>
-                </div>
-                <button class="btn btn-outline" onclick="backToSelection()" style="width: auto;">
-                    ← Назад к выбору
-                </button>
-            </div>
-            <div class="messages-container" id="messagesContainer">
+        <div class="user-chat-container">
+            <div class="messages-container" id="userMessagesContainer">
                 <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                    <div>💬 Начните общение со слушателем</div>
+                    <div>💬 Добро пожаловать в чат!</div>
                 </div>
             </div>
             <div class="message-input-container">
-                <input type="text" class="message-input" id="messageInput" placeholder="Введите сообщение...">
-                <button class="send-btn" onclick="sendMessage()">Отправить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ИНТЕРФЕЙС СЛУШАТЕЛЯ -->
-    <div id="listenerInterface" class="user-interface">
-        <div class="user-header">
-            <div class="user-info">
-                <div class="user-avatar" id="listenerAvatar">L</div>
-                <div>
-                    <div id="listenerDisplayName" style="font-weight: 600;">Слушатель</div>
-                    <div style="font-size: 14px; opacity: 0.7;">Слушатель</div>
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" onclick="showEditProfileModal()" style="width: auto;">
-                    Изменить профиль
-                </button>
-                <button class="btn btn-primary" onclick="logout()" style="width: auto;">
-                    Выйти
-                </button>
-            </div>
-        </div>
-
-        <!-- ЧАТ ДЛЯ СЛУШАТЕЛЯ -->
-        <div class="chat-container" style="display: block; margin: 0 30px 30px;">
-            <div class="chat-header">
-                <div class="current-chat-info">
-                    <div class="user-avatar" style="background: var(--accent-color);">U</div>
-                    <div>
-                        <div style="font-weight: 600;">Ожидание пользователя</div>
-                        <div class="status-offline" style="font-size: 12px;">Оффлайн</div>
-                    </div>
-                </div>
-            </div>
-            <div class="messages-container" id="listenerMessagesContainer">
-                <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                    <div>👂 Ожидайте сообщений от пользователей</div>
-                    <div style="font-size: 14px; margin-top: 10px;">Как только пользователь напишет вам, здесь появится чат</div>
-                </div>
-            </div>
-            <div class="message-input-container">
-                <input type="text" class="message-input" id="listenerMessageInput" placeholder="Введите ответ..." disabled>
-                <button class="send-btn" onclick="sendListenerMessage()" disabled>Отправить</button>
+                <input type="text" class="message-input" id="userMessageInput" placeholder="Введите сообщение...">
+                <button class="send-btn" id="sendUserMessageBtn">Отправить</button>
             </div>
         </div>
     </div>
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
     <div id="adminPanel" class="admin-panel">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>Панель управления</h1>
-            </div>
-            <div class="user-info-panel">
-                <span id="adminUserInfo">Владелец | Владелец</span>
-            </div>
-            <div class="nav-menu">
-                <div class="nav-item active" onclick="showAdminTab('users')">
-                    <span>👥</span>
-                    <span>Пользователи</span>
+        <div class="admin-container">
+            <!-- САЙДБАР -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h1>Панель управления</h1>
                 </div>
-                <div class="nav-item" onclick="showAdminTab('stats')">
-                    <span>📊</span>
-                    <span>Статистика</span>
+                <div class="user-info">
+                    <div id="adminDisplayName">Владелец</div>
+                    <div id="adminRole" style="opacity: 0.7;">Владелец системы</div>
                 </div>
-                <div class="nav-item" onclick="showAdminTab('settings')">
-                    <span>⚙️</span>
-                    <span>Настройки</span>
-                </div>
-                <div class="nav-item" onclick="logout()" style="color: var(--accent-color); margin-top: 20px;">
-                    <span>🚪</span>
-                    <span>Выйти</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <!-- ВКЛАДКА ПОЛЬЗОВАТЕЛИ -->
-            <div id="usersTab" class="tab-content">
-                <div class="content-header">
-                    <div>
-                        <h2>Управление пользователями</h2>
-                        <p>Список всех пользователей системы</p>
+                <div class="nav-menu">
+                    <div class="nav-item active" data-section="dashboard">
+                        📊 Статистика
                     </div>
+                    <div class="nav-item" data-section="chats">
+                        💬 Чаты
+                    </div>
+                    <div class="nav-item" data-section="users">
+                        👥 Пользователи
+                    </div>
+                    <div class="nav-item" data-section="settings">
+                        ⚙️ Настройки
+                    </div>
+                </div>
+            </div>
+
+            <!-- ОСНОВНОЙ КОНТЕНТ -->
+            <div class="main-content">
+                <!-- ЗАГОЛОВОК -->
+                <div class="content-header">
+                    <h2 id="contentTitle">Статистика системы</h2>
                     <div class="header-actions">
-                        <button class="action-btn" onclick="showAddUserModal()">
-                            <span>➕</span>
-                            <span>Добавить аккаунт</span>
+                        <button class="settings-btn" onclick="showSettings()">
+                            🎨 Настройки темы
                         </button>
-                        <button class="action-btn" onclick="showEditProfileModal()">
-                            <span>👤</span>
-                            <span>Мой профиль</span>
+                        <button class="btn btn-primary" onclick="logout()">
+                            Выйти
                         </button>
                     </div>
                 </div>
-                
-                <div class="content-card">
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: var(--border-color);">
-                                    <th style="padding: 12px; text-align: left;">Пользователь</th>
-                                    <th style="padding: 12px; text-align: left;">Роль</th>
-                                    <th style="padding: 12px; text-align: left;">Статус</th>
-                                    <th style="padding: 12px; text-align: left;">Рейтинг</th>
-                                    <th style="padding: 12px; text-align: left;">Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                <tr>
-                                    <td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">
-                                        Загрузка пользователей...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
-            <!-- ВКЛАДКА СТАТИСТИКА -->
-            <div id="statsTab" class="tab-content" style="display: none;">
-                <div class="content-header">
-                    <div>
-                        <h2>Статистика системы</h2>
-                        <p>Обзор активности и показателей</p>
+                <!-- СТАТИСТИКА -->
+                <div id="dashboardSection" class="content-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalUsers">0</div>
+                            <div class="stat-label">Всего пользователей</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="activeChats">0</div>
+                            <div class="stat-label">Активные чаты</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgRating">0.0</div>
+                            <div class="stat-label">Средний рейтинг</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="messagesToday">0</div>
+                            <div class="stat-label">Сообщений сегодня</div>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="content-card">
-                    <h3>Основные метрики</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
-                        <div style="text-align: center; padding: 20px; background: var(--border-color); border-radius: 8px;">
-                            <div style="font-size: 32px; font-weight: bold;" id="totalUsers">0</div>
-                            <div style="color: #7f8c8d;">Всего пользователей</div>
-                        </div>
-                        <div style="text-align: center; padding: 20px; background: var(--border-color); border-radius: 8px;">
-                            <div style="font-size: 32px; font-weight: bold;" id="onlineUsers">0</div>
-                            <div style="color: #7f8c8d;">Онлайн сейчас</div>
-                        </div>
-                        <div style="text-align: center; padding: 20px; background: var(--border-color); border-radius: 8px;">
-                            <div style="font-size: 32px; font-weight: bold;" id="activeChats">0</div>
-                            <div style="color: #7f8c8d;">Активных чатов</div>
+
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">Последняя активность</h3>
+                        <div id="recentActivity">
+                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                Активность отсутствует
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ ПРОФИЛЯ -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Редактирование профиля</h3>
-                <button class="close-modal" onclick="closeModal('editProfileModal')">&times;</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Отображаемое имя</label>
-                <input type="text" class="form-input" id="editDisplayName" placeholder="Введите имя">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Новый пароль</label>
-                <input type="password" class="form-input" id="editNewPassword" placeholder="Оставьте пустым, если не меняете">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Подтвердите пароль</label>
-                <input type="password" class="form-input" id="editConfirmPassword" placeholder="Повторите новый пароль">
-            </div>
-            <button class="btn btn-primary" onclick="updateProfile()">
-                Сохранить изменения
-            </button>
-        </div>
-    </div>
+                <!-- ЧАТЫ -->
+                <div id="chatsSection" class="content-section hidden">
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">Управление чатами</h3>
+                        <div class="chat-container">
+                            <div class="chats-list" id="adminChatsList">
+                                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                    Чаты отсутствуют
+                                </div>
+                            </div>
+                            <div class="chat-messages">
+                                <div class="messages-container" id="adminMessagesContainer">
+                                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                                        <div>💬 Выберите чат для просмотра сообщений</div>
+                                    </div>
+                                </div>
+                                <div class="message-input-container">
+                                    <input type="text" class="message-input" id="adminMessageInput" placeholder="Введите сообщение...">
+                                    <button class="send-btn" id="sendAdminMessageBtn">Отправить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ ПОЛЬЗОВАТЕЛЯ -->
-    <div id="addUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Добавить аккаунт</h3>
-                <button class="close-modal" onclick="closeModal('addUserModal')">&times;</button>
+                <!-- ПОЛЬЗОВАТЕЛИ -->
+                <div id="usersSection" class="content-section hidden">
+                    <div class="content-card">
+                        <h3 style="margin-bottom: 20px;">Управление пользователями</h3>
+                        <div id="usersList">
+                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                Пользователи отсутствуют
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- НАСТРОЙКИ -->
+                <div id="settingsSection" class="content-section hidden">
+                    <div class="settings-panel">
+                        <div class="settings-section">
+                            <h3 class="settings-title">Тема оформления</h3>
+                            <div class="theme-selector">
+                                <div class="theme-option active" data-theme="sunrise">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                                    Рассвет
+                                </div>
+                                <div class="theme-option" data-theme="light">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                                    Светлая
+                                </div>
+                                <div class="theme-option" data-theme="dark">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
+                                    Тёмная
+                                </div>
+                                <div class="theme-option" data-theme="ocean">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                                    Океан
+                                </div>
+                                <div class="theme-option" data-theme="forest">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
+                                    Лес
+                                </div>
+                                <div class="theme-option" data-theme="midnight">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
+                                    Полночь
+                                </div>
+                                <div class="theme-option" data-theme="coffee">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
+                                    Кофе
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-title">Шрифт</h3>
+                            <div class="font-selector">
+                                <div class="font-option active" data-font="default">Стандартный</div>
+                                <div class="font-option" data-font="modern">Современный</div>
+                                <div class="font-option" data-font="elegant">Элегантный</div>
+                                <div class="font-option" data-font="tech">Технический</div>
+                                <div class="font-option" data-font="rounded">Закругленный</div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3 class="settings-title">Размер шрифта</h3>
+                            <div class="font-selector">
+                                <div class="font-option" data-size="small">Маленький</div>
+                                <div class="font-option active" data-size="normal">Обычный</div>
+                                <div class="font-option" data-size="large">Большой</div>
+                                <div class="font-option" data-size="xlarge">Очень большой</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">Логин</label>
-                <input type="text" class="form-input" id="addUserUsername" placeholder="Введите логин">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Пароль</label>
-                <input type="password" class="form-input" id="addUserPassword" placeholder="Введите пароль">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Роль</label>
-                <select class="form-input" id="addUserRole">
-                    <option value="Пользователь">Пользователь</option>
-                    <option value="Слушатель">Слушатель</option>
-                    <option value="Администратор">Администратор</option>
-                    <option value="Владелец">Владелец</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Отображаемое имя</label>
-                <input type="text" class="form-input" id="addUserDisplayName" placeholder="Введите отображаемое имя">
-            </div>
-            <button class="btn btn-primary" onclick="addUser()">
-                Добавить аккаунт
-            </button>
         </div>
     </div>
 
@@ -825,17 +974,87 @@
     <script>
         // Глобальные переменные
         let currentUser = null;
-        let currentListener = null;
-        const socket = io();
+        let currentSection = 'dashboard';
+        let activeChat = null;
+
+        // ЕДИНСТВЕННЫЙ АККАУНТ ВЛАДЕЛЬЦА
+        const OWNER_ACCOUNT = {
+            username: 'owner',
+            password: 'owner123',
+            displayName: 'Владелец',
+            role: 'Владелец',
+            rating: 5.0,
+            ratingCount: 1
+        };
+
+        // ДЕМО ДАННЫЕ
+        const demoData = {
+            totalUsers: 1,
+            activeChats: 0,
+            avgRating: 5.0,
+            messagesToday: 0,
+            recentActivity: [],
+            chats: [],
+            users: [OWNER_ACCOUNT]
+        };
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Инициализация системы...');
-            setupEventListeners();
-            checkActiveSession();
+            initializeApp();
         });
 
+        function initializeApp() {
+            setupEventListeners();
+            loadUserPreferences();
+            checkActiveSession();
+        }
+
         function setupEventListeners() {
+            // Табы авторизации
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showAuthTab(tabName);
+                });
+            });
+
+            // Кнопки авторизации
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('registerBtn').addEventListener('click', register);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+            document.getElementById('sendUserMessageBtn').addEventListener('click', sendUserMessage);
+            document.getElementById('sendAdminMessageBtn').addEventListener('click', sendAdminMessage);
+
+            // Навигация в админке
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+
+            // Настройки темы
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const theme = this.getAttribute('data-theme');
+                    changeTheme(theme);
+                });
+            });
+
+            // Настройки шрифтов
+            document.querySelectorAll('.font-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    if (this.hasAttribute('data-font')) {
+                        const font = this.getAttribute('data-font');
+                        changeFont(font);
+                    } else if (this.hasAttribute('data-size')) {
+                        const size = this.getAttribute('data-size');
+                        changeFontSize(size);
+                    }
+                });
+            });
+
             // Обработчики Enter
             document.getElementById('authPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') login();
@@ -845,22 +1064,35 @@
                 if (e.key === 'Enter') register();
             });
             
-            document.getElementById('messageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage();
+            document.getElementById('userMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendUserMessage();
             });
+
+            document.getElementById('adminMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendAdminMessage();
+            });
+        }
+
+        function loadUserPreferences() {
+            const theme = localStorage.getItem('theme') || 'sunrise';
+            const font = localStorage.getItem('font') || 'default';
+            const fontSize = localStorage.getItem('fontSize') || 'normal';
+            
+            changeTheme(theme, false);
+            changeFont(font, false);
+            changeFontSize(fontSize, false);
         }
 
         // АВТОРИЗАЦИЯ
         function showAuthTab(tabName) {
+            // Обновляем активные табы
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            // Показываем/скрываем формы
             document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
             document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
-            
-            document.querySelectorAll('.tab').forEach((tab, index) => {
-                tab.classList.toggle('active', 
-                    (index === 0 && tabName === 'login') || 
-                    (index === 1 && tabName === 'register')
-                );
-            });
         }
 
         function login() {
@@ -874,55 +1106,20 @@
 
             console.log('🔐 Попытка входа:', username);
             
-            // Имитация успешного входа
-            const user = {
-                id: Date.now(),
-                username: username,
-                displayName: username,
-                role: 'Пользователь', // По умолчанию все новые пользователи
-                isOnline: true
-            };
-
-            // Если пользователь первый - делаем его владельцем
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            if (activeUsers.length === 0) {
-                user.role = 'Владелец';
+            // Проверяем только аккаунт владельца
+            if (username === OWNER_ACCOUNT.username && password === OWNER_ACCOUNT.password) {
+                handleLoginSuccess(OWNER_ACCOUNT);
+            } else {
+                showNotification('❌ Неверный логин или пароль!', 'error');
+                // Очищаем поля формы
+                document.getElementById('authPassword').value = '';
+                return;
             }
-
-            handleLoginSuccess(user);
         }
 
         function register() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
-
-            if (!username || !password || !passwordConfirm) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (password !== passwordConfirm) {
-                showNotification('❌ Пароли не совпадают!', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-                return;
-            }
-
-            console.log('📝 Регистрация пользователя:', username);
-            
-            const user = {
-                id: Date.now(),
-                username: username,
-                displayName: username,
-                role: 'Пользователь',
-                isOnline: true
-            };
-
-            handleLoginSuccess(user);
+            showNotification('❌ Регистрация новых пользователей отключена. Используйте аккаунт владельца.', 'error');
+            return;
         }
 
         function handleLoginSuccess(user) {
@@ -932,118 +1129,77 @@
             // Сохраняем сессию
             localStorage.setItem('activeUser', JSON.stringify(user));
             
-            // Сохраняем в список пользователей
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const existingUser = activeUsers.find(u => u.username === user.username);
-            if (!existingUser) {
-                activeUsers.push(user);
-                localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
-            }
-
-            // Показываем соответствующий интерфейс
-            showInterfaceByRole();
-        }
-
-        // ПОКАЗ ИНТЕРФЕЙСА ПО РОЛИ
-        function showInterfaceByRole() {
-            document.getElementById('authScreen').style.display = 'none';
-            
-            if (currentUser.role === 'Владелец' || currentUser.role === 'Администратор') {
+            // Определяем какой интерфейс показывать
+            if (user.role === 'Владелец') {
                 showAdminPanel();
-            } else if (currentUser.role === 'Слушатель') {
-                showListenerInterface();
+                loadAdminData();
             } else {
                 showUserInterface();
             }
         }
 
-        // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
-        function showUserInterface() {
-            document.getElementById('userInterface').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('listenerInterface').style.display = 'none';
+        // АДМИН ПАНЕЛЬ
+        function showAdminPanel() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('userInterface').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
             
             // Обновляем информацию о пользователе
-            document.getElementById('userDisplayName').textContent = currentUser.displayName;
-            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-            
-            // Загружаем список слушателей
-            loadListeners();
+            document.getElementById('adminDisplayName').textContent = currentUser.displayName;
+            document.getElementById('adminRole').textContent = currentUser.role;
         }
 
-        function loadListeners() {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const listeners = activeUsers.filter(user => user.role === 'Слушатель');
+        function showSection(section) {
+            // Обновляем навигацию
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-section') === section);
+            });
+
+            // Скрываем все секции
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            // Показываем выбранную секцию
+            document.getElementById(section + 'Section').classList.remove('hidden');
             
-            const listenerGrid = document.getElementById('listenerGrid');
+            // Обновляем заголовок
+            const titles = {
+                dashboard: 'Статистика системы',
+                chats: 'Управление чатами',
+                users: 'Управление пользователями',
+                settings: 'Настройки системы'
+            };
+            document.getElementById('contentTitle').textContent = titles[section];
             
-            if (listeners.length === 0) {
-                listenerGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #7f8c8d;">
-                        <div>😔 Слушатели не найдены</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Обратитесь к администратору</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            listenerGrid.innerHTML = listeners.map(listener => `
-                <div class="listener-card" onclick="selectListener(${listener.id})">
-                    <div class="listener-header">
-                        <div class="listener-avatar">${listener.displayName.charAt(0).toUpperCase()}</div>
-                        <div class="listener-info">
-                            <div class="listener-name">${listener.displayName}</div>
-                            <div class="listener-rating">⭐ 4.8 (24 отзыва)</div>
-                        </div>
-                        <div class="listener-status status-online">Online</div>
-                    </div>
-                    <div class="listener-description">
-                        Готов выслушать вашу историю и поддержать в трудную минуту
-                    </div>
-                </div>
-            `).join('');
+            currentSection = section;
         }
 
-        function selectListener(listenerId) {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            currentListener = activeUsers.find(user => user.id === listenerId);
-            
-            if (currentListener) {
-                // Показываем чат
-                document.getElementById('listenerSelection').style.display = 'none';
-                document.getElementById('chatContainer').style.display = 'flex';
-                
-                // Обновляем информацию о слушателе в чате
-                document.getElementById('currentListenerName').textContent = currentListener.displayName;
-                document.getElementById('currentListenerAvatar').textContent = currentListener.displayName.charAt(0).toUpperCase();
-                
-                showNotification(`💬 Чат с ${currentListener.displayName}`, 'success');
+        function loadAdminData() {
+            // Обновляем статистику
+            document.getElementById('totalUsers').textContent = demoData.totalUsers;
+            document.getElementById('activeChats').textContent = demoData.activeChats;
+            document.getElementById('avgRating').textContent = demoData.avgRating.toFixed(1);
+            document.getElementById('messagesToday').textContent = demoData.messagesToday;
+
+            // Обновляем активность
+            updateRecentActivity();
+        }
+
+        function updateRecentActivity() {
+            const container = document.getElementById('recentActivity');
+            if (demoData.recentActivity.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Активность отсутствует</div>';
+            } else {
+                // Здесь можно добавить отображение активности
             }
         }
 
-        function selectRandomListener() {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const listeners = activeUsers.filter(user => user.role === 'Слушатель');
+        // ЧАТ ДЛЯ ПОЛЬЗОВАТЕЛЯ
+        function sendUserMessage() {
+            if (!currentUser) return;
             
-            if (listeners.length === 0) {
-                showNotification('❌ Нет доступных слушателей', 'error');
-                return;
-            }
-            
-            const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
-            selectListener(randomListener.id);
-        }
-
-        function backToSelection() {
-            document.getElementById('chatContainer').style.display = 'none';
-            document.getElementById('listenerSelection').style.display = 'block';
-            currentListener = null;
-        }
-
-        function sendMessage() {
-            if (!currentUser || !currentListener) return;
-            
-            const input = document.getElementById('messageInput');
+            const input = document.getElementById('userMessageInput');
             const text = input.value.trim();
             
             if (!text) {
@@ -1052,7 +1208,7 @@
             }
 
             // Добавляем сообщение в чат
-            addMessageToChat({
+            addMessageToUserChat({
                 username: currentUser.username,
                 text: text,
                 timestamp: new Date(),
@@ -1062,279 +1218,150 @@
             // Очищаем поле ввода
             input.value = '';
 
-            // Имитируем ответ слушателя
+            // Имитируем ответ
             setTimeout(() => {
                 const responses = [
-                    "Понимаю ваши чувства. Расскажите подробнее...",
-                    "Спасибо, что делитесь этим со мной. Что вы чувствуете сейчас?",
-                    "Это действительно важный момент. Как вы с этим справляетесь?",
-                    "Я вас слушаю. Продолжайте, когда будете готовы"
+                    "Привет! Как дела?",
+                    "Спасибо за сообщение!",
+                    "Интересно, расскажи подробнее",
+                    "Я вас понял, продолжайте"
                 ];
                 const randomResponse = responses[Math.floor(Math.random() * responses.length)];
                 
-                addMessageToChat({
-                    username: currentListener.username,
+                addMessageToUserChat({
+                    username: 'support',
                     text: randomResponse,
                     timestamp: new Date(),
-                    type: 'listener'
+                    type: 'admin'
                 });
-            }, 2000 + Math.random() * 3000);
+            }, 1000 + Math.random() * 2000);
         }
 
-        function addMessageToChat(message) {
-            const container = document.getElementById('messagesContainer');
+        function addMessageToUserChat(message) {
+            const container = document.getElementById('userMessagesContainer');
             
             // Очищаем приветственное сообщение
-            if (container.children.length === 1 && container.children[0].textContent.includes('Начните общение')) {
+            if (container.children.length === 1 && container.children[0].textContent.includes('Добро пожаловать')) {
                 container.innerHTML = '';
             }
             
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${message.type === 'user' ? 'user' : 'listener'}`;
+            messageDiv.className = `message ${message.username === currentUser.username ? 'user' : 'admin'}`;
             messageDiv.innerHTML = `
                 <div>${message.text}</div>
-                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
-                    ${new Date(message.timestamp).toLocaleTimeString()}
-                </div>
+                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
             `;
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
         }
 
-        // ИНТЕРФЕЙС СЛУШАТЕЛЯ
-        function showListenerInterface() {
-            document.getElementById('userInterface').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('listenerInterface').style.display = 'block';
+        // ЧАТ ДЛЯ АДМИНА
+        function sendAdminMessage() {
+            if (!activeChat) {
+                showNotification('❌ Выберите чат для отправки сообщения!', 'error');
+                return;
+            }
             
-            document.getElementById('listenerDisplayName').textContent = currentUser.displayName;
-            document.getElementById('listenerAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-        }
-
-        function sendListenerMessage() {
-            // Функция для ответа слушателя
-            const input = document.getElementById('listenerMessageInput');
+            const input = document.getElementById('adminMessageInput');
             const text = input.value.trim();
             
-            if (!text) return;
-            
-            // Здесь будет логика отправки сообщения от слушателя
+            if (!text) {
+                showNotification('❌ Введите сообщение!', 'error');
+                return;
+            }
+
+            // Добавляем сообщение в чат
+            addMessageToAdminChat({
+                username: currentUser.username,
+                text: text,
+                timestamp: new Date(),
+                type: 'admin'
+            });
+
+            // Очищаем поле ввода
             input.value = '';
         }
 
-        // АДМИН ПАНЕЛЬ
-        function showAdminPanel() {
-            document.getElementById('userInterface').style.display = 'none';
-            document.getElementById('listenerInterface').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'flex';
+        function addMessageToAdminChat(message) {
+            const container = document.getElementById('adminMessagesContainer');
             
-            document.getElementById('adminUserInfo').textContent = 
-                `${currentUser.displayName} | ${currentUser.role}`;
-            
-            loadAdminUsers();
-            updateAdminStats();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${message.type === 'admin' ? 'user' : 'admin'}`;
+            messageDiv.innerHTML = `
+                <div>${message.text}</div>
+                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
+            `;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
         }
 
-        function showAdminTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
+        // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
+        function showUserInterface() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('userInterface').style.display = 'block';
+            
+            // Обновляем информацию о пользователе
+            document.getElementById('userDisplayName').textContent = currentUser.displayName;
+            document.getElementById('userRole').textContent = currentUser.role;
+            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            
+            // Обновляем рейтинг
+            updateUserRating({
+                averageRating: currentUser.rating || 0,
+                ratingCount: currentUser.ratingCount || 0
+            });
+        }
+
+        function updateUserRating(data) {
+            document.getElementById('userRating').textContent = data.averageRating.toFixed(1);
+            document.getElementById('ratingCount').textContent = data.ratingCount;
+        }
+
+        // НАСТРОЙКИ ТЕМЫ
+        function showSettings() {
+            showSection('settings');
+        }
+
+        function changeTheme(themeName, save = true) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add('theme-' + themeName);
+            
+            // Обновляем активную тему в настройках
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === themeName);
             });
             
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
+            if (save) {
+                localStorage.setItem('theme', themeName);
+            }
+        }
+
+        function changeFont(fontName, save = true) {
+            document.body.className = document.body.className.replace(/font-\w+/g, '');
+            document.body.classList.add('font-' + fontName);
+            
+            // Обновляем активный шрифт в настройках
+            document.querySelectorAll('.font-option[data-font]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-font') === fontName);
             });
             
-            event.target.closest('.nav-item').classList.add('active');
-            
-            document.getElementById(tabName + 'Tab').style.display = 'block';
-        }
-
-        function loadAdminUsers() {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const container = document.getElementById('usersTable');
-            
-            if (activeUsers.length === 0) {
-                container.innerHTML = '<tr><td colspan="5" style="padding: 20px; text-align: center; color: #7f8c8d;">Пользователи не найдены</td></tr>';
-                return;
-            }
-            
-            container.innerHTML = activeUsers.map(user => `
-                <tr style="border-bottom: 1px solid var(--border-color);">
-                    <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: ${getRoleColor(user.role)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
-                                ${user.displayName.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                                <div style="font-weight: 600;">${user.displayName}</div>
-                                <div style="font-size: 12px; color: #7f8c8d;">@${user.username}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td style="padding: 12px;">
-                        <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${getRoleColor(user.role)}; color: white;">
-                            ${user.role}
-                        </span>
-                    </td>
-                    <td style="padding: 12px;">
-                        <span style="color: ${user.isOnline ? '#27ae60' : '#95a5a6'}; font-weight: 600;">
-                            ${user.isOnline ? '🟢 Online' : '🔴 Offline'}
-                        </span>
-                    </td>
-                    <td style="padding: 12px;">
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <span style="font-weight: 600;">4.8</span>
-                            <span style="color: #7f8c8d; font-size: 12px;">(24)</span>
-                        </div>
-                    </td>
-                    <td style="padding: 12px;">
-                        <div style="display: flex; gap: 8px;">
-                            <button class="action-btn" onclick="editAdminUser(${user.id})" style="background: var(--warning-color);">
-                                ✏️ Изменить
-                            </button>
-                            ${user.role !== 'Владелец' ? `
-                                <button class="action-btn" onclick="deleteAdminUser(${user.id})" style="background: var(--error-color);">
-                                    🗑️ Удалить
-                                </button>
-                            ` : ''}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function getRoleColor(role) {
-            const colors = {
-                'Владелец': '#e74c3c',
-                'Администратор': '#3498db',
-                'Слушатель': '#2ecc71',
-                'Пользователь': '#95a5a6'
-            };
-            return colors[role] || '#95a5a6';
-        }
-
-        function updateAdminStats() {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const listeners = activeUsers.filter(user => user.role === 'Слушатель').length;
-            const onlineUsers = activeUsers.filter(user => user.isOnline).length;
-            
-            document.getElementById('totalUsers').textContent = activeUsers.length;
-            document.getElementById('onlineUsers').textContent = onlineUsers;
-            document.getElementById('activeChats').textContent = listeners;
-        }
-
-        // МОДАЛЬНЫЕ ОКНА
-        function showEditProfileModal() {
-            document.getElementById('editDisplayName').value = currentUser.displayName;
-            document.getElementById('editNewPassword').value = '';
-            document.getElementById('editConfirmPassword').value = '';
-            document.getElementById('editProfileModal').style.display = 'flex';
-        }
-
-        function showAddUserModal() {
-            document.getElementById('addUserUsername').value = '';
-            document.getElementById('addUserPassword').value = '';
-            document.getElementById('addUserDisplayName').value = '';
-            document.getElementById('addUserRole').value = 'Пользователь';
-            document.getElementById('addUserModal').style.display = 'flex';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        function updateProfile() {
-            const displayName = document.getElementById('editDisplayName').value.trim();
-            const newPassword = document.getElementById('editNewPassword').value;
-            const confirmPassword = document.getElementById('editConfirmPassword').value;
-
-            if (!displayName) {
-                showNotification('❌ Введите отображаемое имя!', 'error');
-                return;
-            }
-
-            if (newPassword && newPassword !== confirmPassword) {
-                showNotification('❌ Пароли не совпадают!', 'error');
-                return;
-            }
-
-            // Обновляем данные пользователя
-            currentUser.displayName = displayName;
-            
-            // Сохраняем в localStorage
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const userIndex = activeUsers.findIndex(u => u.username === currentUser.username);
-            if (userIndex !== -1) {
-                activeUsers[userIndex] = currentUser;
-                localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
-            }
-            localStorage.setItem('activeUser', JSON.stringify(currentUser));
-
-            // Обновляем интерфейс
-            showInterfaceByRole();
-            
-            closeModal('editProfileModal');
-            showNotification('✅ Профиль обновлен!', 'success');
-        }
-
-        function addUser() {
-            const username = document.getElementById('addUserUsername').value.trim();
-            const password = document.getElementById('addUserPassword').value;
-            const role = document.getElementById('addUserRole').value;
-            const displayName = document.getElementById('addUserDisplayName').value.trim();
-
-            if (!username || !password || !displayName) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-                return;
-            }
-
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            
-            if (activeUsers.find(u => u.username === username)) {
-                showNotification('❌ Пользователь с таким логином уже существует!', 'error');
-                return;
-            }
-
-            const newUser = {
-                id: Date.now(),
-                username: username,
-                displayName: displayName,
-                role: role,
-                isOnline: false
-            };
-
-            activeUsers.push(newUser);
-            localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
-
-            closeModal('addUserModal');
-            showNotification(`✅ ${role} "${displayName}" добавлен!`, 'success');
-            loadAdminUsers();
-            updateAdminStats();
-        }
-
-        function editAdminUser(userId) {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const user = activeUsers.find(u => u.id === userId);
-            if (user) {
-                showNotification(`✏️ Редактирование пользователя ${user.displayName}`, 'info');
+            if (save) {
+                localStorage.setItem('font', fontName);
             }
         }
 
-        function deleteAdminUser(userId) {
-            const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-            const user = activeUsers.find(u => u.id === userId);
+        function changeFontSize(size, save = true) {
+            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+            document.body.classList.add('font-size-' + size);
             
-            if (user && confirm(`Удалить пользователя ${user.displayName}?`)) {
-                const updatedUsers = activeUsers.filter(u => u.id !== userId);
-                localStorage.setItem('activeUsers', JSON.stringify(updatedUsers));
-                showNotification(`🗑️ Пользователь ${user.displayName} удален`, 'success');
-                loadAdminUsers();
-                updateAdminStats();
+            // Обновляем активный размер в настройках
+            document.querySelectorAll('.font-option[data-size]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-size') === size);
+            });
+            
+            if (save) {
+                localStorage.setItem('fontSize', size);
             }
         }
 
@@ -1364,23 +1391,17 @@
 
         function logout() {
             if (currentUser) {
-                // Обновляем статус пользователя
-                const activeUsers = JSON.parse(localStorage.getItem('activeUsers') || '[]');
-                const userIndex = activeUsers.findIndex(u => u.username === currentUser.username);
-                if (userIndex !== -1) {
-                    activeUsers[userIndex].isOnline = false;
-                    localStorage.setItem('activeUsers', JSON.stringify(activeUsers));
-                }
-                
                 localStorage.removeItem('activeUser');
             }
-            
             currentUser = null;
             document.getElementById('userInterface').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('listenerInterface').style.display = 'none';
             document.getElementById('authScreen').style.display = 'flex';
             showNotification('👋 До свидания!', 'success');
+            
+            // Очищаем поля формы
+            document.getElementById('authUsername').value = '';
+            document.getElementById('authPassword').value = '';
         }
     </script>
 </body>

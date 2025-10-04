@@ -956,6 +956,9 @@
                     <button class="btn btn-primary" onclick="submitRating()">
                         Отправить оценку
                     </button>
+                    <button class="btn btn-secondary" onclick="endChat()" style="margin-left: 10px;">
+                        Завершить чат
+                    </button>
                 </div>
             </div>
         </div>
@@ -1370,24 +1373,6 @@
                     isOnline: false
                 },
                 {
-                    username: 'listener1',
-                    password: 'listener123',
-                    displayName: 'Анна',
-                    role: 'listener',
-                    rating: 4.5,
-                    ratingCount: 12,
-                    isOnline: true
-                },
-                {
-                    username: 'listener2',
-                    password: 'listener123',
-                    displayName: 'Максим',
-                    role: 'listener',
-                    rating: 4.9,
-                    ratingCount: 8,
-                    isOnline: true
-                },
-                {
                     username: 'user1',
                     password: 'user123',
                     displayName: 'Пользователь',
@@ -1701,28 +1686,8 @@
             addMessageToUserChat(message);
             input.value = '';
 
-            // Имитируем ответ слушателя
-            setTimeout(() => {
-                const responses = [
-                    "Понимаю вас...",
-                    "Расскажите подробнее",
-                    "Как вы себя чувствуете?",
-                    "Это интересно, продолжайте",
-                    "Я вас слушаю"
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                
-                const listenerMessage = {
-                    id: Date.now(),
-                    text: response,
-                    sender: currentListener.username,
-                    timestamp: new Date(),
-                    type: 'other'
-                };
-
-                activeChat.messages.push(listenerMessage);
-                addMessageToUserChat(listenerMessage);
-            }, 1000 + Math.random() * 3000);
+            // УВЕДОМЛЕНИЕ ДЛЯ СЛУШАТЕЛЯ (в реальной системе здесь был бы WebSocket)
+            showNotification(`✉️ Сообщение отправлено слушателю`, 'info');
         }
 
         function addMessageToUserChat(message) {
@@ -1772,6 +1737,10 @@
             updateRatingStars(0);
 
             // Завершаем чат
+            endChat();
+        }
+
+        function endChat() {
             if (activeChat) {
                 activeChat.isActive = false;
                 activeChat.endTime = new Date();
@@ -1781,6 +1750,8 @@
             document.getElementById('userChatSection').classList.add('hidden');
             document.getElementById('listenerSelection').classList.remove('hidden');
             clearInterval(chatTimer);
+            activeChat = null;
+            currentListener = null;
         }
 
         // ИНТЕРФЕЙС СЛУШАТЕЛЯ
@@ -1815,10 +1786,14 @@
 
             container.innerHTML = listenerChats.map(chat => {
                 const user = systemData.users.find(u => u.username === chat.user1);
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                const preview = lastMessage ? lastMessage.text : 'Нет сообщений';
+                
                 return `
                     <div class="chat-item" onclick="openListenerChat('${chat.id}')">
                         <div style="font-weight: 600;">${user?.displayName || 'Пользователь'}</div>
-                        <div style="font-size: 12px; opacity: 0.7;">Активен</div>
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">${preview}</div>
+                        <div style="font-size: 11px; opacity: 0.5; margin-top: 3px;">Активен</div>
                     </div>
                 `;
             }).join('');
@@ -1837,7 +1812,10 @@
         }
 
         function sendListenerMessage() {
-            if (!activeChat) return;
+            if (!activeChat) {
+                showNotification('❌ Выберите чат для общения!', 'error');
+                return;
+            }
             
             const input = document.getElementById('listenerMessageInput');
             const text = input.value.trim();
@@ -1849,12 +1827,14 @@
                 text: text,
                 sender: currentUser.username,
                 timestamp: new Date(),
-                type: 'user'
+                type: 'other'
             };
 
             activeChat.messages.push(message);
             addMessageToListenerChat(message);
             input.value = '';
+
+            showNotification(`✉️ Ответ отправлен пользователю`, 'info');
         }
 
         function addMessageToListenerChat(message) {
@@ -1907,6 +1887,7 @@
 
             if (section === 'users') loadUsersTable();
             if (section === 'listeners') loadListenersTable();
+            if (section === 'chats') loadAdminChats();
         }
 
         function updateAdminData() {
@@ -1966,6 +1947,51 @@
             `).join('');
         }
 
+        function loadAdminChats() {
+            const container = document.getElementById('adminChatsList');
+            if (systemData.chats.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Чаты отсутствуют</div>';
+                return;
+            }
+
+            container.innerHTML = systemData.chats.map(chat => {
+                const user1 = systemData.users.find(u => u.username === chat.user1);
+                const user2 = systemData.users.find(u => u.username === chat.user2);
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                const preview = lastMessage ? lastMessage.text : 'Нет сообщений';
+                
+                return `
+                    <div class="chat-item" onclick="openAdminChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user1?.displayName || 'Пользователь'} ↔ ${user2?.displayName || 'Слушатель'}</div>
+                        <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">${preview}</div>
+                        <div style="font-size: 11px; opacity: 0.5; margin-top: 3px;">
+                            ${chat.isActive ? '● Активен' : '○ Завершен'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openAdminChat(chatId) {
+            const chat = systemData.chats.find(chat => chat.id === chatId);
+            if (!chat) return;
+
+            const container = document.getElementById('adminMessagesContainer');
+            container.innerHTML = '';
+
+            chat.messages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                const sender = systemData.users.find(u => u.username === message.sender);
+                messageDiv.className = `message ${message.sender === chat.user1 ? 'user' : 'other'}`;
+                messageDiv.innerHTML = `
+                    <div><strong>${sender?.displayName || message.sender}:</strong> ${message.text}</div>
+                    <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
+                `;
+                container.appendChild(messageDiv);
+            });
+            container.scrollTop = container.scrollHeight;
+        }
+
         function sendNotification() {
             const title = document.getElementById('notificationTitle').value.trim();
             const text = document.getElementById('notificationText').value.trim();
@@ -2017,236 +2043,8 @@
             `).join('');
         }
 
-        // НАСТРОЙКИ ТЕМЫ
-        function showUserThemeSettings() {
-            const container = document.getElementById('userThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function showListenerThemeSettings() {
-            const container = document.getElementById('listenerThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function showAdminThemeSettings() {
-            const container = document.getElementById('adminThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function getThemeSettingsHTML() {
-            return `
-                <div class="settings-section">
-                    <h3 class="settings-title">Тема оформления</h3>
-                    <div class="theme-selector">
-                        <div class="theme-option" data-theme="sunrise">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
-                            Рассвет
-                        </div>
-                        <div class="theme-option" data-theme="light">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
-                            Светлая
-                        </div>
-                        <div class="theme-option" data-theme="dark">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
-                            Тёмная
-                        </div>
-                        <div class="theme-option" data-theme="ocean">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
-                            Океан
-                        </div>
-                        <div class="theme-option" data-theme="forest">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
-                            Лес
-                        </div>
-                        <div class="theme-option" data-theme="midnight">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
-                            Полночь
-                        </div>
-                        <div class="theme-option" data-theme="coffee">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
-                            Кофе
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="settings-title">Шрифт</h3>
-                    <div class="font-selector">
-                        <div class="font-option" data-font="default">Стандартный</div>
-                        <div class="font-option" data-font="modern">Современный</div>
-                        <div class="font-option" data-font="elegant">Элегантный</div>
-                        <div class="font-option" data-font="tech">Технический</div>
-                        <div class="font-option" data-font="rounded">Закругленный</div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="settings-title">Размер шрифта</h3>
-                    <div class="font-selector">
-                        <div class="font-option" data-size="small">Маленький</div>
-                        <div class="font-option" data-size="normal">Обычный</div>
-                        <div class="font-option" data-size="large">Большой</div>
-                        <div class="font-option" data-size="xlarge">Очень большой</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function setupThemeSettings() {
-            // Тема
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const theme = this.getAttribute('data-theme');
-                    changeTheme(theme);
-                });
-            });
-
-            // Шрифт
-            document.querySelectorAll('.font-option[data-font]').forEach(option => {
-                option.addEventListener('click', function() {
-                    const font = this.getAttribute('data-font');
-                    changeFont(font);
-                });
-            });
-
-            // Размер шрифта
-            document.querySelectorAll('.font-option[data-size]').forEach(option => {
-                option.addEventListener('click', function() {
-                    const size = this.getAttribute('data-size');
-                    changeFontSize(size);
-                });
-            });
-
-            // Устанавливаем активные настройки
-            updateActiveSettings();
-        }
-
-        function updateActiveSettings() {
-            const theme = localStorage.getItem('theme') || 'sunrise';
-            const font = localStorage.getItem('font') || 'default';
-            const fontSize = localStorage.getItem('fontSize') || 'normal';
-
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-theme') === theme);
-            });
-
-            document.querySelectorAll('.font-option[data-font]').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-font') === font);
-            });
-
-            document.querySelectorAll('.font-option[data-size]').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-size') === fontSize);
-            });
-        }
-
-        function changeTheme(themeName, save = true) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            document.body.classList.add('theme-' + themeName);
-            
-            if (save) {
-                localStorage.setItem('theme', themeName);
-                updateActiveSettings();
-            }
-        }
-
-        function changeFont(fontName, save = true) {
-            document.body.className = document.body.className.replace(/font-\w+/g, '');
-            document.body.classList.add('font-' + fontName);
-            
-            if (save) {
-                localStorage.setItem('font', fontName);
-                updateActiveSettings();
-            }
-        }
-
-        function changeFontSize(size, save = true) {
-            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
-            document.body.classList.add('font-size-' + size);
-            
-            if (save) {
-                localStorage.setItem('fontSize', size);
-                updateActiveSettings();
-            }
-        }
-
-        // СМЕНА ПАРОЛЯ И ИМЕНИ
-        function changePassword() {
-            const current = document.getElementById('currentPassword').value;
-            const newPass = document.getElementById('newPassword').value;
-            const confirm = document.getElementById('confirmNewPassword').value;
-
-            if (!current || !newPass || !confirm) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (current !== currentUser.password) {
-                showNotification('❌ Текущий пароль неверен!', 'error');
-                return;
-            }
-
-            if (newPass !== confirm) {
-                showNotification('❌ Новые пароли не совпадают!', 'error');
-                return;
-            }
-
-            currentUser.password = newPass;
-            showNotification('✅ Пароль успешно изменен!', 'success');
-            
-            // Очищаем поля
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmNewPassword').value = '';
-        }
-
-        function changeListenerPassword() {
-            changePassword(); // Та же логика
-        }
-
-        function changeAdminPassword() {
-            changePassword(); // Та же логика
-        }
-
-        function changeDisplayName() {
-            const newName = document.getElementById('newDisplayName').value.trim();
-            if (!newName) {
-                showNotification('❌ Введите новое имя!', 'error');
-                return;
-            }
-
-            currentUser.displayName = newName;
-            document.getElementById('userDisplayName').textContent = newName;
-            document.getElementById('userAvatar').textContent = newName.charAt(0).toUpperCase();
-            showNotification('✅ Имя успешно изменено!', 'success');
-        }
-
-        function changeListenerDisplayName() {
-            const newName = document.getElementById('listenerNewDisplayName').value.trim();
-            if (!newName) {
-                showNotification('❌ Введите новое имя!', 'error');
-                return;
-            }
-
-            currentUser.displayName = newName;
-            document.getElementById('listenerDisplayName').textContent = newName;
-            document.getElementById('listenerAvatar').textContent = newName.charAt(0).toUpperCase();
-            showNotification('✅ Имя успешно изменено!', 'success');
-        }
-
-        function changeAdminDisplayName() {
-            const newName = document.getElementById('adminNewDisplayName').value.trim();
-            if (!newName) {
-                showNotification('❌ Введите новое имя!', 'error');
-                return;
-            }
-
-            currentUser.displayName = newName;
-            document.getElementById('adminDisplayName').textContent = newName;
-            showNotification('✅ Имя успешно изменено!', 'success');
-        }
+        // НАСТРОЙКИ ТЕМЫ (остальные функции остаются без изменений)
+        // ... (функции changeTheme, changeFont, changeFontSize и т.д.)
 
         // УТИЛИТЫ
         function getRoleDisplayName(role) {
@@ -2332,6 +2130,232 @@
 
         // Инициализация данных при загрузке
         updateSystemStats();
+
+        // Функции для настроек темы (добавляем их обратно)
+        function showUserThemeSettings() {
+            const container = document.getElementById('userThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function showListenerThemeSettings() {
+            const container = document.getElementById('listenerThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function showAdminThemeSettings() {
+            const container = document.getElementById('adminThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function getThemeSettingsHTML() {
+            return `
+                <div class="settings-section">
+                    <h3 class="settings-title">Тема оформления</h3>
+                    <div class="theme-selector">
+                        <div class="theme-option" data-theme="sunrise">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                            Рассвет
+                        </div>
+                        <div class="theme-option" data-theme="light">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                            Светлая
+                        </div>
+                        <div class="theme-option" data-theme="dark">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
+                            Тёмная
+                        </div>
+                        <div class="theme-option" data-theme="ocean">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                            Океан
+                        </div>
+                        <div class="theme-option" data-theme="forest">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
+                            Лес
+                        </div>
+                        <div class="theme-option" data-theme="midnight">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
+                            Полночь
+                        </div>
+                        <div class="theme-option" data-theme="coffee">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
+                            Кофе
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-title">Шрифт</h3>
+                    <div class="font-selector">
+                        <div class="font-option" data-font="default">Стандартный</div>
+                        <div class="font-option" data-font="modern">Современный</div>
+                        <div class="font-option" data-font="elegant">Элегантный</div>
+                        <div class="font-option" data-font="tech">Технический</div>
+                        <div class="font-option" data-font="rounded">Закругленный</div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-title">Размер шрифта</h3>
+                    <div class="font-selector">
+                        <div class="font-option" data-size="small">Маленький</div>
+                        <div class="font-option" data-size="normal">Обычный</div>
+                        <div class="font-option" data-size="large">Большой</div>
+                        <div class="font-option" data-size="xlarge">Очень большой</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupThemeSettings() {
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const theme = this.getAttribute('data-theme');
+                    changeTheme(theme);
+                });
+            });
+
+            document.querySelectorAll('.font-option[data-font]').forEach(option => {
+                option.addEventListener('click', function() {
+                    const font = this.getAttribute('data-font');
+                    changeFont(font);
+                });
+            });
+
+            document.querySelectorAll('.font-option[data-size]').forEach(option => {
+                option.addEventListener('click', function() {
+                    const size = this.getAttribute('data-size');
+                    changeFontSize(size);
+                });
+            });
+
+            updateActiveSettings();
+        }
+
+        function updateActiveSettings() {
+            const theme = localStorage.getItem('theme') || 'sunrise';
+            const font = localStorage.getItem('font') || 'default';
+            const fontSize = localStorage.getItem('fontSize') || 'normal';
+
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === theme);
+            });
+
+            document.querySelectorAll('.font-option[data-font]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-font') === font);
+            });
+
+            document.querySelectorAll('.font-option[data-size]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-size') === fontSize);
+            });
+        }
+
+        function changeTheme(themeName, save = true) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add('theme-' + themeName);
+            
+            if (save) {
+                localStorage.setItem('theme', themeName);
+                updateActiveSettings();
+            }
+        }
+
+        function changeFont(fontName, save = true) {
+            document.body.className = document.body.className.replace(/font-\w+/g, '');
+            document.body.classList.add('font-' + fontName);
+            
+            if (save) {
+                localStorage.setItem('font', fontName);
+                updateActiveSettings();
+            }
+        }
+
+        function changeFontSize(size, save = true) {
+            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+            document.body.classList.add('font-size-' + size);
+            
+            if (save) {
+                localStorage.setItem('fontSize', size);
+                updateActiveSettings();
+            }
+        }
+
+        // Функции смены пароля и имени
+        function changePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmNewPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            if (current !== currentUser.password) {
+                showNotification('❌ Текущий пароль неверен!', 'error');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                showNotification('❌ Новые пароли не совпадают!', 'error');
+                return;
+            }
+
+            currentUser.password = newPass;
+            showNotification('✅ Пароль успешно изменен!', 'success');
+            
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        }
+
+        function changeListenerPassword() {
+            changePassword();
+        }
+
+        function changeAdminPassword() {
+            changePassword();
+        }
+
+        function changeDisplayName() {
+            const newName = document.getElementById('newDisplayName').value.trim();
+            if (!newName) {
+                showNotification('❌ Введите новое имя!', 'error');
+                return;
+            }
+
+            currentUser.displayName = newName;
+            document.getElementById('userDisplayName').textContent = newName;
+            document.getElementById('userAvatar').textContent = newName.charAt(0).toUpperCase();
+            showNotification('✅ Имя успешно изменено!', 'success');
+        }
+
+        function changeListenerDisplayName() {
+            const newName = document.getElementById('listenerNewDisplayName').value.trim();
+            if (!newName) {
+                showNotification('❌ Введите новое имя!', 'error');
+                return;
+            }
+
+            currentUser.displayName = newName;
+            document.getElementById('listenerDisplayName').textContent = newName;
+            document.getElementById('listenerAvatar').textContent = newName.charAt(0).toUpperCase();
+            showNotification('✅ Имя успешно изменено!', 'success');
+        }
+
+        function changeAdminDisplayName() {
+            const newName = document.getElementById('adminNewDisplayName').value.trim();
+            if (!newName) {
+                showNotification('❌ Введите новое имя!', 'error');
+                return;
+            }
+
+            currentUser.displayName = newName;
+            document.getElementById('adminDisplayName').textContent = newName;
+            showNotification('✅ Имя успешно изменено!', 'success');
+        }
     </script>
 </body>
 </html>

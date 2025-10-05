@@ -16,7 +16,8 @@ const io = socketIo(server, {
         credentials: true
     },
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    transports: ['websocket', 'polling']
 });
 
 // Middleware
@@ -29,13 +30,15 @@ app.use(express.urlencoded({ extended: true }));
 const USERS_FILE = 'users.json';
 const CHATS_FILE = 'chats.json';
 const RATINGS_FILE = 'ratings.json';
+const NOTIFICATIONS_FILE = 'notifications.json';
 
 // Создание файлов если их нет
 function initializeFiles() {
     const files = [
         { name: USERS_FILE, default: [] },
         { name: CHATS_FILE, default: [] },
-        { name: RATINGS_FILE, default: [] }
+        { name: RATINGS_FILE, default: [] },
+        { name: NOTIFICATIONS_FILE, default: [] }
     ];
 
     files.forEach(file => {
@@ -84,6 +87,10 @@ function getRatings() {
     return loadData(RATINGS_FILE, []);
 }
 
+function getNotifications() {
+    return loadData(NOTIFICATIONS_FILE, []);
+}
+
 // Сохранение с синхронизацией
 function saveUsers(users) {
     return saveData(USERS_FILE, users);
@@ -95,6 +102,10 @@ function saveChats(chats) {
 
 function saveRatings(ratings) {
     return saveData(RATINGS_FILE, ratings);
+}
+
+function saveNotifications(notifications) {
+    return saveData(NOTIFICATIONS_FILE, notifications);
 }
 
 // Инициализация демо-пользователей
@@ -222,6 +233,7 @@ io.on('connection', (socket) => {
             const currentUsers = getUsers();
             const currentChats = getChats();
             const currentRatings = getRatings();
+            const currentNotifications = getNotifications();
             
             socket.emit('session_restored', { 
                 success: true,
@@ -232,14 +244,25 @@ io.on('connection', (socket) => {
                 users: currentUsers.filter(u => u.id !== user.id) 
             });
             
-            socket.emit('chats_list', { 
-                chats: currentChats.filter(chat => 
-                    chat.user1 === user.id || chat.user2 === user.id
-                )
-            });
+            // Для админа показываем все чаты, для остальных - только свои
+            if (user.role === 'admin') {
+                socket.emit('chats_list', { 
+                    chats: currentChats 
+                });
+            } else {
+                socket.emit('chats_list', { 
+                    chats: currentChats.filter(chat => 
+                        chat.user1 === user.id || chat.user2 === user.id
+                    )
+                });
+            }
             
             socket.emit('ratings_list', { 
                 ratings: currentRatings 
+            });
+
+            socket.emit('notifications_list', {
+                notifications: currentNotifications
             });
             
             // Уведомляем других о подключении
@@ -352,6 +375,7 @@ io.on('connection', (socket) => {
         const currentUsers = getUsers();
         const currentChats = getChats();
         const currentRatings = getRatings();
+        const currentNotifications = getNotifications();
 
         // Отправляем успешный вход
         socket.emit('login_success', { user });
@@ -361,14 +385,25 @@ io.on('connection', (socket) => {
             users: currentUsers.filter(u => u.id !== user.id) 
         });
         
-        socket.emit('chats_list', { 
-            chats: currentChats.filter(chat => 
-                chat.user1 === user.id || chat.user2 === user.id
-            )
-        });
+        // Для админа показываем все чаты, для остальных - только свои
+        if (user.role === 'admin') {
+            socket.emit('chats_list', { 
+                chats: currentChats 
+            });
+        } else {
+            socket.emit('chats_list', { 
+                chats: currentChats.filter(chat => 
+                    chat.user1 === user.id || chat.user2 === user.id
+                )
+            });
+        }
         
         socket.emit('ratings_list', { 
             ratings: currentRatings 
+        });
+
+        socket.emit('notifications_list', {
+            notifications: currentNotifications
         });
         
         // Уведомляем других о подключении
@@ -471,6 +506,59 @@ io.on('connection', (socket) => {
         }
     });
 
+    // ОТПРАВКА ТЕХНИЧЕСКОГО УВЕДОМЛЕНИЯ
+    socket.on('send_technical_notification', (data) => {
+        console.log(`📢 Отправка технического уведомления:`, data);
+        
+        const notifications = getNotifications();
+        const { title, text, type, recipients } = data;
+        
+        const newNotification = {
+            id: generateId(),
+            title,
+            text,
+            type,
+            recipients,
+            timestamp: new Date().toISOString(),
+            readBy: []
+        };
+
+        notifications.push(newNotification);
+        saveNotifications(notifications);
+
+        // Отправляем уведомление соответствующим пользователям
+        const users = getUsers();
+        let targetUsers = [];
+
+        switch (recipients) {
+            case 'all':
+                targetUsers = users;
+                break;
+            case 'users':
+                targetUsers = users.filter(u => u.role === 'user');
+                break;
+            case 'listeners':
+                targetUsers = users.filter(u => u.role === 'listener');
+                break;
+            case 'admins':
+                targetUsers = users.filter(u => u.role === 'admin');
+                break;
+        }
+
+        // Отправляем уведомление онлайн пользователям
+        targetUsers.forEach(user => {
+            if (user.socketId) {
+                const userSocket = io.sockets.sockets.get(user.socketId);
+                if (userSocket) {
+                    userSocket.emit('new_notification', { notification: newNotification });
+                }
+            }
+        });
+
+        socket.emit('notification_sent', { success: true });
+        console.log(`✅ Техническое уведомление отправлено: ${title}`);
+    });
+
     // ПОЛУЧЕНИЕ ДАННЫХ
     socket.on('get_users', () => {
         console.log(`📊 Запрос списка пользователей от ${socket.id}`);
@@ -483,7 +571,11 @@ io.on('connection', (socket) => {
         const user = getUserBySocketId(socket.id);
         const chats = getChats();
         
-        if (user) {
+        if (user && user.role === 'admin') {
+            // Админ видит все чаты
+            socket.emit('chats_list', { chats });
+        } else if (user) {
+            // Обычные пользователи видят только свои чаты
             const userChats = chats.filter(chat => 
                 chat.user1 === user.id || chat.user2 === user.id
             );
@@ -497,6 +589,12 @@ io.on('connection', (socket) => {
         console.log(`⭐ Запрос списка оценок от ${socket.id}`);
         const ratings = getRatings();
         socket.emit('ratings_list', { ratings });
+    });
+
+    socket.on('get_notifications', () => {
+        console.log(`📢 Запрос списка уведомлений от ${socket.id}`);
+        const notifications = getNotifications();
+        socket.emit('notifications_list', { notifications });
     });
 
     // СОЗДАНИЕ ЧАТА
@@ -559,9 +657,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Уведомляем всех о новом чате
-        socket.broadcast.emit('chat_created_broadcast', { chat: newChat });
-        
         console.log(`💬 Новый чат создан: ${user1Data.username} ↔ ${user2Data.username}`);
     });
 
@@ -591,14 +686,7 @@ io.on('connection', (socket) => {
         chat.messages.push(newMessage);
         saveChats(chats);
 
-        // Отправляем сообщение всем участникам чата
-        const user1 = getUserById(chat.user1);
-        const user2 = getUserById(chat.user2);
-
-        // Отправляем отправителю
-        socket.emit('new_message', { chatId, message: newMessage });
-        
-        // Отправляем получателю
+        // Отправляем сообщение получателю (только одному разу!)
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
         const targetUser = getUserById(targetUserId);
         
@@ -610,9 +698,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Уведомляем всех о новом сообщении
-        socket.broadcast.emit('new_message_broadcast', { chatId, message: newMessage });
-        
         console.log(`📨 Новое сообщение в чате ${chatId} от ${message.senderId}`);
     });
 
@@ -704,9 +789,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Уведомляем всех о завершении чата
-        socket.broadcast.emit('chat_ended_broadcast', { chatId });
-        
         console.log(`🔚 Чат завершен: ${chatId}`);
     });
 
@@ -742,6 +824,11 @@ app.get('/api/chats', (req, res) => {
 app.get('/api/ratings', (req, res) => {
     const ratings = getRatings();
     res.json(ratings);
+});
+
+app.get('/api/notifications', (req, res) => {
+    const notifications = getNotifications();
+    res.json(notifications);
 });
 
 app.get('/api/stats', (req, res) => {
@@ -781,12 +868,14 @@ app.get('/health', (req, res) => {
     const users = getUsers();
     const chats = getChats();
     const ratings = getRatings();
+    const notifications = getNotifications();
     
     res.json({ 
         status: 'OK', 
         users: users.length,
         chats: chats.length,
         ratings: ratings.length,
+        notifications: notifications.length,
         timestamp: new Date().toISOString()
     });
 });
@@ -804,11 +893,13 @@ server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     const chats = getChats();
     const ratings = getRatings();
+    const notifications = getNotifications();
     
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📊 Пользователей: ${users.length}`);
     console.log(`💬 Чатов: ${chats.length}`);
     console.log(`⭐ Оценок: ${ratings.length}`);
+    console.log(`📢 Уведомлений: ${notifications.length}`);
     console.log(`🌐 URL: http://localhost:${PORT}`);
     console.log(`💾 Данные синхронизируются через JSON файлы`);
 });

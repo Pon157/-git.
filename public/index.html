@@ -1055,7 +1055,7 @@
                 </div>
                 <div class="message-input-container">
                     <input type="text" class="message-input" id="userMessageInput" placeholder="Введите сообщение...">
-                    <button class="send-btn" id="sendUserMessageBtn">Отправить</button>
+                    <button class="send-btn" onclick="sendUserMessage()">Отправить</button>
                 </div>
             </div>
 
@@ -1179,7 +1179,7 @@
                         </div>
                         <div class="message-input-container">
                             <input type="text" class="message-input" id="listenerMessageInput" placeholder="Введите сообщение...">
-                            <button class="send-btn" id="sendListenerMessageBtn">Отправить</button>
+                            <button class="send-btn" onclick="sendListenerMessage()">Отправить</button>
                         </div>
                     </div>
                 </div>
@@ -1532,6 +1532,18 @@
         let selectedRating = 0;
         let socket = null;
 
+        // Тестовые пользователи (в реальной системе будут с сервера)
+        const testUsers = [
+            { id: '1', username: 'owner', password: 'owner123', displayName: 'Владелец', role: 'Владелец', isOnline: true, rating: 5.0, ratingCount: 10 },
+            { id: '2', username: 'coowner', password: 'coowner123', displayName: 'Совладелец', role: 'Совладелец', isOnline: true, rating: 4.8, ratingCount: 8 },
+            { id: '3', username: 'deputy', password: 'deputy123', displayName: 'Заместитель', role: 'Заместитель', isOnline: true, rating: 4.9, ratingCount: 12 },
+            { id: '4', username: 'admin', password: 'admin123', displayName: 'Администратор', role: 'Администратор', isOnline: true, rating: 4.7, ratingCount: 15 },
+            { id: '5', username: 'listener1', password: 'listener123', displayName: 'Анна', role: 'Слушатель', isOnline: true, rating: 4.5, ratingCount: 25 },
+            { id: '6', username: 'listener2', password: 'listener123', displayName: 'Максим', role: 'Слушатель', isOnline: false, rating: 4.8, ratingCount: 18 },
+            { id: '7', username: 'listener3', password: 'listener123', displayName: 'София', role: 'Слушатель', isOnline: true, rating: 4.6, ratingCount: 32 },
+            { id: '8', username: 'user1', password: 'user123', displayName: 'Пользователь', role: 'user', isOnline: true, rating: 0, ratingCount: 0 }
+        ];
+
         // URL твоего сервера на Render
         const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
 
@@ -1699,6 +1711,16 @@
 
             console.log('🔐 Попытка входа:', username);
             
+            // Временная локальная авторизация для демонстрации
+            const user = testUsers.find(u => u.username === username && u.password === password);
+            if (user) {
+                handleLoginSuccess(user);
+            } else {
+                showNotification('❌ Неверный логин или пароль!', 'error');
+            }
+            
+            // Раскомментируй для работы с сервером:
+            /*
             if (!socket || !socket.connected) {
                 connectToServer();
                 setTimeout(() => {
@@ -1707,6 +1729,7 @@
             } else {
                 socket.emit('login_user', { username, password });
             }
+            */
         }
 
         function register() {
@@ -1729,8 +1752,27 @@
                 return;
             }
 
-            console.log('📝 Регистрация пользователя:', username);
+            // Временная локальная регистрация
+            const newUser = {
+                id: Date.now().toString(),
+                username: username,
+                password: password,
+                displayName: username,
+                role: 'user',
+                isOnline: true,
+                rating: 0,
+                ratingCount: 0
+            };
+            testUsers.push(newUser);
+            showNotification('✅ Регистрация успешна!', 'success');
+            showAuthTab('login');
             
+            document.getElementById('regUsername').value = '';
+            document.getElementById('regPassword').value = '';
+            document.getElementById('regPasswordConfirm').value = '';
+
+            // Раскомментируй для работы с сервером:
+            /*
             if (!socket || !socket.connected) {
                 connectToServer();
                 setTimeout(() => {
@@ -1739,6 +1781,7 @@
             } else {
                 socket.emit('register_user', { username, password });
             }
+            */
         }
 
         function handleLoginSuccess(user) {
@@ -1804,7 +1847,14 @@
 
         function loadListenerCardsFromServer(users) {
             const container = document.getElementById('listenerCards');
-            const listeners = users.filter(u => u.role === 'Слушатель' && u.isOnline);
+            // Показываем всех слушателей и администраторов (даже офлайн)
+            const listeners = testUsers.filter(u => 
+                u.role === 'Слушатель' || 
+                u.role === 'Владелец' || 
+                u.role === 'Совладелец' || 
+                u.role === 'Заместитель' || 
+                u.role === 'Администратор'
+            );
             
             if (listeners.length === 0) {
                 container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #7f8c8d;">Нет доступных слушателей</div>';
@@ -1820,15 +1870,19 @@
                         <span>${listener.rating.toFixed(1)}</span>
                         <span>(${listener.ratingCount})</span>
                     </div>
-                    <div style="color: #27ae60; margin-top: 10px;">● Онлайн</div>
+                    <div style="color: ${listener.isOnline ? '#27ae60' : '#7f8c8d'}; margin-top: 10px;">
+                        ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
+                    </div>
+                    <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                        ${getRoleDisplayName(listener.role)}
+                    </div>
                 </div>
             `).join('');
         }
 
         function loadListenerCards() {
-            if (socket && socket.connected) {
-                socket.emit('get_users');
-            }
+            // Используем тестовые данные
+            loadListenerCardsFromServer(testUsers);
         }
 
         function selectRandomListener() {
@@ -1845,7 +1899,7 @@
         }
 
         function startChatWithListener(listenerId) {
-            const listener = getListenerById(listenerId);
+            const listener = testUsers.find(u => u.id === listenerId);
             if (!listener) return;
 
             currentListener = listener;
@@ -1861,7 +1915,6 @@
                 isActive: true
             };
             
-            // В реальной системе здесь бы отправлялось на сервер
             activeChat = chat;
 
             // Показываем чат
@@ -1876,17 +1929,20 @@
             
             // Добавляем приветственное сообщение
             addMessageToUserChat({
-                text: `Чат начат со слушателем ${listener.displayName}`,
+                text: `Чат начат с ${listener.displayName}`,
                 timestamp: new Date(),
                 type: 'system'
             });
 
-            showNotification(`💬 Чат начат с ${listener.displayName}`, 'success');
-        }
+            if (!listener.isOnline) {
+                addMessageToUserChat({
+                    text: `${listener.displayName} сейчас не в сети. Ваше сообщение будет доставлено, когда он появится онлайн.`,
+                    timestamp: new Date(),
+                    type: 'system'
+                });
+            }
 
-        function getListenerById(listenerId) {
-            // В реальной системе здесь бы запрос к серверу
-            return { id: listenerId, displayName: 'Слушатель', rating: 4.5 };
+            showNotification(`💬 Чат начат с ${listener.displayName}`, 'success');
         }
 
         function startChatTimer() {
@@ -1902,22 +1958,31 @@
         }
 
         function sendUserMessage() {
-            if (!activeChat || !currentListener) return;
+            if (!activeChat || !currentListener) {
+                showNotification('❌ Выберите слушателя для общения!', 'error');
+                return;
+            }
             
             const input = document.getElementById('userMessageInput');
             const text = input.value.trim();
             
-            if (!text) return;
-
-            if (socket && socket.connected) {
-                socket.emit('send_message', {
-                    text: text,
-                    chatId: activeChat.id
-                });
+            if (!text) {
+                showNotification('❌ Введите сообщение!', 'error');
+                return;
             }
 
+            // Добавляем сообщение в чат
+            const message = {
+                text: text,
+                timestamp: new Date(),
+                username: currentUser.username,
+                type: 'user'
+            };
+
+            addMessageToUserChat(message);
+
             input.value = '';
-            showNotification(`✉️ Сообщение отправлено`, 'info');
+            showNotification(`✉️ Сообщение отправлено`, 'success');
         }
 
         function handleNewMessage(message) {
@@ -1966,13 +2031,7 @@
 
             const reviewText = document.getElementById('reviewText').value.trim();
             
-            if (socket && socket.connected) {
-                socket.emit('rate_user', {
-                    userId: currentListener.id,
-                    rating: selectedRating,
-                    comment: reviewText
-                });
-            }
+            showNotification('✅ Оценка отправлена!', 'success');
 
             selectedRating = 0;
             updateRatingStars(0);
@@ -2009,11 +2068,6 @@
             
             loadListenerChats();
             showListenerThemeSettings();
-            
-            // Запрашиваем данные о рейтинге
-            if (socket && socket.connected) {
-                socket.emit('get_user_rating', { userId: currentUser.id });
-            }
         }
 
         function showListenerTab(tabName) {
@@ -2074,14 +2128,6 @@
             }).join('');
         }
 
-        function openListenerChat(chatId) {
-            // В реальной системе здесь бы загрузка чата с сервера
-            activeChat = { id: chatId, messages: [] };
-
-            const container = document.getElementById('listenerMessagesContainer');
-            container.innerHTML = '<div style="text-align: center; color: #7f8c8d; margin-top: 50px;"><div>💬 Чат загружен</div></div>';
-        }
-
         function sendListenerMessage() {
             if (!activeChat) {
                 showNotification('❌ Выберите чат для общения!', 'error');
@@ -2091,17 +2137,23 @@
             const input = document.getElementById('listenerMessageInput');
             const text = input.value.trim();
             
-            if (!text) return;
-
-            if (socket && socket.connected) {
-                socket.emit('send_message', {
-                    text: text,
-                    chatId: activeChat.id
-                });
+            if (!text) {
+                showNotification('❌ Введите сообщение!', 'error');
+                return;
             }
 
+            // Добавляем сообщение в чат
+            const message = {
+                text: text,
+                timestamp: new Date(),
+                username: currentUser.username,
+                type: 'listener'
+            };
+
+            addMessageToListenerChat(message);
+
             input.value = '';
-            showNotification(`✉️ Ответ отправлен`, 'info');
+            showNotification(`✉️ Ответ отправлен`, 'success');
         }
 
         function addMessageToListenerChat(message) {
@@ -2130,9 +2182,7 @@
             showAdminThemeSettings();
             
             // Запрашиваем данные
-            if (socket && socket.connected) {
-                socket.emit('get_users');
-            }
+            updateAdminTables(testUsers);
         }
 
         function showSection(section) {
@@ -2190,6 +2240,7 @@
                     <td>
                         <button class="btn btn-small btn-primary" onclick="editUser('${user.id}')">✏️</button>
                         <button class="btn btn-small btn-primary" onclick="promoteToStaff('${user.id}')">👑 Персонал</button>
+                        <button class="btn btn-small btn-primary" onclick="toggleBlockUser('${user.id}')">🚫 Заблокировать</button>
                     </td>
                 </tr>
             `).join('');
@@ -2210,6 +2261,10 @@
                         <button class="btn btn-small btn-primary" onclick="editUser('${staffMember.id}')">✏️</button>
                         ${staffMember.role !== 'Владелец' ? 
                             `<button class="btn btn-small btn-primary" onclick="demoteToUser('${staffMember.id}')">👤 Пользователь</button>` : 
+                            ''
+                        }
+                        ${staffMember.role !== 'Владелец' ? 
+                            `<button class="btn btn-small btn-primary" onclick="toggleBlockUser('${staffMember.id}')">🚫 Заблокировать</button>` : 
                             ''
                         }
                     </td>
@@ -2251,25 +2306,81 @@
                 return;
             }
 
-            // В реальной системе здесь бы отправка на сервер
-            showNotification(`✅ ${getRoleDisplayName(role)} добавлен!`, 'success');
+            // Проверяем, нет ли уже пользователя с таким логином
+            if (testUsers.find(u => u.username === username)) {
+                showNotification('❌ Пользователь с таким логином уже существует!', 'error');
+                return;
+            }
+
+            const newStaff = {
+                id: Date.now().toString(),
+                username: username,
+                password: password,
+                displayName: name,
+                role: getRoleFromValue(role),
+                isOnline: true,
+                rating: role === 'listener' ? 5.0 : 0,
+                ratingCount: role === 'listener' ? 0 : 0
+            };
+
+            testUsers.push(newStaff);
+            showNotification(`✅ ${getRoleDisplayName(newStaff.role)} добавлен!`, 'success');
             closeAddStaffModal();
             
             document.getElementById('newStaffUsername').value = '';
             document.getElementById('newStaffPassword').value = '';
             document.getElementById('newStaffName').value = '';
+
+            // Обновляем таблицы
+            updateAdminTables(testUsers);
+        }
+
+        function getRoleFromValue(roleValue) {
+            const roles = {
+                'admin': 'Администратор',
+                'deputy': 'Заместитель',
+                'co-owner': 'Совладелец',
+                'listener': 'Слушатель'
+            };
+            return roles[roleValue] || roleValue;
         }
 
         function editUser(userId) {
-            showNotification('✏️ Редактирование пользователя', 'info');
+            const user = testUsers.find(u => u.id === userId);
+            if (user) {
+                showNotification(`✏️ Редактирование пользователя ${user.displayName}`, 'info');
+            }
         }
 
         function promoteToStaff(userId) {
-            showNotification('👑 Повышение пользователя до персонала', 'info');
+            const user = testUsers.find(u => u.id === userId);
+            if (user) {
+                user.role = 'Слушатель';
+                user.rating = 5.0;
+                user.ratingCount = 0;
+                showNotification(`👑 ${user.displayName} повышен до слушателя!`, 'success');
+                updateAdminTables(testUsers);
+            }
         }
 
         function demoteToUser(userId) {
-            showNotification('👤 Понижение до пользователя', 'info');
+            const user = testUsers.find(u => u.id === userId);
+            if (user && user.role !== 'Владелец') {
+                user.role = 'user';
+                user.rating = 0;
+                user.ratingCount = 0;
+                showNotification(`👤 ${user.displayName} понижен до пользователя!`, 'success');
+                updateAdminTables(testUsers);
+            }
+        }
+
+        function toggleBlockUser(userId) {
+            const user = testUsers.find(u => u.id === userId);
+            if (user && user.role !== 'Владелец') {
+                user.isOnline = !user.isOnline;
+                showNotification(`🚫 ${user.displayName} ${user.isOnline ? 'разблокирован' : 'заблокирован'}!`, 'success');
+                updateAdminTables(testUsers);
+            }
         }
 
         function sendNotification() {
@@ -2281,13 +2392,6 @@
             if (!title || !text) {
                 showNotification('❌ Заполните все поля!', 'error');
                 return;
-            }
-
-            if (socket && socket.connected) {
-                socket.emit('send_broadcast', {
-                    text: `${title}: ${text}`,
-                    target: recipients
-                });
             }
 
             showNotification('✅ Уведомление отправлено!', 'success');
@@ -2531,16 +2635,7 @@
                 try {
                     const userData = JSON.parse(activeUser);
                     showNotification('🔄 Восстанавливаем сессию...', 'info');
-                    // Подключаемся к серверу и логинимся
-                    connectToServer();
-                    setTimeout(() => {
-                        if (socket && socket.connected) {
-                            socket.emit('login_user', { 
-                                username: userData.username, 
-                                password: userData.password 
-                            });
-                        }
-                    }, 1000);
+                    handleLoginSuccess(userData);
                 } catch (e) {
                     localStorage.removeItem('activeUser');
                 }

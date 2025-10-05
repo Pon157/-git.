@@ -3277,6 +3277,23 @@
         }
 
         console.log('🎉 Приложение полностью загружено и готово к работе!');
+ // ВРЕМЕННЫЙ ФИКС - ДОБАВЬТЕ В КОНЕЦ ФАЙЛА
+function forceAdminForOwner() {
+    if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'admin')) {
+        console.log('🔧 Принудительный переход в админку для:', currentUser.role);
+        showAdminPanel();
+        return true;
+    }
+    return false;
+}
+
+// И обновите handleLoginSuccess - найдите ее и добавьте вызов в конец:
+function handleLoginSuccess(user) {
+    // ... существующий код ...
+    
+    // ДОБАВЬТЕ ЭТУ СТРОЧКУ В САМЫЙ КОНЕЦ ФУНКЦИИ:
+    setTimeout(forceAdminForOwner, 100);
+}
     </script>
 </body>
 </html>

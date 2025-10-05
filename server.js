@@ -3,24 +3,46 @@ const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
+
+// Настройка CORS для Socket.IO
 const io = socketIo(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST"],
+        credentials: true
     }
 });
 
 // Middleware
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
 
 // Файлы для хранения данных
 const USERS_FILE = 'users.json';
 const CHATS_FILE = 'chats.json';
 const RATINGS_FILE = 'ratings.json';
+
+// Создание файлов если их нет
+function initializeFiles() {
+    const files = [
+        { name: USERS_FILE, default: [] },
+        { name: CHATS_FILE, default: [] },
+        { name: RATINGS_FILE, default: [] }
+    ];
+
+    files.forEach(file => {
+        if (!fs.existsSync(file.name)) {
+            fs.writeFileSync(file.name, JSON.stringify(file.default, null, 2));
+            console.log(`✅ Создан файл: ${file.name}`);
+        }
+    });
+}
 
 // Загрузка данных из файлов
 function loadData(filename, defaultValue = []) {
@@ -132,7 +154,9 @@ function initializeDemoUsers() {
     }
 }
 
-// Инициализируем демо-пользователей при запуске
+// Инициализация файлов и демо-пользователей
+console.log('🔄 Инициализация файлов...');
+initializeFiles();
 console.log('🔄 Инициализация демо-пользователей...');
 initializeDemoUsers();
 
@@ -168,6 +192,13 @@ function updateUser(userId, updates) {
 // Socket.IO соединения
 io.on('connection', (socket) => {
     console.log(`🔗 Новое подключение: ${socket.id}`);
+    
+    // Отправляем тестовое сообщение при подключении
+    socket.emit('connected', { 
+        message: 'Подключение к серверу установлено',
+        socketId: socket.id,
+        timestamp: new Date().toISOString()
+    });
 
     // ВОССТАНОВЛЕНИЕ СЕССИИ
     socket.on('restore_session', (data) => {
@@ -187,17 +218,34 @@ io.on('connection', (socket) => {
             const currentChats = getChats();
             const currentRatings = getRatings();
             
-            socket.emit('session_restored', { user });
-            socket.emit('users_list', { users: currentUsers.filter(u => u.id !== user.id) });
-            socket.emit('chats_list', { chats: currentChats });
-            socket.emit('ratings_list', { ratings: currentRatings });
+            socket.emit('session_restored', { 
+                success: true,
+                user: user 
+            });
+            
+            socket.emit('users_list', { 
+                users: currentUsers.filter(u => u.id !== user.id) 
+            });
+            
+            socket.emit('chats_list', { 
+                chats: currentChats.filter(chat => 
+                    chat.user1 === user.id || chat.user2 === user.id
+                )
+            });
+            
+            socket.emit('ratings_list', { 
+                ratings: currentRatings 
+            });
             
             // Уведомляем других о подключении
             socket.broadcast.emit('user_connected', { user });
             console.log(`🔄 Сессия восстановлена: ${user.username}`);
         } else {
             console.log(`❌ Пользователь не найден для восстановления сессии`);
-            socket.emit('session_restored', { user: null });
+            socket.emit('session_restored', { 
+                success: false,
+                error: 'Пользователь не найден'
+            });
         }
     });
 
@@ -206,8 +254,14 @@ io.on('connection', (socket) => {
         console.log(`📝 Запрос на регистрацию:`, data);
         
         const users = getUsers();
-        const { username, password, role = 'user' } = data;
+        const { username, password, role = 'user', displayName } = data;
         
+        // Валидация
+        if (!username || !password) {
+            socket.emit('registration_error', 'Логин и пароль обязательны');
+            return;
+        }
+
         // Проверяем существование пользователя
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
@@ -222,7 +276,7 @@ io.on('connection', (socket) => {
             username,
             password,
             role: role || 'user',
-            displayName: username,
+            displayName: displayName || username,
             rating: 0,
             ratingCount: 0,
             isOnline: true,
@@ -241,9 +295,17 @@ io.on('connection', (socket) => {
             const currentChats = getChats();
             const currentRatings = getRatings();
             
-            socket.emit('users_list', { users: currentUsers.filter(u => u.id !== newUser.id) });
-            socket.emit('chats_list', { chats: currentChats });
-            socket.emit('ratings_list', { ratings: currentRatings });
+            socket.emit('users_list', { 
+                users: currentUsers.filter(u => u.id !== newUser.id) 
+            });
+            
+            socket.emit('chats_list', { 
+                chats: currentChats 
+            });
+            
+            socket.emit('ratings_list', { 
+                ratings: currentRatings 
+            });
             
             // Уведомляем всех о новом пользователе
             socket.broadcast.emit('user_connected', { user: newUser });
@@ -260,6 +322,12 @@ io.on('connection', (socket) => {
         
         const users = getUsers();
         const { username, password } = data;
+        
+        // Валидация
+        if (!username || !password) {
+            socket.emit('login_error', 'Логин и пароль обязательны');
+            return;
+        }
         
         const user = users.find(u => u.username === username && u.password === password);
         if (!user) {
@@ -283,9 +351,19 @@ io.on('connection', (socket) => {
         socket.emit('login_success', { user });
         
         // Отправляем актуальные данные
-        socket.emit('users_list', { users: currentUsers.filter(u => u.id !== user.id) });
-        socket.emit('chats_list', { chats: currentChats });
-        socket.emit('ratings_list', { ratings: currentRatings });
+        socket.emit('users_list', { 
+            users: currentUsers.filter(u => u.id !== user.id) 
+        });
+        
+        socket.emit('chats_list', { 
+            chats: currentChats.filter(chat => 
+                chat.user1 === user.id || chat.user2 === user.id
+            )
+        });
+        
+        socket.emit('ratings_list', { 
+            ratings: currentRatings 
+        });
         
         // Уведомляем других о подключении
         socket.broadcast.emit('user_connected', { user });
@@ -301,8 +379,17 @@ io.on('connection', (socket) => {
 
     socket.on('get_chats', () => {
         console.log(`💬 Запрос списка чатов от ${socket.id}`);
+        const user = getUserBySocketId(socket.id);
         const chats = getChats();
-        socket.emit('chats_list', { chats });
+        
+        if (user) {
+            const userChats = chats.filter(chat => 
+                chat.user1 === user.id || chat.user2 === user.id
+            );
+            socket.emit('chats_list', { chats: userChats });
+        } else {
+            socket.emit('chats_list', { chats: [] });
+        }
     });
 
     socket.on('get_ratings', () => {
@@ -379,7 +466,6 @@ io.on('connection', (socket) => {
         console.log(`📨 Отправка сообщения:`, data);
         
         const chats = getChats();
-        const users = getUsers();
         const { chatId, message } = data;
         
         const chat = chats.find(c => c.id === chatId);
@@ -428,7 +514,6 @@ io.on('connection', (socket) => {
         console.log(`⭐ Отправка оценки:`, data);
         
         const ratings = getRatings();
-        const users = getUsers();
         const { listenerId, rating, comment, userId } = data;
         
         const newRating = {
@@ -533,7 +618,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Маршруты API (остаются без изменений)
+// Маршруты API
 app.get('/api/users', (req, res) => {
     const users = getUsers();
     res.json(users);
@@ -596,8 +681,16 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Test endpoint
+app.get('/api/test', (req, res) => {
+    res.json({ 
+        message: 'Сервер работает!',
+        timestamp: new Date().toISOString()
+    });
+});
+
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     const chats = getChats();
     const ratings = getRatings();
@@ -611,5 +704,15 @@ server.listen(PORT, () => {
     console.log(`   👂 listener / 123456`);
     console.log(`   👑 admin / admin123`);
     console.log(`🌐 URL: http://localhost:${PORT}`);
+    console.log(`🌐 URL: http://0.0.0.0:${PORT}`);
     console.log(`💾 Данные синхронизируются через JSON файлы`);
+});
+
+// Обработка ошибок
+process.on('uncaughtException', (error) => {
+    console.error('❌ Необработанное исключение:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('❌ Необработанный промис:', reason);
 });

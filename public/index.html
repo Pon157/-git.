@@ -1267,9 +1267,6 @@
                     <div class="nav-item" data-section="users">
                         👥 Пользователи
                     </div>
-                    <div class="nav-item" data-section="listeners">
-                        🎧 Слушатели
-                    </div>
                     <div class="nav-item" data-section="staff">
                         👑 Персонал
                     </div>
@@ -1288,8 +1285,8 @@
                 <div class="content-header">
                     <h2 id="contentTitle">Статистика системы</h2>
                     <div class="header-actions">
-                        <button class="settings-btn" onclick="showAdminThemeSettings()">
-                            🎨 Настройки темы
+                        <button class="settings-btn" onclick="showAdminSettings()">
+                            ⚙️ Настройки профиля
                         </button>
                         <button class="btn btn-primary" onclick="logout()">
                             Выйти
@@ -1359,32 +1356,6 @@
                                     <th>Логин</th>
                                     <th>Имя</th>
                                     <th>Роль</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут заполнены динамически -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- СЛУШАТЕЛИ -->
-                <div id="listenersSection" class="content-section hidden">
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Управление слушателями</h3>
-                        <div class="header-actions" style="margin-bottom: 20px;">
-                            <button class="btn btn-primary" onclick="showAddListenerModal()">
-                                ➕ Добавить слушателя
-                            </button>
-                        </div>
-                        <table class="data-table" id="listenersTable">
-                            <thead>
-                                <tr>
-                                    <th>Логин</th>
-                                    <th>Имя</th>
-                                    <th>Рейтинг</th>
                                     <th>Статус</th>
                                     <th>Действия</th>
                                 </tr>
@@ -1471,7 +1442,7 @@
                     <div class="settings-panel">
                         <div class="settings-section">
                             <div class="flex justify-between items-center">
-                                <h3 class="settings-title">Настройки системы</h3>
+                                <h3 class="settings-title">Настройки профиля</h3>
                                 <button class="btn btn-secondary" onclick="hideAdminSettings()">
                                     ← Назад к панели
                                 </button>
@@ -1508,54 +1479,9 @@
                             </div>
                             <button class="btn btn-primary" onclick="changeAdminDisplayName()">Сменить имя</button>
                         </div>
-
-                        <!-- Управление ролями -->
-                        <div class="settings-section" id="roleManagementSection">
-                            <h3 class="settings-title">Управление ролями</h3>
-                            <div class="form-group">
-                                <label class="form-label">Пользователь</label>
-                                <select class="form-input" id="userForRoleChange">
-                                    <option value="">Выберите пользователя</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Новая роль</label>
-                                <select class="form-input" id="newUserRole">
-                                    <option value="user">Пользователь</option>
-                                    <option value="listener">Слушатель</option>
-                                    <option value="admin">Администратор</option>
-                                    <option value="deputy">Заместитель</option>
-                                    <option value="co-owner">Совладелец</option>
-                                </select>
-                            </div>
-                            <button class="btn btn-primary" onclick="changeUserRole()">Изменить роль</button>
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ СЛУШАТЕЛЯ -->
-    <div id="addListenerModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Добавить слушателя</h3>
-                <button class="modal-close" onclick="closeAddListenerModal()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Логин</label>
-                <input type="text" class="form-input" id="newListenerUsername" placeholder="Введите логин">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Пароль</label>
-                <input type="password" class="form-input" id="newListenerPassword" placeholder="Введите пароль">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Имя</label>
-                <input type="text" class="form-input" id="newListenerName" placeholder="Введите имя">
-            </div>
-            <button class="btn btn-primary w-full" onclick="addNewListener()">Добавить слушателя</button>
         </div>
     </div>
 
@@ -1584,6 +1510,7 @@
                     <option value="admin">Администратор</option>
                     <option value="deputy">Заместитель</option>
                     <option value="co-owner">Совладелец</option>
+                    <option value="listener">Слушатель</option>
                 </select>
             </div>
             <button class="btn btn-primary w-full" onclick="addNewStaff()">Добавить сотрудника</button>
@@ -1865,7 +1792,7 @@
             console.log('👥 Получен список пользователей:', users);
             
             // Для пользователя - загружаем карточки слушателей
-            if (currentUser && (currentUser.role === 'user' || currentUser.role === 'user')) {
+            if (currentUser && currentUser.role === 'user') {
                 loadListenerCardsFromServer(users);
             }
             
@@ -2223,14 +2150,17 @@
                 dashboard: 'Статистика системы',
                 chats: 'Все чаты',
                 users: 'Управление пользователями',
-                listeners: 'Управление слушателями',
                 staff: 'Управление персоналом',
                 notifications: 'Технические уведомления',
-                adminSettings: 'Настройки системы'
+                adminSettings: 'Настройки профиля'
             };
             document.getElementById('contentTitle').textContent = titles[section];
             
             currentSection = section;
+        }
+
+        function showAdminSettings() {
+            showSection('adminSettings');
         }
 
         function hideAdminSettings() {
@@ -2243,7 +2173,6 @@
 
         function updateAdminTables(users) {
             loadUsersTable(users);
-            loadListenersTable(users);
             loadStaffTable(users);
             updateSystemStats(users);
         }
@@ -2260,25 +2189,7 @@
                     <td>${user.isOnline ? '● Онлайн' : '○ Офлайн'}</td>
                     <td>
                         <button class="btn btn-small btn-primary" onclick="editUser('${user.id}')">✏️</button>
-                        <button class="btn btn-small btn-primary" onclick="changeUserRole('${user.id}', 'listener')">🎧 Слушатель</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function loadListenersTable(users) {
-            const tbody = document.querySelector('#listenersTable tbody');
-            const listeners = users.filter(u => u.role === 'Слушатель');
-            
-            tbody.innerHTML = listeners.map(listener => `
-                <tr>
-                    <td>${listener.username}</td>
-                    <td>${listener.displayName}</td>
-                    <td>${listener.rating.toFixed(1)} (${listener.ratingCount})</td>
-                    <td>${listener.isOnline ? '● Онлайн' : '○ Офлайн'}</td>
-                    <td>
-                        <button class="btn btn-small btn-primary" onclick="editUser('${listener.id}')">✏️</button>
-                        <button class="btn btn-small btn-primary" onclick="changeUserRole('${listener.id}', 'user')">👤 Пользователь</button>
+                        <button class="btn btn-small btn-primary" onclick="promoteToStaff('${user.id}')">👑 Персонал</button>
                     </td>
                 </tr>
             `).join('');
@@ -2286,7 +2197,7 @@
 
         function loadStaffTable(users) {
             const tbody = document.querySelector('#staffTable tbody');
-            const staffRoles = ['Владелец', 'Совладелец', 'Заместитель', 'Администратор'];
+            const staffRoles = ['Владелец', 'Совладелец', 'Заместитель', 'Администратор', 'Слушатель'];
             const staff = users.filter(u => staffRoles.includes(u.role));
             
             tbody.innerHTML = staff.map(staffMember => `
@@ -2298,7 +2209,7 @@
                     <td>
                         <button class="btn btn-small btn-primary" onclick="editUser('${staffMember.id}')">✏️</button>
                         ${staffMember.role !== 'Владелец' ? 
-                            `<button class="btn btn-small btn-primary" onclick="changeUserRole('${staffMember.id}', 'user')">👤 Пользователь</button>` : 
+                            `<button class="btn btn-small btn-primary" onclick="demoteToUser('${staffMember.id}')">👤 Пользователь</button>` : 
                             ''
                         }
                     </td>
@@ -2321,33 +2232,6 @@
         }
 
         // ФУНКЦИИ АДМИНИСТРАТОРА
-        function showAddListenerModal() {
-            document.getElementById('addListenerModal').style.display = 'flex';
-        }
-
-        function closeAddListenerModal() {
-            document.getElementById('addListenerModal').style.display = 'none';
-        }
-
-        function addNewListener() {
-            const username = document.getElementById('newListenerUsername').value.trim();
-            const password = document.getElementById('newListenerPassword').value.trim();
-            const name = document.getElementById('newListenerName').value.trim();
-
-            if (!username || !password || !name) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            // В реальной системе здесь бы отправка на сервер
-            showNotification('✅ Слушатель добавлен!', 'success');
-            closeAddListenerModal();
-            
-            document.getElementById('newListenerUsername').value = '';
-            document.getElementById('newListenerPassword').value = '';
-            document.getElementById('newListenerName').value = '';
-        }
-
         function showAddStaffModal() {
             document.getElementById('addStaffModal').style.display = 'flex';
         }
@@ -2380,8 +2264,12 @@
             showNotification('✏️ Редактирование пользователя', 'info');
         }
 
-        function changeUserRole(userId, newRole) {
-            showNotification(`🎭 Изменение роли пользователя на ${getRoleDisplayName(newRole)}`, 'info');
+        function promoteToStaff(userId) {
+            showNotification('👑 Повышение пользователя до персонала', 'info');
+        }
+
+        function demoteToUser(userId) {
+            showNotification('👤 Понижение до пользователя', 'info');
         }
 
         function sendNotification() {

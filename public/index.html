@@ -2000,13 +2000,18 @@
 
         function loadListenerCards() {
             const container = document.getElementById('listenerCards');
-            const listeners = users.filter(u => (u.role === 'listener' || u.role === 'admin') && u.id !== currentUser.id);
+            // ИСПРАВЛЕНИЕ: Администраторы тоже могут быть слушателями
+            const listeners = users.filter(u => 
+                (u.role === 'listener' || u.role === 'admin') && 
+                u.id !== currentUser.id && 
+                u.isOnline
+            );
             
             if (listeners.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #7f8c8d;">
-                        <div>😔 Нет доступных слушателей</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Администратор может добавить слушателей в панели управления</div>
+                        <div>😔 Нет доступных слушателей онлайн</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Попробуйте позже или выберите случайного слушателя</div>
                     </div>
                 `;
                 return;
@@ -2037,7 +2042,11 @@
         }
 
         function selectRandomListener() {
-            const listeners = users.filter(u => (u.role === 'listener' || u.role === 'admin') && u.isOnline && u.id !== currentUser.id);
+            const listeners = users.filter(u => 
+                (u.role === 'listener' || u.role === 'admin') && 
+                u.isOnline && 
+                u.id !== currentUser.id
+            );
             if (listeners.length === 0) {
                 showNotification('❌ Нет доступных слушателей онлайн!', 'error');
                 return;
@@ -2110,6 +2119,10 @@
             };
 
             console.log('📤 Отправка сообщения:', message);
+            
+            // ИСПРАВЛЕНИЕ: Добавляем сообщение сразу в интерфейс отправителя
+            addMessageToUserChat(message);
+            
             socket.emit('send_message', {
                 chatId: activeChat.id,
                 message: message
@@ -2136,10 +2149,17 @@
                 // Обновляем счетчик сообщений
                 updateMessageCount();
                 
+                // ИСПРАВЛЕНИЕ: Отображаем сообщение у обоих участников чата
                 if (currentUser.role === 'user') {
-                    addMessageToUserChat(data.message);
+                    // Если сообщение не от текущего пользователя, добавляем его
+                    if (data.message.senderId !== currentUser.id) {
+                        addMessageToUserChat(data.message);
+                    }
                 } else if (currentUser.role === 'listener') {
-                    addMessageToListenerChat(data.message);
+                    // Если сообщение не от текущего слушателя, добавляем его
+                    if (data.message.senderId !== currentUser.id) {
+                        addMessageToListenerChat(data.message);
+                    }
                 }
             }
         }
@@ -2161,6 +2181,9 @@
             `;
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
+            
+            // Обновляем счетчик сообщений
+            updateMessageCount();
         }
 
         function updateMessageCount() {
@@ -2267,8 +2290,10 @@
 
         function updateListenerChatsList() {
             const container = document.getElementById('listenerChatsList');
+            // ИСПРАВЛЕНИЕ: Администраторы тоже могут получать чаты
             const listenerChats = chats.filter(chat => 
-                chat.user2 === currentUser.id && chat.isActive
+                (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id)) && 
+                chat.isActive
             );
             
             if (listenerChats.length === 0) {
@@ -2356,6 +2381,10 @@
             };
 
             console.log('📤 Отправка сообщения от слушателя:', message);
+            
+            // ИСПРАВЛЕНИЕ: Добавляем сообщение сразу в интерфейс отправителя
+            addMessageToListenerChat(message);
+            
             socket.emit('send_message', {
                 chatId: activeChat.id,
                 message: message
@@ -2366,6 +2395,11 @@
 
         function addMessageToListenerChat(message, scroll = true) {
             const container = document.getElementById('listenerMessagesContainer');
+            
+            // Очищаем приветственное сообщение
+            if (container.children.length === 1 && container.children[0].textContent.includes('Выберите чат')) {
+                container.innerHTML = '';
+            }
             
             const messageDiv = document.createElement('div');
             const isCurrentUser = message.senderId === currentUser.id;
@@ -2459,7 +2493,7 @@
             document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
             
             updateAdminData();
-            showAdminThemeSettings();
+            showAdminThemeSettings(); // ИСПРАВЛЕНИЕ: Добавляем настройки для администратора
         }
 
         function showSection(section) {
@@ -3246,4 +3280,3 @@
     </script>
 </body>
 </html>
-

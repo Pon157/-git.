@@ -139,6 +139,40 @@ function saveNotifications(notifications) {
     return saveData(NOTIFICATIONS_FILE, notifications);
 }
 
+// Автоматическое создание владельца если его нет
+function ensureOwnerExists() {
+    let users = getUsers();
+    
+    const ownerUser = users.find(u => u.role === 'owner');
+    
+    if (!ownerUser) {
+        console.log('👑 Владелец не найден, создаем...');
+        
+        const newOwner = {
+            id: 'owner-' + Date.now(),
+            username: 'owner',
+            password: 'owner2024',
+            role: 'owner',
+            displayName: 'Владелец Системы',
+            avatar: '👑',
+            rating: 5.0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString(),
+            isSuperAdmin: true,
+            permissions: ['all'],
+            ownerSince: new Date().toISOString()
+        };
+        
+        users.push(newOwner);
+        saveUsers(users);
+        console.log('✅ Владелец создан: owner / owner2024');
+    } else {
+        console.log('✅ Владелец уже существует');
+    }
+}
+
 // Автоматическое создание администратора если его нет
 function ensureAdminExists() {
     let users = getUsers();
@@ -154,13 +188,14 @@ function ensureAdminExists() {
             password: 'admin123',
             role: 'admin',
             displayName: 'Главный Администратор',
-            avatar: '👑',
+            avatar: '⚙️',
             rating: 5.0,
             ratingCount: 0,
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isSuperAdmin: true
+            isSuperAdmin: false,
+            permissions: ['manage_users', 'manage_chats', 'send_notifications']
         };
         
         users.push(newAdmin);
@@ -236,6 +271,7 @@ function initializeDemoUsers() {
 // Инициализация файлов и пользователей
 console.log('🔄 Инициализация системы...');
 initializeFiles();
+ensureOwnerExists();
 ensureAdminExists();
 initializeDemoUsers();
 
@@ -260,6 +296,21 @@ function getUserById(userId) {
 function getUserByUsername(username) {
     const users = getUsers();
     return users.find(u => u.username === username);
+}
+
+// Проверка прав доступа
+function hasPermission(user, permission) {
+    if (!user) return false;
+    
+    // Владелец имеет все права
+    if (user.role === 'owner') return true;
+    
+    // Администратор имеет большинство прав
+    if (user.role === 'admin') {
+        return user.permissions?.includes('all') || user.permissions?.includes(permission);
+    }
+    
+    return false;
 }
 
 // Обновление пользователя с гарантией сохранения
@@ -348,8 +399,8 @@ io.on('connection', (socket) => {
                 users: currentUsers.filter(u => u.id !== user.id) 
             });
             
-            // Для админа показываем все чаты, для остальных - только свои
-            if (user.role === 'admin') {
+            // Для владельца и админа показываем все чаты, для остальных - только свои
+            if (user.role === 'owner' || user.role === 'admin') {
                 socket.emit('chats_list', { 
                     chats: currentChats 
                 });
@@ -371,7 +422,7 @@ io.on('connection', (socket) => {
             
             // Уведомляем других о подключении
             socket.broadcast.emit('user_connected', { user });
-            console.log(`🔄 Сессия восстановлена: ${user.username}`);
+            console.log(`🔄 Сессия восстановлена: ${user.username} (${user.role})`);
         } else {
             console.log(`❌ Пользователь не найден для восстановления сессии`);
             socket.emit('session_restored', { 
@@ -401,6 +452,12 @@ io.on('connection', (socket) => {
 
         if (password.length < 6) {
             socket.emit('registration_error', 'Пароль должен быть не менее 6 символов');
+            return;
+        }
+
+        // Запрещаем создание владельца через регистрацию
+        if (role === 'owner') {
+            socket.emit('registration_error', 'Роль владельца недоступна для регистрации');
             return;
         }
 
@@ -499,8 +556,8 @@ io.on('connection', (socket) => {
             users: currentUsers.filter(u => u.id !== user.id) 
         });
         
-        // Для админа показываем все чаты, для остальных - только свои
-        if (user.role === 'admin') {
+        // Для владельца и админа показываем все чаты, для остальных - только свои
+        if (user.role === 'owner' || user.role === 'admin') {
             socket.emit('chats_list', { 
                 chats: currentChats 
             });
@@ -522,7 +579,7 @@ io.on('connection', (socket) => {
         
         // Уведомляем других о подключении
         socket.broadcast.emit('user_connected', { user });
-        console.log(`✅ Успешный вход: ${username} (ID: ${user.id})`);
+        console.log(`✅ Успешный вход: ${username} (${user.role})`);
     });
 
     // ОБНОВЛЕНИЕ ПРОФИЛЯ
@@ -563,9 +620,21 @@ io.on('connection', (socket) => {
     socket.on('register_staff', (data) => {
         console.log(`➕ Добавление сотрудника:`, data);
         
+        const currentUser = getUserBySocketId(socket.id);
+        if (!currentUser || !hasPermission(currentUser, 'manage_users')) {
+            socket.emit('staff_add_error', 'Недостаточно прав для добавления сотрудника');
+            return;
+        }
+        
         const users = getUsers();
         const { username, password, displayName, role } = data;
         
+        // Запрещаем создание владельца
+        if (role === 'owner') {
+            socket.emit('staff_add_error', 'Нельзя создать пользователя с ролью владельца');
+            return;
+        }
+
         // Проверяем существование пользователя
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
@@ -580,12 +649,13 @@ io.on('connection', (socket) => {
             password,
             role: role || 'listener',
             displayName: displayName || username,
-            avatar: role === 'admin' ? '👑' : '🎧',
+            avatar: role === 'admin' ? '⚙️' : '🎧',
             rating: 0,
             ratingCount: 0,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser.id
         };
 
         users.push(newStaff);
@@ -594,7 +664,7 @@ io.on('connection', (socket) => {
         if (saved) {
             socket.emit('staff_added', { user: newStaff });
             socket.broadcast.emit('user_connected', { user: newStaff });
-            console.log(`✅ Сотрудник добавлен: ${username} (${role})`);
+            console.log(`✅ Сотрудник добавлен: ${username} (${role}) создан пользователем ${currentUser.username}`);
         } else {
             socket.emit('staff_add_error', 'Ошибка сохранения сотрудника');
         }
@@ -604,6 +674,12 @@ io.on('connection', (socket) => {
     socket.on('change_role', (data) => {
         console.log(`🎭 Изменение роли:`, data);
         
+        const currentUser = getUserBySocketId(socket.id);
+        if (!currentUser || !hasPermission(currentUser, 'manage_users')) {
+            socket.emit('role_change_error', 'Недостаточно прав для изменения ролей');
+            return;
+        }
+        
         const { userId, newRole } = data;
         const user = getUserById(userId);
         
@@ -612,23 +688,77 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Запрещаем изменение роли владельца
+        if (user.role === 'owner') {
+            socket.emit('role_change_error', 'Нельзя изменить роль владельца системы');
+            return;
+        }
+
+        // Запрещаем создание новых владельцев
+        if (newRole === 'owner') {
+            socket.emit('role_change_error', 'Нельзя назначить роль владельца');
+            return;
+        }
+
         const updatedUser = updateUser(userId, { 
             role: newRole,
-            avatar: newRole === 'admin' ? '👑' : newRole === 'listener' ? '🎧' : '👤'
+            avatar: newRole === 'admin' ? '⚙️' : newRole === 'listener' ? '🎧' : '👤'
         });
         
         if (updatedUser) {
             socket.emit('role_changed', { userId, newRole, user: updatedUser });
             socket.broadcast.emit('user_updated', { user: updatedUser });
-            console.log(`✅ Роль изменена: ${user.username} -> ${newRole}`);
+            console.log(`✅ Роль изменена: ${user.username} -> ${newRole} (изменено пользователем ${currentUser.username})`);
         } else {
             socket.emit('role_change_error', 'Ошибка изменения роли');
+        }
+    });
+
+    // УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (только для владельца)
+    socket.on('delete_user', (data) => {
+        console.log(`🗑️ Запрос удаления пользователя:`, data);
+        
+        const currentUser = getUserBySocketId(socket.id);
+        if (!currentUser || currentUser.role !== 'owner') {
+            socket.emit('user_delete_error', 'Только владелец может удалять пользователей');
+            return;
+        }
+        
+        const { userId } = data;
+        const user = getUserById(userId);
+        
+        if (!user) {
+            socket.emit('user_delete_error', 'Пользователь не найден');
+            return;
+        }
+
+        // Запрещаем удаление владельца
+        if (user.role === 'owner') {
+            socket.emit('user_delete_error', 'Нельзя удалить владельца системы');
+            return;
+        }
+
+        const users = getUsers();
+        const updatedUsers = users.filter(u => u.id !== userId);
+        
+        if (saveUsers(updatedUsers)) {
+            socket.emit('user_deleted', { userId });
+            socket.broadcast.emit('user_disconnected', { userId });
+            console.log(`✅ Пользователь удален: ${user.username} (удалено владельцем ${currentUser.username})`);
+        } else {
+            socket.emit('user_delete_error', 'Ошибка удаления пользователя');
         }
     });
 
     // ОТПРАВКА ТЕХНИЧЕСКОГО УВЕДОМЛЕНИЯ
     socket.on('send_technical_notification', (data) => {
         console.log(`📢 Отправка технического уведомления:`, data);
+        
+        const currentUser = getUserBySocketId(socket.id);
+        if (!currentUser || !hasPermission(currentUser, 'send_notifications')) {
+            socket.emit('notification_error', 'Недостаточно прав для отправки уведомлений');
+            return;
+        }
         
         const notifications = getNotifications();
         const { title, text, type, recipients } = data;
@@ -640,7 +770,8 @@ io.on('connection', (socket) => {
             type,
             recipients,
             timestamp: new Date().toISOString(),
-            readBy: []
+            readBy: [],
+            sentBy: currentUser.id
         };
 
         notifications.push(newNotification);
@@ -661,7 +792,7 @@ io.on('connection', (socket) => {
                 targetUsers = users.filter(u => u.role === 'listener');
                 break;
             case 'admins':
-                targetUsers = users.filter(u => u.role === 'admin');
+                targetUsers = users.filter(u => u.role === 'admin' || u.role === 'owner');
                 break;
         }
 
@@ -676,7 +807,7 @@ io.on('connection', (socket) => {
         });
 
         socket.emit('notification_sent', { success: true });
-        console.log(`✅ Техническое уведомление отправлено: ${title}`);
+        console.log(`✅ Техническое уведомление отправлено: ${title} (отправлено пользователем ${currentUser.username})`);
     });
 
     // ПОЛУЧЕНИЕ ДАННЫХ
@@ -691,8 +822,8 @@ io.on('connection', (socket) => {
         const user = getUserBySocketId(socket.id);
         const chats = getChats();
         
-        if (user && user.role === 'admin') {
-            // Админ видит все чаты
+        if (user && (user.role === 'owner' || user.role === 'admin')) {
+            // Владелец и админ видят все чаты
             socket.emit('chats_list', { chats });
         } else if (user) {
             // Обычные пользователи видят только свои чаты
@@ -925,7 +1056,7 @@ io.on('connection', (socket) => {
             });
             
             socket.broadcast.emit('user_disconnected', { userId: user.id });
-            console.log(`👋 Пользователь отключился: ${user.username}`);
+            console.log(`👋 Пользователь отключился: ${user.username} (${user.role})`);
         }
     });
 });
@@ -959,6 +1090,7 @@ app.get('/api/stats', (req, res) => {
         totalUsers: users.length,
         totalListeners: users.filter(u => u.role === 'listener').length,
         totalAdmins: users.filter(u => u.role === 'admin').length,
+        totalOwners: users.filter(u => u.role === 'owner').length,
         activeChats: chats.filter(c => c.isActive).length,
         onlineUsers: users.filter(u => u.isOnline).length,
         totalMessages: chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0),
@@ -989,6 +1121,12 @@ app.get('/api/system-info', (req, res) => {
             notifications: notifications.length,
             onlineUsers: users.filter(u => u.isOnline).length
         },
+        roles: {
+            owner: users.filter(u => u.role === 'owner').length,
+            admin: users.filter(u => u.role === 'admin').length,
+            listener: users.filter(u => u.role === 'listener').length,
+            user: users.filter(u => u.role === 'user').length
+        },
         files: {
             usersFile: USERS_FILE,
             chatsFile: CHATS_FILE,
@@ -1011,7 +1149,8 @@ app.post('/api/check-user', (req, res) => {
                 id: user.id, 
                 username: user.username, 
                 role: user.role,
-                displayName: user.displayName
+                displayName: user.displayName,
+                isSuperAdmin: user.isSuperAdmin || false
             } 
         });
     } else {
@@ -1019,17 +1158,19 @@ app.post('/api/check-user', (req, res) => {
     }
 });
 
-// Сброс данных (только для разработки)
+// Сброс данных (только для владельца)
 app.post('/api/reset-data', (req, res) => {
-    const { secret } = req.body;
+    const { secret, username, password } = req.body;
     
-    // Секретный ключ для защиты от случайного сброса
-    if (secret !== 'dev-reset-2024') {
-        return res.status(403).json({ error: 'Неверный секретный ключ' });
+    // Проверяем что запрос от владельца
+    const owner = getUserByUsername('owner');
+    if (!owner || username !== 'owner' || password !== owner.password) {
+        return res.status(403).json({ error: 'Только владелец может сбрасывать данные' });
     }
     
-    console.log('🔄 Сброс данных по запросу API...');
+    console.log('🔄 Сброс данных по запросу владельца...');
     initializeFiles();
+    ensureOwnerExists();
     ensureAdminExists();
     initializeDemoUsers();
     
@@ -1039,6 +1180,24 @@ app.post('/api/reset-data', (req, res) => {
         users: getUsers().length,
         chats: getChats().length
     });
+});
+
+// Получение информации о владельце
+app.get('/api/owner-info', (req, res) => {
+    const owner = getUsers().find(u => u.role === 'owner');
+    if (owner) {
+        res.json({
+            exists: true,
+            owner: {
+                username: owner.username,
+                displayName: owner.displayName,
+                createdAt: owner.createdAt,
+                ownerSince: owner.ownerSince
+            }
+        });
+    } else {
+        res.json({ exists: false });
+    }
 });
 
 // Статический файл
@@ -1095,15 +1254,15 @@ server.listen(PORT, '0.0.0.0', () => {
     
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📊 Статистика системы:`);
-    console.log(`   👥 Пользователей: ${users.length}`);
+    console.log(`   👑 Владелец: owner / owner2024`);
+    console.log(`   ⚙️ Администратор: admin / admin123`);
+    console.log(`   👤 Демо-пользователь: user / 123456`);
+    console.log(`   🎧 Демо-слушатель: listener / 123456`);
+    console.log(`   💬 Демо-поддержка: support / 123456`);
+    console.log(`   👥 Всего пользователей: ${users.length}`);
     console.log(`   💬 Чатов: ${chats.length}`);
-    console.log(`   ⭐ Оценок: ${ratings.length}`);
-    console.log(`   📢 Уведомлений: ${notifications.length}`);
     console.log(`   🌐 URL: http://localhost:${PORT}`);
     console.log(`💾 Данные сохраняются в директории: ${DATA_DIR}`);
-    console.log(`🔐 Администратор: admin / admin123`);
-    console.log(`👤 Демо-пользователь: user / 123456`);
-    console.log(`🎧 Демо-слушатель: listener / 123456`);
 });
 
 // Обработка graceful shutdown

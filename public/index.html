@@ -903,8 +903,14 @@
             </div>
         </div>
 
+        <!-- ТАБЫ ПОЛЬЗОВАТЕЛЯ -->
+        <div class="tabs" style="margin: 0 30px 20px;">
+            <div class="tab active" data-tab="listeners">🎧 Слушатели</div>
+            <div class="tab" data-tab="notifications">📢 Уведомления</div>
+        </div>
+
         <!-- ВЫБОР СЛУШАТЕЛЯ -->
-        <div id="listenerSelection" class="p-20">
+        <div id="listenersTab" class="p-20">
             <h2 class="text-center mb-20">🎧 Выберите слушателя</h2>
             <div class="listener-selection" id="listenerCards">
                 <div class="text-center" style="grid-column: 1/-1;">
@@ -974,6 +980,19 @@
             </div>
         </div>
 
+        <!-- УВЕДОМЛЕНИЯ ПОЛЬЗОВАТЕЛЯ -->
+        <div id="userNotificationsTab" class="hidden p-20">
+            <div class="content-card">
+                <h3 class="mb-20">📢 Технические уведомления</h3>
+                <div class="reviews-container" id="userNotificationsContainer">
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ -->
         <div id="userSettings" class="hidden">
             <div class="settings-panel" style="margin: 0 30px;">
@@ -1014,6 +1033,7 @@
             <div class="tab active" data-tab="chats">💬 Активные чаты</div>
             <div class="tab" data-tab="reviews">⭐ Мои отзывы</div>
             <div class="tab" data-tab="stats">📊 Статистика</div>
+            <div class="tab" data-tab="notifications">📢 Уведомления</div>
         </div>
 
         <!-- ЧАТЫ СЛУШАТЕЛЯ -->
@@ -1076,6 +1096,19 @@
                     <div class="stat-card">
                         <div class="stat-value" id="listenerOnlineTime">0ч</div>
                         <div class="stat-label">Время онлайн</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- УВЕДОМЛЕНИЯ СЛУШАТЕЛЯ -->
+        <div id="listenerNotificationsTab" class="hidden p-20">
+            <div class="content-card">
+                <h3 class="mb-20">📢 Технические уведомления</h3>
+                <div class="reviews-container" id="listenerNotificationsContainer">
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
                     </div>
                 </div>
             </div>
@@ -1294,6 +1327,15 @@
                         <button class="btn btn-primary" onclick="sendTechnicalNotification()">
                             <span>📢 Отправить уведомление</span>
                         </button>
+
+                        <div class="mt-20">
+                            <h4 class="mb-15">📋 Отправленные уведомления</h4>
+                            <div class="reviews-container" id="sentNotificationsContainer">
+                                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                    <div>📢 Уведомлений пока нет</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1356,6 +1398,7 @@
         let users = [];
         let chats = [];
         let ratings = [];
+        let notifications = [];
         let activeChat = null;
         let currentListener = null;
         let chatStartTime = null;
@@ -1364,7 +1407,9 @@
         let currentSection = 'dashboard';
         let onlineTimeStart = null;
         let onlineTimer = null;
-        let messageIds = new Set(); // Для предотвращения дублирования сообщений
+        let messageIds = new Set();
+        let connectionRetries = 0;
+        const MAX_RETRIES = 5;
 
         const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://support-chat-hyv4.onrender.com';
 
@@ -1388,6 +1433,14 @@
                 tab.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
                     showAuthTab(tabName);
+                });
+            });
+
+            // Табы пользователя
+            document.querySelectorAll('#userInterface .tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showUserTab(tabName);
                 });
             });
 
@@ -1501,12 +1554,14 @@
                     transports: ['websocket', 'polling'],
                     timeout: 10000,
                     reconnection: true,
-                    reconnectionAttempts: 5,
-                    reconnectionDelay: 1000
+                    reconnectionAttempts: 10,
+                    reconnectionDelay: 1000,
+                    reconnectionDelayMax: 5000
                 });
 
                 socket.on('connect', () => {
                     console.log('✅ Успешно подключено к серверу');
+                    connectionRetries = 0;
                     showNotification('✅ Подключено к серверу', 'success');
                     
                     // Восстанавливаем сессию если есть
@@ -1520,13 +1575,25 @@
                 socket.on('disconnect', (reason) => {
                     console.log('❌ Отключено от сервера:', reason);
                     if (reason === 'io server disconnect') {
-                        socket.connect();
+                        // Сервер принудительно отключил, пытаемся переподключиться
+                        setTimeout(() => {
+                            socket.connect();
+                        }, 1000);
                     }
                 });
 
                 socket.on('connect_error', (error) => {
                     console.error('Ошибка подключения:', error);
-                    showNotification('❌ Ошибка подключения к серверу. Попробуйте обновить страницу.', 'error');
+                    connectionRetries++;
+                    
+                    if (connectionRetries <= MAX_RETRIES) {
+                        console.log(`🔄 Попытка переподключения ${connectionRetries}/${MAX_RETRIES}`);
+                        setTimeout(() => {
+                            socket.connect();
+                        }, 2000);
+                    } else {
+                        showNotification('❌ Не удалось подключиться к серверу. Проверьте интернет-соединение.', 'error');
+                    }
                 });
 
                 socket.on('reconnect', (attemptNumber) => {
@@ -1600,6 +1667,12 @@
                     updateRatingsUI();
                 });
 
+                socket.on('notifications_list', (data) => {
+                    console.log('📢 Получен список уведомлений:', data.notifications?.length);
+                    notifications = data.notifications || [];
+                    updateNotificationsUI();
+                });
+
                 socket.on('new_message', (data) => {
                     console.log('📨 Новое сообщение:', data);
                     handleNewMessage(data);
@@ -1664,7 +1737,6 @@
 
                 socket.on('rating_received', (data) => {
                     console.log('⭐ Получен новый отзыв:', data);
-                    // Обновляем отзывы у слушателя
                     updateListenerReviewsData();
                 });
 
@@ -1713,6 +1785,14 @@
                 socket.on('notification_sent', (data) => {
                     console.log('📢 Уведомление отправлено:', data);
                     showNotification('✅ Техническое уведомление отправлено', 'success');
+                    socket.emit('get_notifications');
+                });
+
+                socket.on('new_notification', (data) => {
+                    console.log('📢 Новое уведомление:', data);
+                    notifications.unshift(data.notification);
+                    updateNotificationsUI();
+                    showNotification(`📢 Новое уведомление: ${data.notification.title}`, 'info');
                 });
 
                 // Запрашиваем данные после подключения
@@ -1721,6 +1801,7 @@
                         socket.emit('get_users');
                         socket.emit('get_chats');
                         socket.emit('get_ratings');
+                        socket.emit('get_notifications');
                     }
                 }, 1000);
 
@@ -1879,17 +1960,28 @@
             
             showUserThemeSettings();
             loadListenerCards();
+            updateUserNotifications();
+        }
+
+        function showUserTab(tabName) {
+            document.querySelectorAll('#userInterface .tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
+            document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
         }
 
         function showUserSettings() {
-            document.getElementById('listenerSelection').classList.add('hidden');
+            document.getElementById('listenersTab').classList.add('hidden');
             document.getElementById('userChatSection').classList.add('hidden');
+            document.getElementById('userNotificationsTab').classList.add('hidden');
             document.getElementById('userSettings').classList.remove('hidden');
         }
 
         function hideUserSettings() {
             document.getElementById('userSettings').classList.add('hidden');
-            document.getElementById('listenerSelection').classList.remove('hidden');
+            document.getElementById('listenersTab').classList.remove('hidden');
         }
 
         function updateUsersUI() {
@@ -1973,7 +2065,8 @@
             });
 
             // Показываем чат
-            document.getElementById('listenerSelection').classList.add('hidden');
+            document.getElementById('listenersTab').classList.add('hidden');
+            document.getElementById('userNotificationsTab').classList.add('hidden');
             document.getElementById('userChatSection').classList.remove('hidden');
             
             document.getElementById('currentListenerRating').textContent = (listener.rating || 0).toFixed(1);
@@ -2119,7 +2212,7 @@
             }
 
             document.getElementById('userChatSection').classList.add('hidden');
-            document.getElementById('listenerSelection').classList.remove('hidden');
+            document.getElementById('listenersTab').classList.remove('hidden');
             clearInterval(chatTimer);
             activeChat = null;
             currentListener = null;
@@ -2142,6 +2235,7 @@
             updateListenerChatsList();
             updateListenerReviewsData();
             updateListenerStats();
+            updateListenerNotifications();
             
             // Запускаем таймер онлайн времени
             startOnlineTimer();
@@ -2155,14 +2249,20 @@
             document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
             document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
             document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+            document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
         }
 
         function showListenerSettings() {
+            document.getElementById('listenerChatsTab').classList.add('hidden');
+            document.getElementById('listenerReviewsTab').classList.add('hidden');
+            document.getElementById('listenerStatsTab').classList.add('hidden');
+            document.getElementById('listenerNotificationsTab').classList.add('hidden');
             document.getElementById('listenerSettings').classList.remove('hidden');
         }
 
         function hideListenerSettings() {
             document.getElementById('listenerSettings').classList.add('hidden');
+            document.getElementById('listenerChatsTab').classList.remove('hidden');
         }
 
         function updateListenerChatsList() {
@@ -2413,6 +2513,7 @@
             updateUsersTable(regularUsers);
             updateStaffTable(staff);
             updateAdminChatsList();
+            updateSentNotifications();
         }
 
         function updateOnlineUsersList(onlineUsers) {
@@ -2663,6 +2764,133 @@
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
             }
+        }
+
+        function updateSentNotifications() {
+            const container = document.getElementById('sentNotificationsContainer');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">📢 Уведомлений пока нет</div>';
+                return;
+            }
+
+            container.innerHTML = notifications.map(notification => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div style="font-weight: 600;">${notification.title}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${getNotificationTypeDisplay(notification.type)}
+                        </div>
+                    </div>
+                    <div class="review-date">
+                        ${new Date(notification.timestamp).toLocaleString('ru-RU')} • 
+                        ${getRecipientsDisplay(notification.recipients)}
+                    </div>
+                    <div class="review-text" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        ${notification.text}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getNotificationTypeDisplay(type) {
+            const types = {
+                'info': 'ℹ️ Информация',
+                'warning': '⚠️ Предупреждение', 
+                'error': '🔴 Важное'
+            };
+            return types[type] || type;
+        }
+
+        function getRecipientsDisplay(recipients) {
+            const recipientsMap = {
+                'all': '👋 Все пользователи',
+                'users': '👤 Только пользователи',
+                'listeners': '🎧 Только слушатели',
+                'admins': '👑 Администрация'
+            };
+            return recipientsMap[recipients] || recipients;
+        }
+
+        // УВЕДОМЛЕНИЯ ДЛЯ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
+        function updateNotificationsUI() {
+            if (currentUser) {
+                if (currentUser.role === 'user') {
+                    updateUserNotifications();
+                } else if (currentUser.role === 'listener') {
+                    updateListenerNotifications();
+                } else if (currentUser.role === 'admin') {
+                    updateSentNotifications();
+                }
+            }
+        }
+
+        function updateUserNotifications() {
+            const container = document.getElementById('userNotificationsContainer');
+            const userNotifications = notifications.filter(notification => 
+                notification.recipients === 'all' || notification.recipients === 'users'
+            );
+            
+            if (userNotifications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = userNotifications.map(notification => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div style="font-weight: 600;">${notification.title}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${getNotificationTypeDisplay(notification.type)}
+                        </div>
+                    </div>
+                    <div class="review-date">
+                        ${new Date(notification.timestamp).toLocaleString('ru-RU')}
+                    </div>
+                    <div class="review-text" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        ${notification.text}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateListenerNotifications() {
+            const container = document.getElementById('listenerNotificationsContainer');
+            const listenerNotifications = notifications.filter(notification => 
+                notification.recipients === 'all' || notification.recipients === 'listeners'
+            );
+            
+            if (listenerNotifications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = listenerNotifications.map(notification => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div style="font-weight: 600;">${notification.title}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${getNotificationTypeDisplay(notification.type)}
+                        </div>
+                    </div>
+                    <div class="review-date">
+                        ${new Date(notification.timestamp).toLocaleString('ru-RU')}
+                    </div>
+                    <div class="review-text" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        ${notification.text}
+                    </div>
+                </div>
+            `).join('');
         }
 
         // НАСТРОЙКИ ПРОФИЛЯ
@@ -3018,4 +3246,4 @@
     </script>
 </body>
 </html>
-        
+

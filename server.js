@@ -27,13 +27,24 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Файлы для хранения данных
-const USERS_FILE = 'users.json';
-const CHATS_FILE = 'chats.json';
-const RATINGS_FILE = 'ratings.json';
-const NOTIFICATIONS_FILE = 'notifications.json';
+const DATA_DIR = './data';
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const CHATS_FILE = path.join(DATA_DIR, 'chats.json');
+const RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
+const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
 
-// Создание файлов если их нет
+// Создание директории данных если её нет
+function ensureDataDirectory() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`✅ Создана директория данных: ${DATA_DIR}`);
+    }
+}
+
+// Создание файлов если их нет с улучшенной обработкой
 function initializeFiles() {
+    ensureDataDirectory();
+    
     const files = [
         { name: USERS_FILE, default: [] },
         { name: CHATS_FILE, default: [] },
@@ -45,28 +56,48 @@ function initializeFiles() {
         if (!fs.existsSync(file.name)) {
             fs.writeFileSync(file.name, JSON.stringify(file.default, null, 2));
             console.log(`✅ Создан файл: ${file.name}`);
+        } else {
+            console.log(`📁 Файл уже существует: ${file.name}`);
         }
     });
 }
 
-// Загрузка данных из файлов
+// Улучшенная загрузка данных из файлов с резервным копированием
 function loadData(filename, defaultValue = []) {
     try {
         if (fs.existsSync(filename)) {
             const data = fs.readFileSync(filename, 'utf8');
-            return data ? JSON.parse(data) : defaultValue;
+            if (!data.trim()) {
+                console.warn(`⚠️ Файл ${filename} пуст, возвращаем значение по умолчанию`);
+                return defaultValue;
+            }
+            const parsed = JSON.parse(data);
+            console.log(`📥 Загружено ${parsed.length} записей из ${filename}`);
+            return parsed;
         }
     } catch (error) {
         console.error(`❌ Ошибка загрузки ${filename}:`, error);
+        // Создаем резервную копию поврежденного файла
+        if (fs.existsSync(filename)) {
+            const backupName = `${filename}.backup.${Date.now()}`;
+            fs.copyFileSync(filename, backupName);
+            console.log(`💾 Создана резервная копия: ${backupName}`);
+        }
     }
     return defaultValue;
 }
 
-// Сохранение данных в файлы
+// Улучшенное сохранение данных с проверкой
 function saveData(filename, data) {
     try {
-        fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-        console.log(`💾 Данные сохранены в ${filename}`);
+        // Создаем временную копию для атомарности
+        const tempFile = `${filename}.tmp`;
+        fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
+        
+        // Перемещаем временный файл в основной
+        fs.renameSync(tempFile, filename);
+        
+        console.log(`💾 Данные сохранены в ${filename} (${data.length} записей)`);
         return true;
     } catch (error) {
         console.error(`❌ Ошибка сохранения ${filename}:`, error);
@@ -108,7 +139,39 @@ function saveNotifications(notifications) {
     return saveData(NOTIFICATIONS_FILE, notifications);
 }
 
-// Инициализация демо-пользователей
+// Автоматическое создание администратора если его нет
+function ensureAdminExists() {
+    let users = getUsers();
+    
+    const adminUser = users.find(u => u.username === 'admin' && u.role === 'admin');
+    
+    if (!adminUser) {
+        console.log('🛠️ Администратор не найден, создаем...');
+        
+        const newAdmin = {
+            id: 'admin-' + Date.now(),
+            username: 'admin',
+            password: 'admin123',
+            role: 'admin',
+            displayName: 'Главный Администратор',
+            avatar: '👑',
+            rating: 5.0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString(),
+            isSuperAdmin: true
+        };
+        
+        users.push(newAdmin);
+        saveUsers(users);
+        console.log('✅ Администратор создан: admin / admin123');
+    } else {
+        console.log('✅ Администратор уже существует');
+    }
+}
+
+// Инициализация демо-пользователей с проверкой существования
 function initializeDemoUsers() {
     let users = getUsers();
     
@@ -118,7 +181,7 @@ function initializeDemoUsers() {
             username: 'user',
             password: '123456',
             role: 'user',
-            displayName: 'Пользователь',
+            displayName: 'Тестовый Пользователь',
             avatar: '👤',
             rating: 0,
             ratingCount: 0,
@@ -131,7 +194,7 @@ function initializeDemoUsers() {
             username: 'listener',
             password: '123456',
             role: 'listener',
-            displayName: 'Анна',
+            displayName: 'Анна Слушатель',
             avatar: '🎧',
             rating: 4.8,
             ratingCount: 15,
@@ -141,13 +204,13 @@ function initializeDemoUsers() {
         },
         {
             id: 'demo-user-3',
-            username: 'admin',
-            password: 'admin123', 
-            role: 'admin',
-            displayName: 'Администратор',
-            avatar: '👑',
-            rating: 5.0,
-            ratingCount: 8,
+            username: 'support',
+            password: '123456',
+            role: 'listener', 
+            displayName: 'Максим Поддержка',
+            avatar: '💬',
+            rating: 4.9,
+            ratingCount: 23,
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString()
@@ -170,10 +233,10 @@ function initializeDemoUsers() {
     }
 }
 
-// Инициализация файлов и демо-пользователей
-console.log('🔄 Инициализация файлов...');
+// Инициализация файлов и пользователей
+console.log('🔄 Инициализация системы...');
 initializeFiles();
-console.log('🔄 Инициализация демо-пользователей...');
+ensureAdminExists();
 initializeDemoUsers();
 
 // Генерация ID
@@ -193,16 +256,52 @@ function getUserById(userId) {
     return users.find(u => u.id === userId);
 }
 
-// Обновление пользователя
+// Получение пользователя по username
+function getUserByUsername(username) {
+    const users = getUsers();
+    return users.find(u => u.username === username);
+}
+
+// Обновление пользователя с гарантией сохранения
 function updateUser(userId, updates) {
     const users = getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], ...updates };
-        saveUsers(users);
-        return users[userIndex];
+        const originalUser = users[userIndex];
+        users[userIndex] = { ...originalUser, ...updates };
+        
+        // Сохраняем и проверяем результат
+        if (saveUsers(users)) {
+            console.log(`✅ Пользователь обновлен: ${originalUser.username}`);
+            return users[userIndex];
+        } else {
+            console.error(`❌ Ошибка сохранения при обновлении пользователя: ${originalUser.username}`);
+            // Восстанавливаем оригинальные данные
+            users[userIndex] = originalUser;
+            saveUsers(users);
+            return null;
+        }
     }
     return null;
+}
+
+// Автосохранение данных каждые 30 секунд
+function startAutoSave() {
+    setInterval(() => {
+        console.log('🔄 Автосохранение данных...');
+        const users = getUsers();
+        const chats = getChats();
+        const ratings = getRatings();
+        const notifications = getNotifications();
+        
+        // Просто пересохраняем текущие данные
+        saveUsers(users);
+        saveChats(chats);
+        saveRatings(ratings);
+        saveNotifications(notifications);
+        
+        console.log(`💾 Автосохранение завершено: ${users.length} пользователей, ${chats.length} чатов`);
+    }, 30000);
 }
 
 // Socket.IO соединения
@@ -213,7 +312,12 @@ io.on('connection', (socket) => {
     socket.emit('connected', { 
         message: 'Подключение к серверу установлено',
         socketId: socket.id,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        serverInfo: {
+            users: getUsers().length,
+            chats: getChats().length,
+            version: '1.0.0'
+        }
     });
 
     // ВОССТАНОВЛЕНИЕ СЕССИИ
@@ -287,6 +391,16 @@ io.on('connection', (socket) => {
         // Валидация
         if (!username || !password) {
             socket.emit('registration_error', 'Логин и пароль обязательны');
+            return;
+        }
+
+        if (username.length < 3) {
+            socket.emit('registration_error', 'Логин должен быть не менее 3 символов');
+            return;
+        }
+
+        if (password.length < 6) {
+            socket.emit('registration_error', 'Пароль должен быть не менее 6 символов');
             return;
         }
 
@@ -426,7 +540,13 @@ io.on('connection', (socket) => {
         const updates = {};
         if (displayName) updates.displayName = displayName;
         if (avatar) updates.avatar = avatar;
-        if (password) updates.password = password;
+        if (password) {
+            if (password.length < 6) {
+                socket.emit('profile_update_error', 'Пароль должен быть не менее 6 символов');
+                return;
+            }
+            updates.password = password;
+        }
 
         const updatedUser = updateUser(userId, updates);
         
@@ -686,7 +806,7 @@ io.on('connection', (socket) => {
         chat.messages.push(newMessage);
         saveChats(chats);
 
-        // Отправляем сообщение получателю (только одному разу!)
+        // Отправляем сообщение получателю
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
         const targetUser = getUserById(targetUserId);
         
@@ -838,11 +958,44 @@ app.get('/api/stats', (req, res) => {
     const stats = {
         totalUsers: users.length,
         totalListeners: users.filter(u => u.role === 'listener').length,
+        totalAdmins: users.filter(u => u.role === 'admin').length,
         activeChats: chats.filter(c => c.isActive).length,
         onlineUsers: users.filter(u => u.isOnline).length,
-        totalMessages: chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0)
+        totalMessages: chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0),
+        serverUptime: process.uptime(),
+        timestamp: new Date().toISOString()
     };
     res.json(stats);
+});
+
+// Получение информации о системе
+app.get('/api/system-info', (req, res) => {
+    const users = getUsers();
+    const chats = getChats();
+    const ratings = getRatings();
+    const notifications = getNotifications();
+    
+    res.json({
+        server: {
+            version: '1.0.0',
+            uptime: process.uptime(),
+            nodeVersion: process.version,
+            platform: process.platform
+        },
+        data: {
+            users: users.length,
+            chats: chats.length,
+            ratings: ratings.length,
+            notifications: notifications.length,
+            onlineUsers: users.filter(u => u.isOnline).length
+        },
+        files: {
+            usersFile: USERS_FILE,
+            chatsFile: CHATS_FILE,
+            ratingsFile: RATINGS_FILE,
+            notificationsFile: NOTIFICATIONS_FILE
+        }
+    });
 });
 
 // Проверка пользователя
@@ -852,10 +1005,40 @@ app.post('/api/check-user', (req, res) => {
     
     const user = users.find(u => u.username === username && u.password === password);
     if (user) {
-        res.json({ exists: true, user: { id: user.id, username: user.username, role: user.role } });
+        res.json({ 
+            exists: true, 
+            user: { 
+                id: user.id, 
+                username: user.username, 
+                role: user.role,
+                displayName: user.displayName
+            } 
+        });
     } else {
         res.json({ exists: false });
     }
+});
+
+// Сброс данных (только для разработки)
+app.post('/api/reset-data', (req, res) => {
+    const { secret } = req.body;
+    
+    // Секретный ключ для защиты от случайного сброса
+    if (secret !== 'dev-reset-2024') {
+        return res.status(403).json({ error: 'Неверный секретный ключ' });
+    }
+    
+    console.log('🔄 Сброс данных по запросу API...');
+    initializeFiles();
+    ensureAdminExists();
+    initializeDemoUsers();
+    
+    res.json({ 
+        success: true, 
+        message: 'Данные сброшены к начальному состоянию',
+        users: getUsers().length,
+        chats: getChats().length
+    });
 });
 
 // Статический файл
@@ -872,11 +1055,16 @@ app.get('/health', (req, res) => {
     
     res.json({ 
         status: 'OK', 
-        users: users.length,
-        chats: chats.length,
-        ratings: ratings.length,
-        notifications: notifications.length,
-        timestamp: new Date().toISOString()
+        data: {
+            users: users.length,
+            chats: chats.length,
+            ratings: ratings.length,
+            notifications: notifications.length
+        },
+        server: {
+            uptime: process.uptime(),
+            timestamp: new Date().toISOString()
+        }
     });
 });
 
@@ -884,11 +1072,21 @@ app.get('/health', (req, res) => {
 app.get('/api/test', (req, res) => {
     res.json({ 
         message: 'Сервер работает!',
+        dataFiles: {
+            users: USERS_FILE,
+            chats: CHATS_FILE,
+            ratings: RATINGS_FILE,
+            notifications: NOTIFICATIONS_FILE
+        },
         timestamp: new Date().toISOString()
     });
 });
 
 const PORT = process.env.PORT || 3000;
+
+// Запускаем автосохранение
+startAutoSave();
+
 server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     const chats = getChats();
@@ -896,17 +1094,58 @@ server.listen(PORT, '0.0.0.0', () => {
     const notifications = getNotifications();
     
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
-    console.log(`📊 Пользователей: ${users.length}`);
-    console.log(`💬 Чатов: ${chats.length}`);
-    console.log(`⭐ Оценок: ${ratings.length}`);
-    console.log(`📢 Уведомлений: ${notifications.length}`);
-    console.log(`🌐 URL: http://localhost:${PORT}`);
-    console.log(`💾 Данные синхронизируются через JSON файлы`);
+    console.log(`📊 Статистика системы:`);
+    console.log(`   👥 Пользователей: ${users.length}`);
+    console.log(`   💬 Чатов: ${chats.length}`);
+    console.log(`   ⭐ Оценок: ${ratings.length}`);
+    console.log(`   📢 Уведомлений: ${notifications.length}`);
+    console.log(`   🌐 URL: http://localhost:${PORT}`);
+    console.log(`💾 Данные сохраняются в директории: ${DATA_DIR}`);
+    console.log(`🔐 Администратор: admin / admin123`);
+    console.log(`👤 Демо-пользователь: user / 123456`);
+    console.log(`🎧 Демо-слушатель: listener / 123456`);
 });
 
-// Обработка ошибок
+// Обработка graceful shutdown
+process.on('SIGINT', () => {
+    console.log('🔄 Получен SIGINT, сохраняем данные перед выходом...');
+    const users = getUsers();
+    const chats = getChats();
+    const ratings = getRatings();
+    const notifications = getNotifications();
+    
+    saveUsers(users);
+    saveChats(chats);
+    saveRatings(ratings);
+    saveNotifications(notifications);
+    
+    console.log('✅ Все данные сохранены. Завершаем работу.');
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    console.log('🔄 Получен SIGTERM, сохраняем данные перед выходом...');
+    const users = getUsers();
+    const chats = getChats();
+    const ratings = getRatings();
+    const notifications = getNotifications();
+    
+    saveUsers(users);
+    saveChats(chats);
+    saveRatings(ratings);
+    saveNotifications(notifications);
+    
+    console.log('✅ Все данные сохранены. Завершаем работу.');
+    process.exit(0);
+});
+
 process.on('uncaughtException', (error) => {
     console.error('❌ Необработанное исключение:', error);
+    // Сохраняем данные перед падением
+    const users = getUsers();
+    const chats = getChats();
+    saveUsers(users);
+    saveChats(chats);
 });
 
 process.on('unhandledRejection', (reason, promise) => {

@@ -1532,20 +1532,39 @@
         let selectedRating = 0;
         let socket = null;
 
-        // Тестовые пользователи (в реальной системе будут с сервера)
-        const testUsers = [
-            { id: '1', username: 'owner', password: 'owner123', displayName: 'Владелец', role: 'Владелец', isOnline: true, rating: 5.0, ratingCount: 10 },
-            { id: '2', username: 'coowner', password: 'coowner123', displayName: 'Совладелец', role: 'Совладелец', isOnline: true, rating: 4.8, ratingCount: 8 },
-            { id: '3', username: 'deputy', password: 'deputy123', displayName: 'Заместитель', role: 'Заместитель', isOnline: true, rating: 4.9, ratingCount: 12 },
-            { id: '4', username: 'admin', password: 'admin123', displayName: 'Администратор', role: 'Администратор', isOnline: true, rating: 4.7, ratingCount: 15 },
-            { id: '5', username: 'listener1', password: 'listener123', displayName: 'Анна', role: 'Слушатель', isOnline: true, rating: 4.5, ratingCount: 25 },
-            { id: '6', username: 'listener2', password: 'listener123', displayName: 'Максим', role: 'Слушатель', isOnline: false, rating: 4.8, ratingCount: 18 },
-            { id: '7', username: 'listener3', password: 'listener123', displayName: 'София', role: 'Слушатель', isOnline: true, rating: 4.6, ratingCount: 32 },
-            { id: '8', username: 'user1', password: 'user123', displayName: 'Пользователь', role: 'user', isOnline: true, rating: 0, ratingCount: 0 }
+        // URL сервера на Render
+        const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
+
+        // Базовый аккаунт владельца
+        const baseUsers = [
+            { 
+                id: '1', 
+                username: 'owner', 
+                password: 'owner123', 
+                displayName: 'Владелец', 
+                role: 'Владелец', 
+                isOnline: true, 
+                rating: 5.0, 
+                ratingCount: 10 
+            }
         ];
 
-        // URL твоего сервера на Render
-        const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
+        // Загрузка пользователей из localStorage или использование базовых
+        function getUsers() {
+            const savedUsers = localStorage.getItem('chatUsers');
+            if (savedUsers) {
+                return JSON.parse(savedUsers);
+            } else {
+                // Сохраняем базовых пользователей
+                localStorage.setItem('chatUsers', JSON.stringify(baseUsers));
+                return baseUsers;
+            }
+        }
+
+        // Сохранение пользователей в localStorage
+        function saveUsers(users) {
+            localStorage.setItem('chatUsers', JSON.stringify(users));
+        }
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
@@ -1637,6 +1656,11 @@
             socket.on('connect', () => {
                 console.log('✅ Подключено к серверу');
                 showNotification('✅ Подключено к серверу', 'success');
+                
+                // После подключения синхронизируем данные
+                if (currentUser) {
+                    syncUserData();
+                }
             });
 
             socket.on('disconnect', () => {
@@ -1690,6 +1714,15 @@
             });
         }
 
+        // Синхронизация данных пользователя с сервером
+        function syncUserData() {
+            const users = getUsers();
+            if (socket && socket.connected) {
+                // Отправляем данные на сервер
+                socket.emit('sync_users', { users: users });
+            }
+        }
+
         // АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ
         function showAuthTab(tabName) {
             document.querySelectorAll('.tab').forEach(tab => {
@@ -1711,25 +1744,27 @@
 
             console.log('🔐 Попытка входа:', username);
             
-            // Временная локальная авторизация для демонстрации
-            const user = testUsers.find(u => u.username === username && u.password === password);
+            // Локальная проверка
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+            
             if (user) {
                 handleLoginSuccess(user);
             } else {
-                showNotification('❌ Неверный логин или пароль!', 'error');
-            }
-            
-            // Раскомментируй для работы с сервером:
-            /*
-            if (!socket || !socket.connected) {
-                connectToServer();
-                setTimeout(() => {
+                // Пробуем подключиться к серверу
+                if (!socket || !socket.connected) {
+                    connectToServer();
+                    setTimeout(() => {
+                        if (socket && socket.connected) {
+                            socket.emit('login_user', { username, password });
+                        } else {
+                            showNotification('❌ Неверный логин или пароль!', 'error');
+                        }
+                    }, 1000);
+                } else {
                     socket.emit('login_user', { username, password });
-                }, 1000);
-            } else {
-                socket.emit('login_user', { username, password });
+                }
             }
-            */
         }
 
         function register() {
@@ -1752,7 +1787,15 @@
                 return;
             }
 
-            // Временная локальная регистрация
+            // Локальная регистрация
+            const users = getUsers();
+            
+            // Проверяем, нет ли уже пользователя с таким логином
+            if (users.find(u => u.username === username)) {
+                showNotification('❌ Пользователь с таким логином уже существует!', 'error');
+                return;
+            }
+
             const newUser = {
                 id: Date.now().toString(),
                 username: username,
@@ -1763,7 +1806,10 @@
                 rating: 0,
                 ratingCount: 0
             };
-            testUsers.push(newUser);
+
+            users.push(newUser);
+            saveUsers(users);
+            
             showNotification('✅ Регистрация успешна!', 'success');
             showAuthTab('login');
             
@@ -1771,17 +1817,8 @@
             document.getElementById('regPassword').value = '';
             document.getElementById('regPasswordConfirm').value = '';
 
-            // Раскомментируй для работы с сервером:
-            /*
-            if (!socket || !socket.connected) {
-                connectToServer();
-                setTimeout(() => {
-                    socket.emit('register_user', { username, password });
-                }, 1000);
-            } else {
-                socket.emit('register_user', { username, password });
-            }
-            */
+            // Синхронизируем с сервером
+            syncUserData();
         }
 
         function handleLoginSuccess(user) {
@@ -1847,8 +1884,8 @@
 
         function loadListenerCardsFromServer(users) {
             const container = document.getElementById('listenerCards');
-            // Показываем всех слушателей и администраторов (даже офлайн)
-            const listeners = testUsers.filter(u => 
+            // Показываем всех слушателей и администраторов
+            const listeners = users.filter(u => 
                 u.role === 'Слушатель' || 
                 u.role === 'Владелец' || 
                 u.role === 'Совладелец' || 
@@ -1881,8 +1918,8 @@
         }
 
         function loadListenerCards() {
-            // Используем тестовые данные
-            loadListenerCardsFromServer(testUsers);
+            const users = getUsers();
+            loadListenerCardsFromServer(users);
         }
 
         function selectRandomListener() {
@@ -1899,7 +1936,8 @@
         }
 
         function startChatWithListener(listenerId) {
-            const listener = testUsers.find(u => u.id === listenerId);
+            const users = getUsers();
+            const listener = users.find(u => u.id === listenerId);
             if (!listener) return;
 
             currentListener = listener;
@@ -1983,6 +2021,15 @@
 
             input.value = '';
             showNotification(`✉️ Сообщение отправлено`, 'success');
+
+            // Отправляем на сервер если подключены
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: activeChat.id,
+                    text: text,
+                    userId: currentUser.id
+                });
+            }
         }
 
         function handleNewMessage(message) {
@@ -2154,6 +2201,15 @@
 
             input.value = '';
             showNotification(`✉️ Ответ отправлен`, 'success');
+
+            // Отправляем на сервер если подключены
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: activeChat.id,
+                    text: text,
+                    userId: currentUser.id
+                });
+            }
         }
 
         function addMessageToListenerChat(message) {
@@ -2182,7 +2238,8 @@
             showAdminThemeSettings();
             
             // Запрашиваем данные
-            updateAdminTables(testUsers);
+            const users = getUsers();
+            updateAdminTables(users);
         }
 
         function showSection(section) {
@@ -2306,8 +2363,10 @@
                 return;
             }
 
+            const users = getUsers();
+            
             // Проверяем, нет ли уже пользователя с таким логином
-            if (testUsers.find(u => u.username === username)) {
+            if (users.find(u => u.username === username)) {
                 showNotification('❌ Пользователь с таким логином уже существует!', 'error');
                 return;
             }
@@ -2323,7 +2382,9 @@
                 ratingCount: role === 'listener' ? 0 : 0
             };
 
-            testUsers.push(newStaff);
+            users.push(newStaff);
+            saveUsers(users);
+            
             showNotification(`✅ ${getRoleDisplayName(newStaff.role)} добавлен!`, 'success');
             closeAddStaffModal();
             
@@ -2332,7 +2393,10 @@
             document.getElementById('newStaffName').value = '';
 
             // Обновляем таблицы
-            updateAdminTables(testUsers);
+            updateAdminTables(users);
+            
+            // Синхронизируем с сервером
+            syncUserData();
         }
 
         function getRoleFromValue(roleValue) {
@@ -2346,40 +2410,50 @@
         }
 
         function editUser(userId) {
-            const user = testUsers.find(u => u.id === userId);
+            const users = getUsers();
+            const user = users.find(u => u.id === userId);
             if (user) {
                 showNotification(`✏️ Редактирование пользователя ${user.displayName}`, 'info');
             }
         }
 
         function promoteToStaff(userId) {
-            const user = testUsers.find(u => u.id === userId);
+            const users = getUsers();
+            const user = users.find(u => u.id === userId);
             if (user) {
                 user.role = 'Слушатель';
                 user.rating = 5.0;
                 user.ratingCount = 0;
+                saveUsers(users);
                 showNotification(`👑 ${user.displayName} повышен до слушателя!`, 'success');
-                updateAdminTables(testUsers);
+                updateAdminTables(users);
+                syncUserData();
             }
         }
 
         function demoteToUser(userId) {
-            const user = testUsers.find(u => u.id === userId);
+            const users = getUsers();
+            const user = users.find(u => u.id === userId);
             if (user && user.role !== 'Владелец') {
                 user.role = 'user';
                 user.rating = 0;
                 user.ratingCount = 0;
+                saveUsers(users);
                 showNotification(`👤 ${user.displayName} понижен до пользователя!`, 'success');
-                updateAdminTables(testUsers);
+                updateAdminTables(users);
+                syncUserData();
             }
         }
 
         function toggleBlockUser(userId) {
-            const user = testUsers.find(u => u.id === userId);
+            const users = getUsers();
+            const user = users.find(u => u.id === userId);
             if (user && user.role !== 'Владелец') {
                 user.isOnline = !user.isOnline;
+                saveUsers(users);
                 showNotification(`🚫 ${user.displayName} ${user.isOnline ? 'разблокирован' : 'заблокирован'}!`, 'success');
-                updateAdminTables(testUsers);
+                updateAdminTables(users);
+                syncUserData();
             }
         }
 

@@ -62,86 +62,6 @@
             --border-color: #4a5f7a;
         }
 
-        .theme-ocean {
-            --primary-color: #1e90ff;
-            --secondary-color: #00ced1;
-            --accent-color: #ff6347;
-            --bg-color: #f0f8ff;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #b0e0e6;
-        }
-
-        .theme-forest {
-            --primary-color: #228b22;
-            --secondary-color: #32cd32;
-            --accent-color: #ff4500;
-            --bg-color: #f0fff0;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #98fb98;
-        }
-
-        .theme-midnight {
-            --primary-color: #8a2be2;
-            --secondary-color: #4b0082;
-            --accent-color: #ff69b4;
-            --bg-color: #0a0a0a;
-            --card-bg: #1a1a2e;
-            --text-color: #e6e6fa;
-            --border-color: #483d8b;
-        }
-
-        .theme-coffee {
-            --primary-color: #8b4513;
-            --secondary-color: #d2691e;
-            --accent-color: #a0522d;
-            --bg-color: #f5f5dc;
-            --card-bg: #fff8dc;
-            --text-color: #3e2723;
-            --border-color: #deb887;
-        }
-
-        .theme-purple {
-            --primary-color: #9b59b6;
-            --secondary-color: #8e44ad;
-            --accent-color: #e74c3c;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #e8d6f7;
-        }
-
-        .theme-nature {
-            --primary-color: #27ae60;
-            --secondary-color: #2ecc71;
-            --accent-color: #e67e22;
-            --bg-color: #f0fdf4;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #a3e4b8;
-        }
-
-        .theme-sunset {
-            --primary-color: #e74c3c;
-            --secondary-color: #e67e22;
-            --accent-color: #9b59b6;
-            --bg-color: #fef9f3;
-            --card-bg: #ffffff;
-            --text-color: #2c3e50;
-            --border-color: #fadbd8;
-        }
-
-        .theme-space {
-            --primary-color: #2980b9;
-            --secondary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --bg-color: #0d1b2a;
-            --card-bg: #1b263b;
-            --text-color: #e0e1dd;
-            --border-color: #415a77;
-        }
-
         /* ОСНОВНЫЕ СТИЛИ */
         * {
             margin: 0;
@@ -247,10 +167,6 @@
                 gap: 15px;
             }
 
-            .theme-selector {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
-
             .user-header {
                 flex-direction: column;
                 gap: 15px;
@@ -267,10 +183,6 @@
                 height: 400px;
             }
 
-            .settings-panel {
-                margin: 0 15px;
-            }
-
             .tabs {
                 overflow-x: auto;
                 white-space: nowrap;
@@ -279,67 +191,19 @@
             .tab {
                 padding: 10px 15px;
             }
-
-            .modal-content {
-                margin: 20px;
-                width: calc(100% - 40px);
-            }
-
-            .data-table {
-                font-size: 12px;
-            }
-
-            .data-table th,
-            .data-table td {
-                padding: 8px 10px;
-            }
         }
 
         @media (max-width: 480px) {
-            :root {
-                --font-size: 13px;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
-
+            
             .auth-card {
                 margin: 5px;
                 padding: 15px;
             }
-
-            .btn {
-                padding: 12px 20px;
-                font-size: 14px;
-            }
-
-            .stat-card {
-                padding: 15px;
-            }
-
-            .content-card {
-                padding: 15px;
-            }
-
-            .theme-selector {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .message-input-container {
-                padding: 10px;
-            }
-
-            .message-input {
-                padding: 10px 12px;
-            }
-
-            .send-btn {
-                padding: 10px 15px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
         }
 
-        /* СКРЫТЫЕ ЭЛЕМЕНТЫ МОБИЛЬНОГО МЕНЮ */
         .mobile-menu-btn {
             display: none;
         }
@@ -530,24 +394,6 @@
             display: flex;
             gap: 10px;
             align-items: center;
-        }
-
-        .settings-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .settings-btn:hover {
-            background: var(--accent-color);
         }
 
         .content-card {
@@ -753,56 +599,6 @@
             display: none;
         }
 
-        .settings-panel {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
-
-        .settings-section {
-            margin-bottom: 30px;
-        }
-
-        .settings-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-color);
-        }
-
-        .theme-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .theme-option {
-            padding: 15px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .theme-option:hover {
-            border-color: var(--primary-color);
-        }
-
-        .theme-option.active {
-            border-color: var(--accent-color);
-            background: rgba(231, 76, 60, 0.1);
-        }
-
-        .theme-preview {
-            width: 100%;
-            height: 40px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
-
         .listener-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -856,6 +652,15 @@
 
         .offline-indicator {
             background: var(--warning-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .pending-messages-indicator {
+            background: var(--primary-color);
             color: white;
             padding: 5px 10px;
             border-radius: 15px;
@@ -1019,11 +824,6 @@
             to { opacity: 1; }
         }
 
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
         .hidden {
             display: none;
         }
@@ -1044,22 +844,6 @@
         .tab.active {
             border-bottom-color: var(--primary-color);
             font-weight: 600;
-        }
-
-        .flex {
-            display: flex;
-        }
-
-        .flex-col {
-            flex-direction: column;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
         }
 
         .w-full {
@@ -1143,9 +927,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="settings-btn" onclick="showUserSettings()">
-                    ⚙️ Настройки
-                </button>
                 <button class="btn btn-primary" onclick="logout()">
                     Выйти
                 </button>
@@ -1175,6 +956,10 @@
                 <div class="stat-card">
                     <div class="stat-value" id="chatDuration">0:00</div>
                     <div class="stat-label">Длительность чата</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingMessages">0</div>
+                    <div class="stat-label">Ожидают доставки</div>
                 </div>
             </div>
 
@@ -1245,6 +1030,7 @@
         <div class="tabs" style="margin: 0 30px 20px;">
             <div class="tab active" data-tab="chats">💬 Активные чаты</div>
             <div class="tab" data-tab="reviews">⭐ Мои отзывы</div>
+            <div class="tab" data-tab="pending">📨 Ожидающие сообщения</div>
         </div>
 
         <!-- ЧАТЫ СЛУШАТЕЛЯ -->
@@ -1284,6 +1070,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- ОЖИДАЮЩИЕ СООБЩЕНИЯ -->
+        <div id="listenerPendingTab" class="hidden p-20">
+            <div class="content-card">
+                <h3 style="margin-bottom: 20px;">Сообщения, отправленные когда вы были офлайн</h3>
+                <div id="pendingMessagesList">
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📨 Нет ожидающих сообщений</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Сообщения появятся здесь, когда пользователи напишут вам в офлайн</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
@@ -1313,9 +1112,6 @@
                     </div>
                     <div class="nav-item" data-section="staff">
                         👑 Персонал
-                    </div>
-                    <div class="nav-item" data-section="notifications">
-                        📢 Уведомления
                     </div>
                 </div>
             </div>
@@ -1348,17 +1144,8 @@
                             <div class="stat-label">Активные чаты</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-value" id="avgRating">0.0</div>
-                            <div class="stat-label">Средний рейтинг</div>
-                        </div>
-                    </div>
-
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Последняя активность</h3>
-                        <div id="recentActivity">
-                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
-                                Активность отсутствует
-                            </div>
+                            <div class="stat-value" id="pendingMessagesCount">0</div>
+                            <div class="stat-label">Ожидающие сообщения</div>
                         </div>
                     </div>
                 </div>
@@ -1367,18 +1154,9 @@
                 <div id="chatsSection" class="content-section hidden">
                     <div class="content-card">
                         <h3 style="margin-bottom: 20px;">Все чаты системы</h3>
-                        <div class="chat-container">
-                            <div class="chats-list" id="adminChatsList">
-                                <div style="text-align: center; padding: 20px; color: #7f8c8d;">
-                                    Чаты отсутствуют
-                                </div>
-                            </div>
-                            <div class="chat-messages">
-                                <div class="messages-container" id="adminMessagesContainer">
-                                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                                        <div>💬 Выберите чат для просмотра</div>
-                                    </div>
-                                </div>
+                        <div id="allChatsList">
+                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                Чаты отсутствуют
                             </div>
                         </div>
                     </div>
@@ -1388,20 +1166,11 @@
                 <div id="usersSection" class="content-section hidden">
                     <div class="content-card">
                         <h3 style="margin-bottom: 20px;">Управление пользователями</h3>
-                        <table class="data-table" id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th>Логин</th>
-                                    <th>Имя</th>
-                                    <th>Роль</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут заполнены динамически -->
-                            </tbody>
-                        </table>
+                        <div id="usersList">
+                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                Пользователи отсутствуют
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1409,95 +1178,14 @@
                 <div id="staffSection" class="content-section hidden">
                     <div class="content-card">
                         <h3 style="margin-bottom: 20px;">Управление персоналом</h3>
-                        <div class="header-actions" style="margin-bottom: 20px;">
-                            <button class="btn btn-primary" onclick="showAddStaffModal()">
-                                ➕ Добавить сотрудника
-                            </button>
+                        <div id="staffList">
+                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                                Персонал отсутствует
+                            </div>
                         </div>
-                        <table class="data-table" id="staffTable">
-                            <thead>
-                                <tr>
-                                    <th>Логин</th>
-                                    <th>Имя</th>
-                                    <th>Роль</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Данные будут заполнены динамически -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- УВЕДОМЛЕНИЯ -->
-                <div id="notificationsSection" class="content-section hidden">
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">Технические уведомления и рассылки</h3>
-                        <div class="form-group">
-                            <label class="form-label">Заголовок уведомления</label>
-                            <input type="text" class="form-input" id="notificationTitle" placeholder="Введите заголовок">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Текст уведомления</label>
-                            <textarea class="form-input" id="notificationText" placeholder="Введите текст уведомления" rows="4"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Тип уведомления</label>
-                            <select class="form-input" id="notificationType">
-                                <option value="info">Информация</option>
-                                <option value="warning">Предупреждение</option>
-                                <option value="error">Важное</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Получатели</label>
-                            <select class="form-input" id="notificationRecipients">
-                                <option value="all">Все пользователи</option>
-                                <option value="users">Только пользователи</option>
-                                <option value="listeners">Только слушатели</option>
-                                <option value="admins">Администрация</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-primary" onclick="sendNotification()">
-                            📢 Отправить уведомление
-                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ СОТРУДНИКА -->
-    <div id="addStaffModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Добавить сотрудника</h3>
-                <button class="modal-close" onclick="closeAddStaffModal()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Логин</label>
-                <input type="text" class="form-input" id="newStaffUsername" placeholder="Введите логин">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Пароль</label>
-                <input type="password" class="form-input" id="newStaffPassword" placeholder="Введите пароль">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Имя</label>
-                <input type="text" class="form-input" id="newStaffName" placeholder="Введите имя">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Роль</label>
-                <select class="form-input" id="newStaffRole">
-                    <option value="admin">Администратор</option>
-                    <option value="deputy">Заместитель</option>
-                    <option value="co-owner">Совладелец</option>
-                    <option value="listener">Слушатель</option>
-                </select>
-            </div>
-            <button class="btn btn-primary w-full" onclick="addNewStaff()">Добавить сотрудника</button>
         </div>
     </div>
 
@@ -1520,7 +1208,8 @@
             USERS: 'chat_users',
             CHATS: 'chat_sessions',
             MESSAGES: 'chat_messages',
-            RATINGS: 'user_ratings'
+            RATINGS: 'user_ratings',
+            PENDING_MESSAGES: 'pending_messages'
         };
 
         // Инициализация базы данных
@@ -1556,6 +1245,16 @@
                         isOnline: true,
                         rating: 0,
                         ratingCount: 0
+                    },
+                    {
+                        id: '4',
+                        username: 'listener2',
+                        password: '123456',
+                        displayName: 'Дмитрий',
+                        role: 'Слушатель',
+                        isOnline: false,
+                        rating: 4.5,
+                        ratingCount: 8
                     }
                 ];
                 localStorage.setItem(DB_KEYS.USERS, JSON.stringify(defaultUsers));
@@ -1571,6 +1270,10 @@
 
             if (!localStorage.getItem(DB_KEYS.RATINGS)) {
                 localStorage.setItem(DB_KEYS.RATINGS, JSON.stringify([]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.PENDING_MESSAGES)) {
+                localStorage.setItem(DB_KEYS.PENDING_MESSAGES, JSON.stringify([]));
             }
         }
 
@@ -1679,6 +1382,9 @@
                 updateInDB(DB_KEYS.USERS, user.id, { isOnline: true });
                 user.isOnline = true;
                 
+                // Проверяем ожидающие сообщения
+                checkPendingMessages(user.id);
+                
                 handleLoginSuccess(user);
             } else {
                 showNotification('Неверный логин или пароль!', 'error');
@@ -1769,23 +1475,34 @@
                 return;
             }
 
-            container.innerHTML = listeners.map(listener => `
-                <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
-                    <div class="listener-avatar">${listener.displayName.charAt(0)}</div>
-                    <h3>${listener.displayName}</h3>
-                    <div style="margin: 10px 0;">
-                        <span>★ ${listener.rating.toFixed(1)} (${listener.ratingCount})</span>
-                    </div>
-                    <div style="color: ${listener.isOnline ? '#27ae60' : '#7f8c8d'};">
-                        ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
-                    </div>
-                    ${!listener.isOnline ? `
-                        <div class="offline-indicator">
-                            📧 Сообщение будет доставлено при подключении
+            container.innerHTML = listeners.map(listener => {
+                const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES).filter(m => 
+                    m.receiverId === listener.id && m.chatId && m.chatId.includes(currentUser.id)
+                ).length;
+                
+                return `
+                    <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
+                        <div class="listener-avatar">${listener.displayName.charAt(0)}</div>
+                        <h3>${listener.displayName}</h3>
+                        <div style="margin: 10px 0;">
+                            <span>★ ${listener.rating.toFixed(1)} (${listener.ratingCount})</span>
                         </div>
-                    ` : ''}
-                </div>
-            `).join('');
+                        <div style="color: ${listener.isOnline ? '#27ae60' : '#7f8c8d'};">
+                            ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
+                        </div>
+                        ${!listener.isOnline ? `
+                            <div class="offline-indicator">
+                                📧 Можно писать офлайн
+                            </div>
+                        ` : ''}
+                        ${pendingMessages > 0 ? `
+                            <div class="pending-messages-indicator">
+                                📨 ${pendingMessages} сообщ. ожидают
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
         function startChatWithListener(listenerId) {
@@ -1829,8 +1546,11 @@
             startChatTimer();
 
             if (!listener.isOnline) {
-                addSystemMessage('Слушатель сейчас не в сети. Ваше сообщение будет доставлено, когда он появится онлайн.');
+                addSystemMessage('Слушатель сейчас не в сети. Ваше сообщение будет сохранено и доставлено, когда он появится онлайн.');
             }
+
+            // Проверяем ожидающие сообщения
+            checkPendingMessagesForChat();
         }
 
         function loadChatMessages() {
@@ -1858,6 +1578,7 @@
             messageDiv.style.textAlign = 'center';
             messageDiv.style.color = '#7f8c8d';
             messageDiv.style.margin = '10px 0';
+            messageDiv.style.fontStyle = 'italic';
             messageDiv.textContent = text;
             container.appendChild(messageDiv);
             container.scrollTop = container.scrollHeight;
@@ -1867,10 +1588,17 @@
             const messageDiv = document.createElement('div');
             const isCurrentUser = message.senderId === currentUser.id;
             messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
+            
+            let messageContent = message.text;
+            if (message.isPending) {
+                messageContent += ' ⏳ (ожидает доставки)';
+            }
+            
             messageDiv.innerHTML = `
-                <div>${message.text}</div>
+                <div>${messageContent}</div>
                 <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
                     ${new Date(message.timestamp).toLocaleTimeString()}
+                    ${message.isPending ? '⏳' : ''}
                 </div>
             `;
             container.appendChild(messageDiv);
@@ -1900,24 +1628,94 @@
                 isRead: false
             };
 
-            // Сохраняем сообщение
-            const messages = getFromDB(DB_KEYS.MESSAGES);
-            messages.push(message);
-            saveToDB(DB_KEYS.MESSAGES, messages);
+            // Если слушатель офлайн, сохраняем в ожидающие
+            if (!currentListener.isOnline) {
+                message.isPending = true;
+                const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
+                pendingMessages.push(message);
+                saveToDB(DB_KEYS.PENDING_MESSAGES, pendingMessages);
+                showNotification('📧 Сообщение сохранено и будет доставлено когда слушатель будет онлайн', 'info');
+            } else {
+                // Если онлайн, сохраняем в обычные сообщения
+                const messages = getFromDB(DB_KEYS.MESSAGES);
+                messages.push(message);
+                saveToDB(DB_KEYS.MESSAGES, messages);
+                showNotification('Сообщение отправлено!', 'success');
+            }
 
             // Добавляем в чат
             const container = document.getElementById('userMessagesContainer');
             addMessageToChat(message, container);
 
             input.value = '';
-            
-            if (!currentListener.isOnline) {
-                showNotification('Сообщение сохранено и будет доставлено когда слушатель будет онлайн', 'info');
-            } else {
-                showNotification('Сообщение отправлено!', 'success');
-            }
-
+            updatePendingMessagesCount();
             container.scrollTop = container.scrollHeight;
+        }
+
+        // Функции для работы с ожидающими сообщениями
+        function checkPendingMessages(userId) {
+            const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
+            const userPendingMessages = pendingMessages.filter(m => m.receiverId === userId);
+            
+            if (userPendingMessages.length > 0) {
+                // Перемещаем ожидающие сообщения в обычные
+                const messages = getFromDB(DB_KEYS.MESSAGES);
+                userPendingMessages.forEach(msg => {
+                    msg.isPending = false;
+                    msg.deliveredAt = new Date();
+                    messages.push(msg);
+                });
+                saveToDB(DB_KEYS.MESSAGES, messages);
+                
+                // Удаляем из ожидающих
+                const updatedPending = pendingMessages.filter(m => m.receiverId !== userId);
+                saveToDB(DB_KEYS.PENDING_MESSAGES, updatedPending);
+                
+                showNotification(`📨 Доставлено ${userPendingMessages.length} сообщений`, 'success');
+            }
+        }
+
+        function checkPendingMessagesForChat() {
+            if (!activeChat) return;
+            
+            const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
+            const chatPendingMessages = pendingMessages.filter(m => 
+                m.chatId === activeChat.id && m.receiverId === currentUser.id
+            );
+            
+            if (chatPendingMessages.length > 0) {
+                // Перемещаем в обычные сообщения
+                const messages = getFromDB(DB_KEYS.MESSAGES);
+                chatPendingMessages.forEach(msg => {
+                    msg.isPending = false;
+                    msg.deliveredAt = new Date();
+                    messages.push(msg);
+                    
+                    // Добавляем в чат
+                    const container = document.getElementById('userMessagesContainer');
+                    addMessageToChat(msg, container);
+                });
+                saveToDB(DB_KEYS.MESSAGES, messages);
+                
+                // Удаляем из ожидающих
+                const updatedPending = pendingMessages.filter(m => 
+                    !(m.chatId === activeChat.id && m.receiverId === currentUser.id)
+                );
+                saveToDB(DB_KEYS.PENDING_MESSAGES, updatedPending);
+                
+                showNotification(`📨 Получено ${chatPendingMessages.length} новых сообщений`, 'success');
+                updatePendingMessagesCount();
+            }
+        }
+
+        function updatePendingMessagesCount() {
+            if (activeChat && currentListener) {
+                const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
+                const chatPendingCount = pendingMessages.filter(m => 
+                    m.chatId === activeChat.id && m.receiverId === currentListener.id
+                ).length;
+                document.getElementById('pendingMessages').textContent = chatPendingCount;
+            }
         }
 
         // Интерфейс слушателя
@@ -1932,8 +1730,96 @@
             document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount;
             
             loadListenerChats();
+            loadPendingMessages();
         }
 
+        function showListenerTab(tabName) {
+            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+            document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
+            document.getElementById('listenerPendingTab').classList.toggle('hidden', tabName !== 'pending');
+            
+            if (tabName === 'pending') {
+                loadPendingMessages();
+            }
+        }
+
+        function loadPendingMessages() {
+            const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
+            const users = getFromDB(DB_KEYS.USERS);
+            const listenerPendingMessages = pendingMessages.filter(m => m.receiverId === currentUser.id);
+            const container = document.getElementById('pendingMessagesList');
+            
+            if (listenerPendingMessages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📨 Нет ожидающих сообщений</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Сообщения появятся здесь, когда пользователи напишут вам в офлайн</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Группируем сообщения по чатам
+            const messagesByChat = {};
+            listenerPendingMessages.forEach(msg => {
+                if (!messagesByChat[msg.chatId]) {
+                    messagesByChat[msg.chatId] = [];
+                }
+                messagesByChat[msg.chatId].push(msg);
+            });
+
+            container.innerHTML = Object.entries(messagesByChat).map(([chatId, messages]) => {
+                const firstMessage = messages[0];
+                const sender = users.find(u => u.id === firstMessage.senderId);
+                return `
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-weight: 600; margin-bottom: 10px;">
+                            Чат с ${sender?.displayName || 'Пользователем'}
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>${messages.length} сообщений ожидают:</strong>
+                        </div>
+                        ${messages.slice(0, 3).map(msg => `
+                            <div style="padding: 8px; background: var(--border-color); border-radius: 8px; margin-bottom: 5px;">
+                                ${msg.text}
+                            </div>
+                        `).join('')}
+                        ${messages.length > 3 ? `
+                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                                ... и еще ${messages.length - 3} сообщений
+                            </div>
+                        ` : ''}
+                        <button class="btn btn-small btn-primary" onclick="openChatWithPendingMessages('${chatId}')" 
+                                style="margin-top: 10px; padding: 5px 10px; font-size: 12px;">
+                            📨 Открыть чат и получить сообщения
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openChatWithPendingMessages(chatId) {
+            const chats = getFromDB(DB_KEYS.CHATS);
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+
+            activeChat = chat;
+            const users = getFromDB(DB_KEYS.USERS);
+            currentListener = users.find(u => u.id === chat.user2);
+            
+            // Переходим в чаты
+            showListenerTab('chats');
+            loadListenerChatMessages();
+            
+            // Доставляем ожидающие сообщения
+            checkPendingMessagesForChat();
+        }
+
+        // Остальные функции остаются без изменений...
         function loadListenerChats() {
             const chats = getFromDB(DB_KEYS.CHATS);
             const users = getFromDB(DB_KEYS.USERS);
@@ -1948,11 +1834,20 @@
 
             container.innerHTML = listenerChats.map(chat => {
                 const user = users.find(u => u.id === chat.user1);
+                const pendingCount = getFromDB(DB_KEYS.PENDING_MESSAGES).filter(m => 
+                    m.chatId === chat.id && m.receiverId === currentUser.id
+                ).length;
+                
                 return `
                     <div class="chat-item" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer;" 
                          onclick="openListenerChat('${chat.id}')">
                         <div style="font-weight: 600;">${user?.displayName || 'Пользователь'}</div>
                         <div style="font-size: 12px; opacity: 0.7;">Чат активен</div>
+                        ${pendingCount > 0 ? `
+                            <div style="font-size: 11px; color: var(--primary-color); margin-top: 5px;">
+                                📨 ${pendingCount} сообщ. ожидают
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -1963,6 +1858,7 @@
             if (!activeChat) return;
 
             loadListenerChatMessages();
+            checkPendingMessagesForChat();
         }
 
         function loadListenerChatMessages() {
@@ -2033,7 +1929,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // Админ панель
+        // Админ панель и остальные функции...
         function showAdminPanel() {
             hideAllInterfaces();
             document.getElementById('adminPanel').style.display = 'block';
@@ -2057,11 +1953,13 @@
             
             if (section === 'users') loadUsersList();
             if (section === 'staff') loadStaffList();
+            if (section === 'chats') loadAllChatsList();
         }
 
         function updateAdminStats() {
             const users = getFromDB(DB_KEYS.USERS);
             const chats = getFromDB(DB_KEYS.CHATS);
+            const pendingMessages = getFromDB(DB_KEYS.PENDING_MESSAGES);
             
             const totalUsers = users.filter(u => u.role === 'user').length;
             const totalListeners = users.filter(u => u.role === 'Слушатель').length;
@@ -2070,6 +1968,36 @@
             document.getElementById('totalUsers').textContent = totalUsers;
             document.getElementById('totalListeners').textContent = totalListeners;
             document.getElementById('activeChats').textContent = activeChats;
+            document.getElementById('pendingMessagesCount').textContent = pendingMessages.length;
+        }
+
+        function loadAllChatsList() {
+            const chats = getFromDB(DB_KEYS.CHATS);
+            const users = getFromDB(DB_KEYS.USERS);
+            const container = document.getElementById('allChatsList');
+            
+            if (chats.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Чаты отсутствуют</div>';
+                return;
+            }
+
+            container.innerHTML = chats.map(chat => {
+                const user1 = users.find(u => u.id === chat.user1);
+                const user2 = users.find(u => u.id === chat.user2);
+                const pendingCount = getFromDB(DB_KEYS.PENDING_MESSAGES).filter(m => m.chatId === chat.id).length;
+                
+                return `
+                    <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-weight: 600;">
+                            ${user1?.displayName || 'Пользователь'} ↔ ${user2?.displayName || 'Слушатель'}
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.7;">
+                            Статус: ${chat.isActive ? 'Активен' : 'Завершен'}
+                            ${pendingCount > 0 ? ` • 📨 ${pendingCount} сообщ. ожидают` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function loadUsersList() {
@@ -2077,6 +2005,11 @@
             const regularUsers = users.filter(u => u.role === 'user');
             const container = document.getElementById('usersList');
             
+            if (regularUsers.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Пользователи отсутствуют</div>';
+                return;
+            }
+
             container.innerHTML = regularUsers.map(user => `
                 <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
                     <div style="font-weight: 600;">${user.displayName}</div>
@@ -2093,6 +2026,11 @@
             const staff = users.filter(u => u.role !== 'user');
             const container = document.getElementById('staffList');
             
+            if (staff.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Персонал отсутствует</div>';
+                return;
+            }
+
             container.innerHTML = staff.map(user => `
                 <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
                     <div style="font-weight: 600;">${user.displayName}</div>
@@ -2118,15 +2056,6 @@
                 overlay.classList.add('active');
                 isMobileMenuOpen = true;
             }
-        }
-
-        function showListenerTab(tabName) {
-            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
-            });
-
-            document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
-            document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
         }
 
         function startChatTimer() {

@@ -142,44 +142,6 @@
             --border-color: #415a77;
         }
 
-        /* ШРИФТЫ */
-        .font-default {
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .font-modern {
-            --font-family: 'Arial', 'Helvetica Neue', sans-serif;
-        }
-
-        .font-elegant {
-            --font-family: 'Georgia', 'Times New Roman', serif;
-        }
-
-        .font-tech {
-            --font-family: 'Courier New', 'Monaco', monospace;
-        }
-
-        .font-rounded {
-            --font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-        }
-
-        /* РАЗМЕРЫ ШРИФТОВ */
-        .font-size-small {
-            --font-size: 14px;
-        }
-
-        .font-size-normal {
-            --font-size: 16px;
-        }
-
-        .font-size-large {
-            --font-size: 18px;
-        }
-
-        .font-size-xlarge {
-            --font-size: 20px;
-        }
-
         /* ОСНОВНЫЕ СТИЛИ */
         * {
             margin: 0;
@@ -405,7 +367,6 @@
             min-height: 100vh;
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             padding: 20px;
-            animation: fadeIn 0.5s ease;
         }
 
         .auth-card {
@@ -415,7 +376,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 400px;
-            animation: slideUp 0.5s ease;
         }
 
         .auth-title {
@@ -843,29 +803,6 @@
             margin-bottom: 8px;
         }
 
-        .font-selector {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .font-option {
-            padding: 10px 15px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .font-option:hover {
-            border-color: var(--primary-color);
-        }
-
-        .font-option.active {
-            border-color: var(--accent-color);
-            background: rgba(231, 76, 60, 0.1);
-        }
-
         .listener-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -1146,7 +1083,7 @@
         }
     </style>
 </head>
-<body class="theme-sunrise font-default font-size-normal">
+<body class="theme-sunrise">
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="authScreen" class="auth-container">
         <div class="auth-card">
@@ -1160,11 +1097,11 @@
             <div id="loginForm">
                 <div class="form-group">
                     <label class="form-label">Логин</label>
-                    <input type="text" class="form-input" id="authUsername" placeholder="Введите логин">
+                    <input type="text" class="form-input" id="authUsername" placeholder="Введите логин" value="user1">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Пароль</label>
-                    <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль">
+                    <input type="password" class="form-input" id="authPassword" placeholder="Введите пароль" value="123456">
                 </div>
                 <button class="btn btn-primary w-full" id="loginBtn">
                     Войти
@@ -1277,51 +1214,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ -->
-        <div id="userSettings" class="hidden">
-            <div class="settings-panel" style="margin: 0 30px;">
-                <div class="settings-section">
-                    <div class="flex justify-between items-center">
-                        <h3 class="settings-title">Настройки профиля</h3>
-                        <button class="btn btn-secondary" onclick="hideUserSettings()">
-                            ← Назад
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Настройки темы и шрифтов -->
-                <div id="userThemeSettings"></div>
-                
-                <!-- Смена пароля -->
-                <div class="settings-section">
-                    <h3 class="settings-title">Смена пароля</h3>
-                    <div class="form-group">
-                        <label class="form-label">Текущий пароль</label>
-                        <input type="password" class="form-input" id="currentPassword">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Новый пароль</label>
-                        <input type="password" class="form-input" id="newPassword">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Подтвердите новый пароль</label>
-                        <input type="password" class="form-input" id="confirmNewPassword">
-                    </div>
-                    <button class="btn btn-primary" onclick="changePassword()">Сменить пароль</button>
-                </div>
-
-                <!-- Смена имени -->
-                <div class="settings-section">
-                    <h3 class="settings-title">Смена имени</h3>
-                    <div class="form-group">
-                        <label class="form-label">Новое имя</label>
-                        <input type="text" class="form-input" id="newDisplayName" value="Пользователь">
-                    </div>
-                    <button class="btn btn-primary" onclick="changeDisplayName()">Сменить имя</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- ИНТЕРФЕЙС СЛУШАТЕЛЯ -->
@@ -1343,9 +1235,6 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="settings-btn" onclick="showListenerSettings()">
-                    ⚙️ Настройки
-                </button>
                 <button class="btn btn-primary" onclick="logout()">
                     Выйти
                 </button>
@@ -1395,51 +1284,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- НАСТРОЙКИ СЛУШАТЕЛЯ -->
-        <div id="listenerSettings" class="hidden">
-            <div class="settings-panel" style="margin: 0 30px 30px;">
-                <div class="settings-section">
-                    <div class="flex justify-between items-center">
-                        <h3 class="settings-title">Настройки профиля</h3>
-                        <button class="btn btn-secondary" onclick="hideListenerSettings()">
-                            ← Назад
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Настройки темы и шрифтов -->
-                <div id="listenerThemeSettings"></div>
-                
-                <!-- Смена пароля -->
-                <div class="settings-section">
-                    <h3 class="settings-title">Смена пароля</h3>
-                    <div class="form-group">
-                        <label class="form-label">Текущий пароль</label>
-                        <input type="password" class="form-input" id="listenerCurrentPassword">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Новый пароль</label>
-                        <input type="password" class="form-input" id="listenerNewPassword">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Подтвердите новый пароль</label>
-                        <input type="password" class="form-input" id="listenerConfirmNewPassword">
-                    </div>
-                    <button class="btn btn-primary" onclick="changeListenerPassword()">Сменить пароль</button>
-                </div>
-
-                <!-- Смена имени -->
-                <div class="settings-section">
-                    <h3 class="settings-title">Смена имени</h3>
-                    <div class="form-group">
-                        <label class="form-label">Новое имя</label>
-                        <input type="text" class="form-input" id="listenerNewDisplayName" value="Слушатель">
-                    </div>
-                    <button class="btn btn-primary" onclick="changeListenerDisplayName()">Сменить имя</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
@@ -1473,9 +1317,6 @@
                     <div class="nav-item" data-section="notifications">
                         📢 Уведомления
                     </div>
-                    <div class="nav-item" data-section="adminSettings">
-                        ⚙️ Настройки
-                    </div>
                 </div>
             </div>
 
@@ -1485,9 +1326,6 @@
                 <div class="content-header">
                     <h2 id="contentTitle">Статистика системы</h2>
                     <div class="header-actions">
-                        <button class="settings-btn" onclick="showAdminSettings()">
-                            ⚙️ Настройки профиля
-                        </button>
                         <button class="btn btn-primary" onclick="logout()">
                             Выйти
                         </button>
@@ -1626,60 +1464,6 @@
                             📢 Отправить уведомление
                         </button>
                     </div>
-
-                    <div class="content-card">
-                        <h3 style="margin-bottom: 20px;">История уведомлений</h3>
-                        <div id="notificationsHistory">
-                            <div style="text-align: center; padding: 20px; color: #7f8c8d;">
-                                Уведомления не отправлялись
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- НАСТРОЙКИ АДМИНА -->
-                <div id="adminSettings" class="content-section hidden">
-                    <div class="settings-panel">
-                        <div class="settings-section">
-                            <div class="flex justify-between items-center">
-                                <h3 class="settings-title">Настройки профиля</h3>
-                                <button class="btn btn-secondary" onclick="hideAdminSettings()">
-                                    ← Назад к панели
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Настройки темы и шрифтов -->
-                        <div id="adminThemeSettings"></div>
-                        
-                        <!-- Смена пароля -->
-                        <div class="settings-section">
-                            <h3 class="settings-title">Смена пароля</h3>
-                            <div class="form-group">
-                                <label class="form-label">Текущий пароль</label>
-                                <input type="password" class="form-input" id="adminCurrentPassword">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Новый пароль</label>
-                                <input type="password" class="form-input" id="adminNewPassword">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Подтвердите новый пароль</label>
-                                <input type="password" class="form-input" id="adminConfirmNewPassword">
-                            </div>
-                            <button class="btn btn-primary" onclick="changeAdminPassword()">Сменить пароль</button>
-                        </div>
-
-                        <!-- Смена имени -->
-                        <div class="settings-section">
-                            <h3 class="settings-title">Смена имени</h3>
-                            <div class="form-group">
-                                <label class="form-label">Новое имя</label>
-                                <input type="text" class="form-input" id="adminNewDisplayName" value="Администратор">
-                            </div>
-                            <button class="btn btn-primary" onclick="changeAdminDisplayName()">Сменить имя</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1720,7 +1504,6 @@
     <!-- УВЕДОМЛЕНИЯ -->
     <div class="notification" id="notification"></div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         // Глобальные переменные
         let currentUser = null;
@@ -1730,24 +1513,93 @@
         let chatStartTime = null;
         let chatTimer = null;
         let selectedRating = 0;
-        let socket = null;
         let isMobileMenuOpen = false;
 
-        // URL сервера на Render
-        const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
+        // База данных в localStorage
+        const DB_KEYS = {
+            USERS: 'chat_users',
+            CHATS: 'chat_sessions',
+            MESSAGES: 'chat_messages',
+            RATINGS: 'user_ratings'
+        };
 
-        // ИНИЦИАЛИЗАЦИЯ
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Инициализация системы...');
-            initializeApp();
-        });
+        // Инициализация базы данных
+        function initializeDatabase() {
+            if (!localStorage.getItem(DB_KEYS.USERS)) {
+                const defaultUsers = [
+                    {
+                        id: '1',
+                        username: 'owner',
+                        password: 'owner123',
+                        displayName: 'Владелец',
+                        role: 'Владелец',
+                        isOnline: true,
+                        rating: 5.0,
+                        ratingCount: 10
+                    },
+                    {
+                        id: '2',
+                        username: 'listener1',
+                        password: '123456',
+                        displayName: 'Анна',
+                        role: 'Слушатель',
+                        isOnline: false,
+                        rating: 4.8,
+                        ratingCount: 15
+                    },
+                    {
+                        id: '3',
+                        username: 'user1',
+                        password: '123456',
+                        displayName: 'Михаил',
+                        role: 'user',
+                        isOnline: true,
+                        rating: 0,
+                        ratingCount: 0
+                    }
+                ];
+                localStorage.setItem(DB_KEYS.USERS, JSON.stringify(defaultUsers));
+            }
 
-        function initializeApp() {
-            setupEventListeners();
-            loadUserPreferences();
-            checkActiveSession();
-            connectToServer();
+            if (!localStorage.getItem(DB_KEYS.CHATS)) {
+                localStorage.setItem(DB_KEYS.CHATS, JSON.stringify([]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.MESSAGES)) {
+                localStorage.setItem(DB_KEYS.MESSAGES, JSON.stringify([]));
+            }
+
+            if (!localStorage.getItem(DB_KEYS.RATINGS)) {
+                localStorage.setItem(DB_KEYS.RATINGS, JSON.stringify([]));
+            }
         }
+
+        // Работа с базой данных
+        function getFromDB(key) {
+            return JSON.parse(localStorage.getItem(key) || '[]');
+        }
+
+        function saveToDB(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        function updateInDB(key, id, updates) {
+            const items = getFromDB(key);
+            const index = items.findIndex(item => item.id === id);
+            if (index !== -1) {
+                items[index] = { ...items[index], ...updates };
+                saveToDB(key, items);
+                return true;
+            }
+            return false;
+        }
+
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDatabase();
+            setupEventListeners();
+            checkActiveSession();
+        });
 
         function setupEventListeners() {
             // Табы авторизации
@@ -1766,16 +1618,29 @@
                 });
             });
 
-            // Кнопки авторизации
-            document.getElementById('loginBtn').addEventListener('click', login);
-            document.getElementById('registerBtn').addEventListener('click', register);
-            
             // Навигация в админке
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const section = this.getAttribute('data-section');
                     showSection(section);
                 });
+            });
+
+            // Кнопки авторизации
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('registerBtn').addEventListener('click', register);
+
+            // Обработчики Enter
+            document.getElementById('authPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+
+            document.getElementById('userMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendUserMessage();
+            });
+
+            document.getElementById('listenerMessageInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendListenerMessage();
             });
 
             // Рейтинг
@@ -1785,155 +1650,461 @@
                     updateRatingStars(selectedRating);
                 });
             });
-
-            // Обработчики Enter
-            document.getElementById('authPassword').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') login();
-            });
-            
-            document.getElementById('regPasswordConfirm').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') register();
-            });
-            
-            document.getElementById('userMessageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendUserMessage();
-            });
-
-            document.getElementById('listenerMessageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendListenerMessage();
-            });
         }
 
-        function loadUserPreferences() {
-            const theme = localStorage.getItem('theme') || 'sunrise';
-            const font = localStorage.getItem('font') || 'default';
-            const fontSize = localStorage.getItem('fontSize') || 'normal';
-            
-            changeTheme(theme, false);
-            changeFont(font, false);
-            changeFontSize(fontSize, false);
+        // Аутентификация
+        function showAuthTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
         }
 
-        // ПОДКЛЮЧЕНИЕ К СЕРВЕРУ
-        function connectToServer() {
-            if (socket) {
-                socket.disconnect();
+        function login() {
+            const username = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if (!username || !password) {
+                showNotification('Заполните все поля!', 'error');
+                return;
             }
 
-            socket = io(SERVER_URL, {
-                transports: ['websocket', 'polling']
-            });
+            const users = getFromDB(DB_KEYS.USERS);
+            const user = users.find(u => u.username === username && u.password === password);
 
-            socket.on('connect', () => {
-                console.log('✅ Подключено к серверу');
-                showNotification('✅ Подключено к серверу', 'success');
+            if (user) {
+                // Обновляем статус онлайн
+                updateInDB(DB_KEYS.USERS, user.id, { isOnline: true });
+                user.isOnline = true;
                 
-                // После подключения синхронизируем данные
-                if (currentUser) {
-                    syncUserData();
-                }
-            });
-
-            socket.on('disconnect', () => {
-                console.log('❌ Отключено от сервера');
-                showNotification('❌ Потеряно соединение с сервером', 'error');
-            });
-
-            socket.on('reconnect', () => {
-                console.log('🔄 Переподключение к серверу');
-                showNotification('🔄 Переподключение к серверу', 'info');
-                
-                // Синхронизируем данные после переподключения
-                if (currentUser) {
-                    syncUserData();
-                }
-            });
-
-            socket.on('login_success', (user) => {
                 handleLoginSuccess(user);
-            });
-
-            socket.on('login_error', (error) => {
-                showNotification('❌ ' + error, 'error');
-                localStorage.removeItem('activeUser');
-            });
-
-            socket.on('registration_success', (user) => {
-                showNotification('✅ Регистрация успешна!', 'success');
-                showAuthTab('login');
-                document.getElementById('regUsername').value = '';
-                document.getElementById('regPassword').value = '';
-                document.getElementById('regPasswordConfirm').value = '';
-            });
-
-            socket.on('registration_error', (error) => {
-                showNotification('❌ ' + error, 'error');
-            });
-
-            socket.on('users_list', (users) => {
-                updateUsersList(users);
-            });
-
-            socket.on('new_message', (message) => {
-                handleNewMessage(message);
-            });
-
-            socket.on('user_rating_updated', (data) => {
-                updateUserRating(data);
-            });
-
-            socket.on('user_rating_data', (data) => {
-                updateListenerReviews(data);
-            });
-
-            socket.on('rating_success', (message) => {
-                showNotification('✅ ' + message, 'success');
-            });
-
-            socket.on('rating_error', (error) => {
-                showNotification('❌ ' + error, 'error');
-            });
-
-            socket.on('user_data_updated', (data) => {
-                handleUserDataUpdate(data);
-            });
-
-            socket.on('chat_updated', (chat) => {
-                handleChatUpdate(chat);
-            });
-        }
-
-        // Синхронизация данных пользователя с сервером
-        function syncUserData() {
-            if (socket && socket.connected) {
-                socket.emit('sync_user_data', { 
-                    userId: currentUser.id,
-                    userData: currentUser
-                });
+            } else {
+                showNotification('Неверный логин или пароль!', 'error');
             }
         }
 
-        function handleUserDataUpdate(data) {
-            if (data.userId === currentUser.id) {
-                // Обновляем текущего пользователя
-                Object.assign(currentUser, data.updates);
-                localStorage.setItem('activeUser', JSON.stringify(currentUser));
-                
-                // Обновляем интерфейс
-                updateUserInterface();
-                
-                showNotification('✅ Настройки обновлены', 'success');
+        function register() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
+
+            if (!username || !password || !passwordConfirm) {
+                showNotification('Заполните все поля!', 'error');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                showNotification('Пароли не совпадают!', 'error');
+                return;
+            }
+
+            const users = getFromDB(DB_KEYS.USERS);
+            
+            if (users.find(u => u.username === username)) {
+                showNotification('Пользователь с таким логином уже существует!', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: Date.now().toString(),
+                username: username,
+                password: password,
+                displayName: username,
+                role: 'user',
+                isOnline: true,
+                rating: 0,
+                ratingCount: 0
+            };
+
+            users.push(newUser);
+            saveToDB(DB_KEYS.USERS, users);
+            
+            showNotification('Регистрация успешна!', 'success');
+            showAuthTab('login');
+        }
+
+        function handleLoginSuccess(user) {
+            currentUser = user;
+            showNotification(`Добро пожаловать, ${user.displayName}!`, 'success');
+            
+            // Определяем интерфейс по роли
+            switch(user.role) {
+                case 'Владелец':
+                case 'Администратор':
+                    showAdminPanel();
+                    break;
+                case 'Слушатель':
+                    showListenerInterface();
+                    break;
+                case 'user':
+                    showUserInterface();
+                    break;
             }
         }
 
-        function handleChatUpdate(chat) {
-            if (activeChat && activeChat.id === chat.id) {
-                activeChat = chat;
-                loadChatMessages();
+        // Интерфейс пользователя
+        function showUserInterface() {
+            hideAllInterfaces();
+            document.getElementById('userInterface').style.display = 'block';
+            
+            document.getElementById('userDisplayName').textContent = currentUser.displayName;
+            document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            
+            loadListenerCards();
+        }
+
+        function loadListenerCards() {
+            const users = getFromDB(DB_KEYS.USERS);
+            const container = document.getElementById('listenerCards');
+            
+            const listeners = users.filter(u => 
+                u.role === 'Слушатель' || u.role === 'Владелец' || u.role === 'Администратор'
+            );
+
+            if (listeners.length === 0) {
+                container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #7f8c8d;">Нет доступных слушателей</div>';
+                return;
+            }
+
+            container.innerHTML = listeners.map(listener => `
+                <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
+                    <div class="listener-avatar">${listener.displayName.charAt(0)}</div>
+                    <h3>${listener.displayName}</h3>
+                    <div style="margin: 10px 0;">
+                        <span>★ ${listener.rating.toFixed(1)} (${listener.ratingCount})</span>
+                    </div>
+                    <div style="color: ${listener.isOnline ? '#27ae60' : '#7f8c8d'};">
+                        ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
+                    </div>
+                    ${!listener.isOnline ? `
+                        <div class="offline-indicator">
+                            📧 Сообщение будет доставлено при подключении
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function startChatWithListener(listenerId) {
+            const users = getFromDB(DB_KEYS.USERS);
+            const listener = users.find(u => u.id === listenerId);
+            if (!listener) return;
+
+            currentListener = listener;
+            
+            // Создаем или находим чат
+            const chats = getFromDB(DB_KEYS.CHATS);
+            let chat = chats.find(c => 
+                c.user1 === currentUser.id && c.user2 === listenerId && c.isActive
+            );
+
+            if (!chat) {
+                chat = {
+                    id: `${currentUser.id}_${listenerId}_${Date.now()}`,
+                    user1: currentUser.id,
+                    user2: listenerId,
+                    startTime: new Date(),
+                    isActive: true
+                };
+                chats.push(chat);
+                saveToDB(DB_KEYS.CHATS, chats);
+            }
+            
+            activeChat = chat;
+
+            // Показываем чат
+            document.getElementById('listenerSelection').classList.add('hidden');
+            document.getElementById('userChatSection').classList.remove('hidden');
+            
+            document.getElementById('currentListenerRating').textContent = listener.rating.toFixed(1);
+            
+            // Загружаем сообщения
+            loadChatMessages();
+            
+            // Запускаем таймер
+            chatStartTime = new Date();
+            startChatTimer();
+
+            if (!listener.isOnline) {
+                addSystemMessage('Слушатель сейчас не в сети. Ваше сообщение будет доставлено, когда он появится онлайн.');
             }
         }
 
-        // МОБИЛЬНОЕ МЕНЮ
+        function loadChatMessages() {
+            const messages = getFromDB(DB_KEYS.MESSAGES);
+            const chatMessages = messages.filter(m => m.chatId === activeChat.id);
+            const container = document.getElementById('userMessagesContainer');
+            
+            container.innerHTML = '';
+            
+            if (chatMessages.length === 0) {
+                addSystemMessage(`Чат начат с ${currentListener.displayName}`);
+                return;
+            }
+
+            chatMessages.forEach(message => {
+                addMessageToChat(message, container);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addSystemMessage(text) {
+            const container = document.getElementById('userMessagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.style.textAlign = 'center';
+            messageDiv.style.color = '#7f8c8d';
+            messageDiv.style.margin = '10px 0';
+            messageDiv.textContent = text;
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessageToChat(message, container) {
+            const messageDiv = document.createElement('div');
+            const isCurrentUser = message.senderId === currentUser.id;
+            messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
+            messageDiv.innerHTML = `
+                <div>${message.text}</div>
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                    ${new Date(message.timestamp).toLocaleTimeString()}
+                </div>
+            `;
+            container.appendChild(messageDiv);
+        }
+
+        function sendUserMessage() {
+            if (!activeChat || !currentListener) {
+                showNotification('Выберите слушателя для общения!', 'error');
+                return;
+            }
+            
+            const input = document.getElementById('userMessageInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showNotification('Введите сообщение!', 'error');
+                return;
+            }
+
+            const message = {
+                id: Date.now().toString(),
+                chatId: activeChat.id,
+                senderId: currentUser.id,
+                receiverId: currentListener.id,
+                text: text,
+                timestamp: new Date(),
+                isRead: false
+            };
+
+            // Сохраняем сообщение
+            const messages = getFromDB(DB_KEYS.MESSAGES);
+            messages.push(message);
+            saveToDB(DB_KEYS.MESSAGES, messages);
+
+            // Добавляем в чат
+            const container = document.getElementById('userMessagesContainer');
+            addMessageToChat(message, container);
+
+            input.value = '';
+            
+            if (!currentListener.isOnline) {
+                showNotification('Сообщение сохранено и будет доставлено когда слушатель будет онлайн', 'info');
+            } else {
+                showNotification('Сообщение отправлено!', 'success');
+            }
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Интерфейс слушателя
+        function showListenerInterface() {
+            hideAllInterfaces();
+            document.getElementById('listenerInterface').style.display = 'block';
+            
+            document.getElementById('listenerDisplayName').textContent = currentUser.displayName;
+            document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('listenerAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            document.getElementById('listenerRatingValue').textContent = currentUser.rating.toFixed(1);
+            document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount;
+            
+            loadListenerChats();
+        }
+
+        function loadListenerChats() {
+            const chats = getFromDB(DB_KEYS.CHATS);
+            const users = getFromDB(DB_KEYS.USERS);
+            const container = document.getElementById('listenerChatsList');
+            
+            const listenerChats = chats.filter(c => c.user2 === currentUser.id && c.isActive);
+            
+            if (listenerChats.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Активные чаты отсутствуют</div>';
+                return;
+            }
+
+            container.innerHTML = listenerChats.map(chat => {
+                const user = users.find(u => u.id === chat.user1);
+                return `
+                    <div class="chat-item" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer;" 
+                         onclick="openListenerChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user?.displayName || 'Пользователь'}</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Чат активен</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openListenerChat(chatId) {
+            activeChat = getFromDB(DB_KEYS.CHATS).find(c => c.id === chatId);
+            if (!activeChat) return;
+
+            loadListenerChatMessages();
+        }
+
+        function loadListenerChatMessages() {
+            const messages = getFromDB(DB_KEYS.MESSAGES);
+            const users = getFromDB(DB_KEYS.USERS);
+            const chatMessages = messages.filter(m => m.chatId === activeChat.id);
+            const container = document.getElementById('listenerMessagesContainer');
+            
+            container.innerHTML = '';
+            
+            chatMessages.forEach(message => {
+                const messageDiv = document.createElement('div');
+                const isCurrentUser = message.senderId === currentUser.id;
+                messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
+                messageDiv.innerHTML = `
+                    <div>${message.text}</div>
+                    <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                        ${new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                `;
+                container.appendChild(messageDiv);
+            });
+            
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function sendListenerMessage() {
+            if (!activeChat) {
+                showNotification('Выберите чат!', 'error');
+                return;
+            }
+            
+            const input = document.getElementById('listenerMessageInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showNotification('Введите сообщение!', 'error');
+                return;
+            }
+
+            const message = {
+                id: Date.now().toString(),
+                chatId: activeChat.id,
+                senderId: currentUser.id,
+                receiverId: activeChat.user1,
+                text: text,
+                timestamp: new Date(),
+                isRead: false
+            };
+
+            const messages = getFromDB(DB_KEYS.MESSAGES);
+            messages.push(message);
+            saveToDB(DB_KEYS.MESSAGES, messages);
+
+            const container = document.getElementById('listenerMessagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div style="font-size: 12px; opacity: 0.7; margin-top: 5px;">
+                    ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+            container.appendChild(messageDiv);
+
+            input.value = '';
+            showNotification('Сообщение отправлено!', 'success');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Админ панель
+        function showAdminPanel() {
+            hideAllInterfaces();
+            document.getElementById('adminPanel').style.display = 'block';
+            
+            document.getElementById('adminDisplayName').textContent = currentUser.displayName;
+            document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
+            
+            updateAdminStats();
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-section') === section);
+            });
+
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            if (section === 'users') loadUsersList();
+            if (section === 'staff') loadStaffList();
+        }
+
+        function updateAdminStats() {
+            const users = getFromDB(DB_KEYS.USERS);
+            const chats = getFromDB(DB_KEYS.CHATS);
+            
+            const totalUsers = users.filter(u => u.role === 'user').length;
+            const totalListeners = users.filter(u => u.role === 'Слушатель').length;
+            const activeChats = chats.filter(c => c.isActive).length;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalListeners').textContent = totalListeners;
+            document.getElementById('activeChats').textContent = activeChats;
+        }
+
+        function loadUsersList() {
+            const users = getFromDB(DB_KEYS.USERS);
+            const regularUsers = users.filter(u => u.role === 'user');
+            const container = document.getElementById('usersList');
+            
+            container.innerHTML = regularUsers.map(user => `
+                <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600;">${user.displayName}</div>
+                    <div style="opacity: 0.7;">Логин: ${user.username}</div>
+                    <div style="color: ${user.isOnline ? '#27ae60' : '#7f8c8d'};">
+                        ${user.isOnline ? '● Онлайн' : '○ Офлайн'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadStaffList() {
+            const users = getFromDB(DB_KEYS.USERS);
+            const staff = users.filter(u => u.role !== 'user');
+            const container = document.getElementById('staffList');
+            
+            container.innerHTML = staff.map(user => `
+                <div style="padding: 15px; border-bottom: 1px solid var(--border-color);">
+                    <div style="font-weight: 600;">${user.displayName}</div>
+                    <div style="opacity: 0.7;">${getRoleDisplayName(user.role)}</div>
+                    <div style="color: ${user.isOnline ? '#27ae60' : '#7f8c8d'};">
+                        ${user.isOnline ? '● Онлайн' : '○ Офлайн'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Вспомогательные функции
         function toggleMobileMenu() {
             const sidebar = document.getElementById('adminSidebar');
             const overlay = document.querySelector('.mobile-overlay');
@@ -1949,224 +2120,13 @@
             }
         }
 
-        // АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ
-        function showAuthTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => {
+        function showListenerTab(tabName) {
+            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
                 tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
             });
 
-            document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
-            document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
-        }
-
-        function login() {
-            const username = document.getElementById('authUsername').value.trim();
-            const password = document.getElementById('authPassword').value.trim();
-
-            if (!username || !password) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            console.log('🔐 Попытка входа:', username);
-            
-            // Отправляем запрос на сервер
-            if (socket && socket.connected) {
-                socket.emit('login_user', { username, password });
-            } else {
-                showNotification('❌ Нет соединения с сервером!', 'error');
-                connectToServer();
-            }
-        }
-
-        function register() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            const passwordConfirm = document.getElementById('regPasswordConfirm').value.trim();
-
-            if (!username || !password || !passwordConfirm) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (password !== passwordConfirm) {
-                showNotification('❌ Пароли не совпадают!', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
-                return;
-            }
-
-            // Отправляем запрос на сервер
-            if (socket && socket.connected) {
-                socket.emit('register_user', { username, password });
-            } else {
-                showNotification('❌ Нет соединения с сервером!', 'error');
-                connectToServer();
-            }
-        }
-
-        function handleLoginSuccess(user) {
-            currentUser = user;
-            showNotification(`✅ Добро пожаловать, ${user.displayName}!`, 'success');
-            
-            localStorage.setItem('activeUser', JSON.stringify(user));
-            
-            // Определяем интерфейс по роли
-            switch(user.role) {
-                case 'Владелец':
-                case 'Совладелец':
-                case 'Заместитель':
-                case 'Администратор':
-                    showAdminPanel();
-                    break;
-                case 'Слушатель':
-                    showListenerInterface();
-                    break;
-                case 'user':
-                    showUserInterface();
-                    break;
-            }
-        }
-
-        // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
-        function showUserInterface() {
-            hideAllInterfaces();
-            document.getElementById('userInterface').style.display = 'block';
-            
-            document.getElementById('userDisplayName').textContent = currentUser.displayName;
-            document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
-            document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-            
-            loadListenerCards();
-            showUserThemeSettings();
-        }
-
-        function showUserSettings() {
-            document.getElementById('listenerSelection').classList.add('hidden');
-            document.getElementById('userChatSection').classList.add('hidden');
-            document.getElementById('userSettings').classList.remove('hidden');
-        }
-
-        function hideUserSettings() {
-            document.getElementById('userSettings').classList.add('hidden');
-            document.getElementById('listenerSelection').classList.remove('hidden');
-        }
-
-        function updateUsersList(users) {
-            console.log('👥 Получен список пользователей:', users);
-            
-            // Для пользователя - загружаем карточки слушателей
-            if (currentUser && currentUser.role === 'user') {
-                loadListenerCardsFromServer(users);
-            }
-            
-            // Для администратора - обновляем таблицы
-            if (currentUser && ['Владелец', 'Совладелец', 'Заместитель', 'Администратор'].includes(currentUser.role)) {
-                updateAdminTables(users);
-            }
-        }
-
-        function loadListenerCardsFromServer(users) {
-            const container = document.getElementById('listenerCards');
-            // Показываем всех слушателей и администраторов
-            const listeners = users.filter(u => 
-                u.role === 'Слушатель' || 
-                u.role === 'Владелец' || 
-                u.role === 'Совладелец' || 
-                u.role === 'Заместитель' || 
-                u.role === 'Администратор'
-            );
-            
-            if (listeners.length === 0) {
-                container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #7f8c8d;">Нет доступных слушателей</div>';
-                return;
-            }
-
-            container.innerHTML = listeners.map(listener => `
-                <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
-                    <div class="listener-avatar">${listener.displayName.charAt(0)}</div>
-                    <h3>${listener.displayName}</h3>
-                    <div class="listener-rating">
-                        <span class="star">★</span>
-                        <span>${listener.rating.toFixed(1)}</span>
-                        <span>(${listener.ratingCount})</span>
-                    </div>
-                    <div style="color: ${listener.isOnline ? '#27ae60' : '#7f8c8d'}; margin-top: 10px;">
-                        ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
-                    </div>
-                    ${!listener.isOnline ? `
-                        <div class="offline-indicator">
-                            📧 Сообщение будет доставлено при подключении
-                        </div>
-                    ` : ''}
-                    <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                        ${getRoleDisplayName(listener.role)}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function loadListenerCards() {
-            // Запрашиваем актуальный список пользователей с сервера
-            if (socket && socket.connected) {
-                socket.emit('get_users_list');
-            }
-        }
-
-        function selectRandomListener() {
-            const container = document.getElementById('listenerCards');
-            const listenerCards = container.querySelectorAll('.listener-card');
-            
-            if (listenerCards.length === 0) {
-                showNotification('❌ Нет доступных слушателей!', 'error');
-                return;
-            }
-            
-            const randomIndex = Math.floor(Math.random() * listenerCards.length);
-            listenerCards[randomIndex].click();
-        }
-
-        function startChatWithListener(listenerId) {
-            // Запрашиваем информацию о слушателе с сервера
-            if (socket && socket.connected) {
-                socket.emit('get_user_info', { userId: listenerId }, (listener) => {
-                    if (listener) {
-                        currentListener = listener;
-                        
-                        // Создаем чат через сервер
-                        socket.emit('create_chat', {
-                            user1: currentUser.id,
-                            user2: listenerId
-                        }, (chat) => {
-                            if (chat) {
-                                activeChat = chat;
-
-                                // Показываем чат
-                                document.getElementById('listenerSelection').classList.add('hidden');
-                                document.getElementById('userChatSection').classList.remove('hidden');
-                                
-                                document.getElementById('currentListenerRating').textContent = listener.rating.toFixed(1);
-                                
-                                // Загружаем сообщения
-                                loadChatMessages();
-                                
-                                // Запускаем таймер
-                                chatStartTime = new Date();
-                                startChatTimer();
-
-                                if (!listener.isOnline) {
-                                    addSystemMessage('Слушатель сейчас не в сети. Ваше сообщение будет доставлено, когда он появится онлайн.');
-                                }
-
-                                showNotification(`💬 Чат начат с ${listener.displayName}`, 'success');
-                            }
-                        });
-                    }
-                });
-            }
+            document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+            document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
         }
 
         function startChatTimer() {
@@ -2181,101 +2141,6 @@
             }, 1000);
         }
 
-        function loadChatMessages() {
-            if (socket && socket.connected && activeChat) {
-                socket.emit('get_chat_messages', { chatId: activeChat.id }, (messages) => {
-                    const container = document.getElementById('userMessagesContainer');
-                    container.innerHTML = '';
-                    
-                    if (messages.length === 0) {
-                        addSystemMessage(`Чат начат с ${currentListener.displayName}`);
-                        return;
-                    }
-
-                    messages.forEach(message => {
-                        addMessageToUserChat(message);
-                    });
-                    
-                    container.scrollTop = container.scrollHeight;
-                });
-            }
-        }
-
-        function addSystemMessage(text) {
-            const container = document.getElementById('userMessagesContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.style.textAlign = 'center';
-            messageDiv.style.color = '#7f8c8d';
-            messageDiv.style.margin = '10px 0';
-            messageDiv.textContent = text;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function sendUserMessage() {
-            if (!activeChat || !currentListener) {
-                showNotification('❌ Выберите слушателя для общения!', 'error');
-                return;
-            }
-            
-            const input = document.getElementById('userMessageInput');
-            const text = input.value.trim();
-            
-            if (!text) {
-                showNotification('❌ Введите сообщение!', 'error');
-                return;
-            }
-
-            // Отправляем сообщение через сервер
-            if (socket && socket.connected) {
-                socket.emit('send_message', {
-                    chatId: activeChat.id,
-                    text: text,
-                    senderId: currentUser.id,
-                    receiverId: currentListener.id
-                }, (result) => {
-                    if (result.success) {
-                        input.value = '';
-                        
-                        if (!currentListener.isOnline) {
-                            showNotification('📧 Сообщение сохранено и будет доставлено когда слушатель будет онлайн', 'info');
-                        } else {
-                            showNotification('✉️ Сообщение отправлено!', 'success');
-                        }
-                    } else {
-                        showNotification('❌ Ошибка отправки сообщения', 'error');
-                    }
-                });
-            }
-        }
-
-        function handleNewMessage(message) {
-            // Добавляем сообщение в соответствующий чат
-            if (currentUser.role === 'user' && activeChat && activeChat.id === message.chatId) {
-                addMessageToUserChat(message);
-            } else if (currentUser.role === 'Слушатель' && activeChat && activeChat.id === message.chatId) {
-                addMessageToListenerChat(message);
-            }
-        }
-
-        function addMessageToUserChat(message) {
-            const container = document.getElementById('userMessagesContainer');
-            
-            if (container.children.length === 1 && container.children[0].textContent.includes('Чат начат')) {
-                container.innerHTML = '';
-            }
-            
-            const messageDiv = document.createElement('div');
-            const isCurrentUser = message.senderId === currentUser.id;
-            messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
-            messageDiv.innerHTML = `
-                <div>${message.text}</div>
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
         function updateRatingStars(rating) {
             document.querySelectorAll('.rating-star').forEach((star, index) => {
                 star.classList.toggle('active', index < rating);
@@ -2284,38 +2149,42 @@
 
         function submitRating() {
             if (selectedRating === 0) {
-                showNotification('❌ Выберите оценку!', 'error');
+                showNotification('Выберите оценку!', 'error');
                 return;
             }
 
-            if (!currentListener) {
-                showNotification('❌ Нет активного чата!', 'error');
-                return;
-            }
+            if (!currentListener) return;
 
+            const ratings = getFromDB(DB_KEYS.RATINGS);
             const reviewText = document.getElementById('reviewText').value.trim();
             
-            // Отправляем оценку на сервер
-            if (socket && socket.connected) {
-                socket.emit('submit_rating', {
-                    listenerId: currentListener.id,
-                    userId: currentUser.id,
-                    rating: selectedRating,
-                    comment: reviewText
-                }, (result) => {
-                    if (result.success) {
-                        showNotification('✅ Оценка отправлена!', 'success');
-                        endChat();
-                    } else {
-                        showNotification('❌ Ошибка отправки оценки', 'error');
-                    }
-                });
-            }
+            ratings.push({
+                id: Date.now().toString(),
+                listenerId: currentListener.id,
+                userId: currentUser.id,
+                rating: selectedRating,
+                comment: reviewText,
+                timestamp: new Date()
+            });
+            saveToDB(DB_KEYS.RATINGS, ratings);
+
+            // Обновляем рейтинг слушателя
+            const users = getFromDB(DB_KEYS.USERS);
+            const listenerRatings = ratings.filter(r => r.listenerId === currentListener.id);
+            const averageRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0) / listenerRatings.length;
+            
+            updateInDB(DB_KEYS.USERS, currentListener.id, {
+                rating: averageRating,
+                ratingCount: listenerRatings.length
+            });
+
+            showNotification('Оценка отправлена!', 'success');
+            endChat();
         }
 
         function endChat() {
-            if (activeChat && socket && socket.connected) {
-                socket.emit('end_chat', { chatId: activeChat.id });
+            if (activeChat) {
+                updateInDB(DB_KEYS.CHATS, activeChat.id, { isActive: false });
             }
 
             document.getElementById('userChatSection').classList.add('hidden');
@@ -2328,631 +2197,24 @@
             document.getElementById('reviewText').value = '';
         }
 
-        // ИНТЕРФЕЙС СЛУШАТЕЛЯ
-        function showListenerInterface() {
-            hideAllInterfaces();
-            document.getElementById('listenerInterface').style.display = 'block';
+        function selectRandomListener() {
+            const users = getFromDB(DB_KEYS.USERS);
+            const listeners = users.filter(u => 
+                u.role === 'Слушатель' || u.role === 'Владелец' || u.role === 'Администратор'
+            );
             
-            document.getElementById('listenerDisplayName').textContent = currentUser.displayName;
-            document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
-            document.getElementById('listenerAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-            document.getElementById('listenerRatingValue').textContent = currentUser.rating.toFixed(1);
-            document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount;
-            
-            loadListenerChats();
-            showListenerThemeSettings();
-        }
-
-        function showListenerTab(tabName) {
-            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
-            });
-
-            document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
-            document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
-        }
-
-        function showListenerSettings() {
-            document.getElementById('listenerSettings').classList.remove('hidden');
-        }
-
-        function hideListenerSettings() {
-            document.getElementById('listenerSettings').classList.add('hidden');
-        }
-
-        function loadListenerChats() {
-            if (socket && socket.connected) {
-                socket.emit('get_listener_chats', { listenerId: currentUser.id }, (chats) => {
-                    const container = document.getElementById('listenerChatsList');
-                    
-                    if (chats.length === 0) {
-                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">Активные чаты отсутствуют</div>';
-                        return;
-                    }
-
-                    container.innerHTML = chats.map(chat => `
-                        <div class="chat-item" onclick="openListenerChat('${chat.id}')">
-                            <div style="font-weight: 600;">Чат с пользователем</div>
-                            <div style="font-size: 12px; opacity: 0.7;">Активен</div>
-                        </div>
-                    `).join('');
-                });
-            }
-        }
-
-        function openListenerChat(chatId) {
-            if (socket && socket.connected) {
-                socket.emit('get_chat_info', { chatId: chatId }, (chat) => {
-                    if (chat) {
-                        activeChat = chat;
-                        loadListenerChatMessages();
-                    }
-                });
-            }
-        }
-
-        function loadListenerChatMessages() {
-            if (socket && socket.connected && activeChat) {
-                socket.emit('get_chat_messages', { chatId: activeChat.id }, (messages) => {
-                    const container = document.getElementById('listenerMessagesContainer');
-                    container.innerHTML = '';
-                    
-                    messages.forEach(message => {
-                        addMessageToListenerChat(message);
-                    });
-                    
-                    container.scrollTop = container.scrollHeight;
-                });
-            }
-        }
-
-        function updateListenerReviews(data) {
-            const container = document.getElementById('listenerReviewsContainer');
-            
-            if (!data.ratings || data.ratings.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                        <div>⭐ Отзывов пока нет</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Пользователи оставят отзывы после завершения чатов</div>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = data.ratings.map(review => {
-                const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-                
-                return `
-                    <div class="review-item">
-                        <div class="review-header">
-                            <div style="font-weight: 600;">${review.raterName}</div>
-                            <div class="review-rating">
-                                ${stars.split('').map(star => `<span class="review-star">${star}</span>`).join('')}
-                            </div>
-                        </div>
-                        <div class="review-date">
-                            ${new Date(review.timestamp).toLocaleDateString('ru-RU')}
-                        </div>
-                        ${review.comment ? `
-                            <div class="review-text">${review.comment}</div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function sendListenerMessage() {
-            if (!activeChat) {
-                showNotification('❌ Выберите чат для общения!', 'error');
+            if (listeners.length === 0) {
+                showNotification('Нет доступных слушателей!', 'error');
                 return;
             }
             
-            const input = document.getElementById('listenerMessageInput');
-            const text = input.value.trim();
-            
-            if (!text) {
-                showNotification('❌ Введите сообщение!', 'error');
-                return;
-            }
-
-            if (socket && socket.connected) {
-                socket.emit('send_message', {
-                    chatId: activeChat.id,
-                    text: text,
-                    senderId: currentUser.id,
-                    receiverId: activeChat.user1
-                }, (result) => {
-                    if (result.success) {
-                        input.value = '';
-                        showNotification('✉️ Сообщение отправлено!', 'success');
-                    } else {
-                        showNotification('❌ Ошибка отправки сообщения', 'error');
-                    }
-                });
-            }
+            const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
+            startChatWithListener(randomListener.id);
         }
 
-        function addMessageToListenerChat(message) {
-            const container = document.getElementById('listenerMessagesContainer');
-            
-            const messageDiv = document.createElement('div');
-            const isCurrentUser = message.senderId === currentUser.id;
-            messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
-            messageDiv.innerHTML = `
-                <div>${message.text}</div>
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-            container.appendChild(messageDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // АДМИН ПАНЕЛЬ
-        function showAdminPanel() {
-            hideAllInterfaces();
-            document.getElementById('adminPanel').style.display = 'block';
-            
-            document.getElementById('adminDisplayName').textContent = currentUser.displayName;
-            document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
-            
-            updateAdminData();
-            showAdminThemeSettings();
-            
-            // Запрашиваем данные
-            if (socket && socket.connected) {
-                socket.emit('get_users_list');
-            }
-        }
-
-        function showSection(section) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.toggle('active', item.getAttribute('data-section') === section);
-            });
-
-            document.querySelectorAll('.content-section').forEach(sec => {
-                sec.classList.add('hidden');
-            });
-
-            document.getElementById(section + 'Section').classList.remove('hidden');
-            
-            const titles = {
-                dashboard: 'Статистика системы',
-                chats: 'Все чаты',
-                users: 'Управление пользователями',
-                staff: 'Управление персоналом',
-                notifications: 'Технические уведомления',
-                adminSettings: 'Настройки профиля'
-            };
-            document.getElementById('contentTitle').textContent = titles[section];
-            
-            currentSection = section;
-        }
-
-        function showAdminSettings() {
-            showSection('adminSettings');
-        }
-
-        function hideAdminSettings() {
-            showSection('dashboard');
-        }
-
-        function updateAdminData() {
-            // Статистика будет обновляться из данных с сервера
-        }
-
-        function updateAdminTables(users) {
-            loadUsersTable(users);
-            loadStaffTable(users);
-            updateSystemStats(users);
-        }
-
-        function loadUsersTable(users) {
-            const tbody = document.querySelector('#usersTable tbody');
-            const regularUsers = users.filter(u => u.role === 'user');
-            
-            tbody.innerHTML = regularUsers.map(user => `
-                <tr>
-                    <td>${user.username}</td>
-                    <td>${user.displayName}</td>
-                    <td>${getRoleDisplayName(user.role)}</td>
-                    <td>${user.isOnline ? '● Онлайн' : '○ Офлайн'}</td>
-                    <td>
-                        <button class="btn btn-small btn-primary" onclick="editUser('${user.id}')">✏️</button>
-                        <button class="btn btn-small btn-primary" onclick="promoteToStaff('${user.id}')">👑 Персонал</button>
-                        <button class="btn btn-small btn-primary" onclick="toggleBlockUser('${user.id}')">🚫 Заблокировать</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function loadStaffTable(users) {
-            const tbody = document.querySelector('#staffTable tbody');
-            const staffRoles = ['Владелец', 'Совладелец', 'Заместитель', 'Администратор', 'Слушатель'];
-            const staff = users.filter(u => staffRoles.includes(u.role));
-            
-            tbody.innerHTML = staff.map(staffMember => `
-                <tr>
-                    <td>${staffMember.username}</td>
-                    <td>${staffMember.displayName}</td>
-                    <td>${getRoleDisplayName(staffMember.role)}</td>
-                    <td>${staffMember.isOnline ? '● Онлайн' : '○ Офлайн'}</td>
-                    <td>
-                        <button class="btn btn-small btn-primary" onclick="editUser('${staffMember.id}')">✏️</button>
-                        ${staffMember.role !== 'Владелец' ? 
-                            `<button class="btn btn-small btn-primary" onclick="demoteToUser('${staffMember.id}')">👤 Пользователь</button>` : 
-                            ''
-                        }
-                        ${staffMember.role !== 'Владелец' ? 
-                            `<button class="btn btn-small btn-primary" onclick="toggleBlockUser('${staffMember.id}')">🚫 Заблокировать</button>` : 
-                            ''
-                        }
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function updateSystemStats(users) {
-            const totalUsers = users.filter(u => u.role === 'user').length;
-            const totalListeners = users.filter(u => u.role === 'Слушатель').length;
-            
-            // Запрашиваем актуальные данные о чатах с сервера
-            if (socket && socket.connected) {
-                socket.emit('get_system_stats', (stats) => {
-                    document.getElementById('totalUsers').textContent = totalUsers;
-                    document.getElementById('totalListeners').textContent = totalListeners;
-                    document.getElementById('activeChats').textContent = stats.activeChats || 0;
-                    document.getElementById('avgRating').textContent = stats.avgRating ? stats.avgRating.toFixed(1) : '0.0';
-                });
-            }
-        }
-
-        // ФУНКЦИИ АДМИНИСТРАТОРА
-        function showAddStaffModal() {
-            document.getElementById('addStaffModal').style.display = 'flex';
-        }
-
-        function closeAddStaffModal() {
-            document.getElementById('addStaffModal').style.display = 'none';
-        }
-
-        function addNewStaff() {
-            const username = document.getElementById('newStaffUsername').value.trim();
-            const password = document.getElementById('newStaffPassword').value.trim();
-            const name = document.getElementById('newStaffName').value.trim();
-            const role = document.getElementById('newStaffRole').value;
-
-            if (!username || !password || !name) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (socket && socket.connected) {
-                socket.emit('add_staff', {
-                    username: username,
-                    password: password,
-                    displayName: name,
-                    role: getRoleFromValue(role)
-                }, (result) => {
-                    if (result.success) {
-                        showNotification(`✅ ${getRoleDisplayName(getRoleFromValue(role))} добавлен!`, 'success');
-                        closeAddStaffModal();
-                        
-                        document.getElementById('newStaffUsername').value = '';
-                        document.getElementById('newStaffPassword').value = '';
-                        document.getElementById('newStaffName').value = '';
-
-                        // Обновляем список пользователей
-                        socket.emit('get_users_list');
-                    } else {
-                        showNotification('❌ ' + result.error, 'error');
-                    }
-                });
-            }
-        }
-
-        function getRoleFromValue(roleValue) {
-            const roles = {
-                'admin': 'Администратор',
-                'deputy': 'Заместитель',
-                'co-owner': 'Совладелец',
-                'listener': 'Слушатель'
-            };
-            return roles[roleValue] || roleValue;
-        }
-
-        function editUser(userId) {
-            showNotification(`✏️ Редактирование пользователя`, 'info');
-        }
-
-        function promoteToStaff(userId) {
-            if (socket && socket.connected) {
-                socket.emit('promote_to_staff', { userId: userId }, (result) => {
-                    if (result.success) {
-                        showNotification(`👑 Пользователь повышен до слушателя!`, 'success');
-                        socket.emit('get_users_list');
-                    } else {
-                        showNotification('❌ ' + result.error, 'error');
-                    }
-                });
-            }
-        }
-
-        function demoteToUser(userId) {
-            if (socket && socket.connected) {
-                socket.emit('demote_to_user', { userId: userId }, (result) => {
-                    if (result.success) {
-                        showNotification(`👤 Пользователь понижен до пользователя!`, 'success');
-                        socket.emit('get_users_list');
-                    } else {
-                        showNotification('❌ ' + result.error, 'error');
-                    }
-                });
-            }
-        }
-
-        function toggleBlockUser(userId) {
-            if (socket && socket.connected) {
-                socket.emit('toggle_block_user', { userId: userId }, (result) => {
-                    if (result.success) {
-                        showNotification(`🚫 Пользователь ${result.isOnline ? 'разблокирован' : 'заблокирован'}!`, 'success');
-                        socket.emit('get_users_list');
-                    } else {
-                        showNotification('❌ ' + result.error, 'error');
-                    }
-                });
-            }
-        }
-
-        function sendNotification() {
-            const title = document.getElementById('notificationTitle').value.trim();
-            const text = document.getElementById('notificationText').value.trim();
-            const type = document.getElementById('notificationType').value;
-            const recipients = document.getElementById('notificationRecipients').value;
-
-            if (!title || !text) {
-                showNotification('❌ Заполните все поля!', 'error');
-                return;
-            }
-
-            if (socket && socket.connected) {
-                socket.emit('send_notification', {
-                    title: title,
-                    text: text,
-                    type: type,
-                    recipients: recipients
-                }, (result) => {
-                    if (result.success) {
-                        showNotification('✅ Уведомление отправлено!', 'success');
-                        document.getElementById('notificationTitle').value = '';
-                        document.getElementById('notificationText').value = '';
-                    } else {
-                        showNotification('❌ Ошибка отправки уведомления', 'error');
-                    }
-                });
-            }
-        }
-
-        // НАСТРОЙКИ ТЕМЫ
-        function showUserThemeSettings() {
-            const container = document.getElementById('userThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function showListenerThemeSettings() {
-            const container = document.getElementById('listenerThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function showAdminThemeSettings() {
-            const container = document.getElementById('adminThemeSettings');
-            container.innerHTML = getThemeSettingsHTML();
-            setupThemeSettings();
-        }
-
-        function getThemeSettingsHTML() {
-            return `
-                <div class="settings-section">
-                    <h3 class="settings-title">Тема оформления</h3>
-                    <div class="theme-selector">
-                        <div class="theme-option" data-theme="sunrise">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
-                            Рассвет
-                        </div>
-                        <div class="theme-option" data-theme="light">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
-                            Светлая
-                        </div>
-                        <div class="theme-option" data-theme="dark">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
-                            Тёмная
-                        </div>
-                        <div class="theme-option" data-theme="ocean">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
-                            Океан
-                        </div>
-                        <div class="theme-option" data-theme="forest">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
-                            Лес
-                        </div>
-                        <div class="theme-option" data-theme="midnight">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);"></div>
-                            Полночь
-                        </div>
-                        <div class="theme-option" data-theme="coffee">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);"></div>
-                            Кофе
-                        </div>
-                        <div class="theme-option" data-theme="purple">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);"></div>
-                            Фиолетовая
-                        </div>
-                        <div class="theme-option" data-theme="nature">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);"></div>
-                            Природа
-                        </div>
-                        <div class="theme-option" data-theme="sunset">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #e74c3c 0%, #e67e22 100%);"></div>
-                            Закат
-                        </div>
-                        <div class="theme-option" data-theme="space">
-                            <div class="theme-preview" style="background: linear-gradient(135deg, #2980b9 0%, #2c3e50 100%);"></div>
-                            Космос
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="settings-title">Шрифт</h3>
-                    <div class="font-selector">
-                        <div class="font-option" data-font="default">Стандартный</div>
-                        <div class="font-option" data-font="modern">Современный</div>
-                        <div class="font-option" data-font="elegant">Элегантный</div>
-                        <div class="font-option" data-font="tech">Технический</div>
-                        <div class="font-option" data-font="rounded">Закругленный</div>
-                    </div>
-                </div>
-
-                <div class="settings-section">
-                    <h3 class="settings-title">Размер шрифта</h3>
-                    <div class="font-selector">
-                        <div class="font-option" data-size="small">Маленький</div>
-                        <div class="font-option" data-size="normal">Обычный</div>
-                        <div class="font-option" data-size="large">Большой</div>
-                        <div class="font-option" data-size="xlarge">Очень большой</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function setupThemeSettings() {
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const theme = this.getAttribute('data-theme');
-                    changeTheme(theme);
-                });
-            });
-
-            document.querySelectorAll('.font-option[data-font]').forEach(option => {
-                option.addEventListener('click', function() {
-                    const font = this.getAttribute('data-font');
-                    changeFont(font);
-                });
-            });
-
-            document.querySelectorAll('.font-option[data-size]').forEach(option => {
-                option.addEventListener('click', function() {
-                    const size = this.getAttribute('data-size');
-                    changeFontSize(size);
-                });
-            });
-
-            updateActiveSettings();
-        }
-
-        function updateActiveSettings() {
-            const theme = localStorage.getItem('theme') || 'sunrise';
-            const font = localStorage.getItem('font') || 'default';
-            const fontSize = localStorage.getItem('fontSize') || 'normal';
-
-            document.querySelectorAll('.theme-option').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-theme') === theme);
-            });
-
-            document.querySelectorAll('.font-option[data-font]').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-font') === font);
-            });
-
-            document.querySelectorAll('.font-option[data-size]').forEach(option => {
-                option.classList.toggle('active', option.getAttribute('data-size') === fontSize);
-            });
-        }
-
-        function changeTheme(themeName, save = true) {
-            document.body.className = document.body.className.replace(/theme-\w+/g, '');
-            document.body.classList.add('theme-' + themeName);
-            
-            if (save) {
-                localStorage.setItem('theme', themeName);
-                updateActiveSettings();
-            }
-        }
-
-        function changeFont(fontName, save = true) {
-            document.body.className = document.body.className.replace(/font-\w+/g, '');
-            document.body.classList.add('font-' + fontName);
-            
-            if (save) {
-                localStorage.setItem('font', fontName);
-                updateActiveSettings();
-            }
-        }
-
-        function changeFontSize(size, save = true) {
-            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
-            document.body.classList.add('font-size-' + size);
-            
-            if (save) {
-                localStorage.setItem('fontSize', size);
-                updateActiveSettings();
-            }
-        }
-
-        // Функции смены пароля и имени
-        function changePassword() {
-            showNotification('🔐 Функция смены пароля', 'info');
-        }
-
-        function changeListenerPassword() {
-            changePassword();
-        }
-
-        function changeAdminPassword() {
-            changePassword();
-        }
-
-        function changeDisplayName() {
-            showNotification('✏️ Функция смены имени', 'info');
-        }
-
-        function changeListenerDisplayName() {
-            changeDisplayName();
-        }
-
-        function changeAdminDisplayName() {
-            changeDisplayName();
-        }
-
-        function updateUserRating(data) {
-            if (currentUser && currentUser.role === 'Слушатель') {
-                document.getElementById('listenerRatingValue').textContent = data.averageRating.toFixed(1);
-                document.getElementById('listenerRatingCount').textContent = data.ratingCount;
-            }
-        }
-
-        function updateUserInterface() {
-            if (currentUser.role === 'user') {
-                document.getElementById('userDisplayName').textContent = currentUser.displayName;
-                document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
-                document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-            } else if (currentUser.role === 'Слушатель') {
-                document.getElementById('listenerDisplayName').textContent = currentUser.displayName;
-                document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
-                document.getElementById('listenerAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
-                document.getElementById('listenerRatingValue').textContent = currentUser.rating.toFixed(1);
-                document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount;
-            } else {
-                document.getElementById('adminDisplayName').textContent = currentUser.displayName;
-                document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
-            }
-        }
-
-        // УТИЛИТЫ
         function getRoleDisplayName(role) {
             const roles = {
                 'Владелец': 'Владелец',
-                'Совладелец': 'Совладелец',
-                'Заместитель': 'Заместитель',
                 'Администратор': 'Администратор',
                 'Слушатель': 'Слушатель',
                 'user': 'Пользователь'
@@ -2967,7 +2229,7 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 4000);
+            }, 3000);
         }
 
         function hideAllInterfaces() {
@@ -2995,23 +2257,21 @@
         }
 
         function logout() {
-            if (currentUser && socket && socket.connected) {
-                socket.emit('user_logout', { userId: currentUser.id });
-            }
-            
             if (currentUser) {
+                // Устанавливаем статус офлайн
+                const users = getFromDB(DB_KEYS.USERS);
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex].isOnline = false;
+                    saveToDB(DB_KEYS.USERS, users);
+                }
+                
                 localStorage.removeItem('activeUser');
-            }
-            if (socket) {
-                socket.disconnect();
             }
             currentUser = null;
             hideAllInterfaces();
             document.getElementById('authScreen').style.display = 'flex';
             showNotification('👋 До свидания!', 'success');
-            
-            document.getElementById('authUsername').value = '';
-            document.getElementById('authPassword').value = '';
         }
     </script>
 </body>

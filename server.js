@@ -14,7 +14,9 @@ const io = socketIo(server, {
         origin: "*",
         methods: ["GET", "POST"],
         credentials: true
-    }
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
 // Middleware
@@ -105,7 +107,8 @@ function initializeDemoUsers() {
             username: 'user',
             password: '123456',
             role: 'user',
-            displayName: 'Тестовый Пользователь',
+            displayName: 'Пользователь',
+            avatar: '👤',
             rating: 0,
             ratingCount: 0,
             isOnline: false,
@@ -117,7 +120,8 @@ function initializeDemoUsers() {
             username: 'listener',
             password: '123456',
             role: 'listener',
-            displayName: 'Анна Слушатель',
+            displayName: 'Анна',
+            avatar: '🎧',
             rating: 4.8,
             ratingCount: 15,
             isOnline: false,
@@ -129,7 +133,8 @@ function initializeDemoUsers() {
             username: 'admin',
             password: 'admin123', 
             role: 'admin',
-            displayName: 'Администратор Системы',
+            displayName: 'Администратор',
+            avatar: '👑',
             rating: 5.0,
             ratingCount: 8,
             isOnline: false,
@@ -277,6 +282,7 @@ io.on('connection', (socket) => {
             password,
             role: role || 'user',
             displayName: displayName || username,
+            avatar: '👤',
             rating: 0,
             ratingCount: 0,
             isOnline: true,
@@ -370,6 +376,101 @@ io.on('connection', (socket) => {
         console.log(`✅ Успешный вход: ${username} (ID: ${user.id})`);
     });
 
+    // ОБНОВЛЕНИЕ ПРОФИЛЯ
+    socket.on('update_profile', (data) => {
+        console.log(`📝 Обновление профиля:`, data);
+        
+        const { userId, displayName, avatar, password } = data;
+        const user = getUserById(userId);
+        
+        if (!user) {
+            socket.emit('profile_update_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updates = {};
+        if (displayName) updates.displayName = displayName;
+        if (avatar) updates.avatar = avatar;
+        if (password) updates.password = password;
+
+        const updatedUser = updateUser(userId, updates);
+        
+        if (updatedUser) {
+            socket.emit('profile_updated', { user: updatedUser });
+            socket.broadcast.emit('user_updated', { user: updatedUser });
+            console.log(`✅ Профиль обновлен: ${user.username}`);
+        } else {
+            socket.emit('profile_update_error', 'Ошибка обновления профиля');
+        }
+    });
+
+    // ДОБАВЛЕНИЕ СОТРУДНИКА
+    socket.on('register_staff', (data) => {
+        console.log(`➕ Добавление сотрудника:`, data);
+        
+        const users = getUsers();
+        const { username, password, displayName, role } = data;
+        
+        // Проверяем существование пользователя
+        const existingUser = users.find(u => u.username === username);
+        if (existingUser) {
+            socket.emit('staff_add_error', 'Пользователь с таким логином уже существует');
+            return;
+        }
+
+        // Создаем нового сотрудника
+        const newStaff = {
+            id: generateId(),
+            username,
+            password,
+            role: role || 'listener',
+            displayName: displayName || username,
+            avatar: role === 'admin' ? '👑' : '🎧',
+            rating: 0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(newStaff);
+        const saved = saveUsers(users);
+        
+        if (saved) {
+            socket.emit('staff_added', { user: newStaff });
+            socket.broadcast.emit('user_connected', { user: newStaff });
+            console.log(`✅ Сотрудник добавлен: ${username} (${role})`);
+        } else {
+            socket.emit('staff_add_error', 'Ошибка сохранения сотрудника');
+        }
+    });
+
+    // ИЗМЕНЕНИЕ РОЛИ
+    socket.on('change_role', (data) => {
+        console.log(`🎭 Изменение роли:`, data);
+        
+        const { userId, newRole } = data;
+        const user = getUserById(userId);
+        
+        if (!user) {
+            socket.emit('role_change_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updatedUser = updateUser(userId, { 
+            role: newRole,
+            avatar: newRole === 'admin' ? '👑' : newRole === 'listener' ? '🎧' : '👤'
+        });
+        
+        if (updatedUser) {
+            socket.emit('role_changed', { userId, newRole, user: updatedUser });
+            socket.broadcast.emit('user_updated', { user: updatedUser });
+            console.log(`✅ Роль изменена: ${user.username} -> ${newRole}`);
+        } else {
+            socket.emit('role_change_error', 'Ошибка изменения роли');
+        }
+    });
+
     // ПОЛУЧЕНИЕ ДАННЫХ
     socket.on('get_users', () => {
         console.log(`📊 Запрос списка пользователей от ${socket.id}`);
@@ -458,6 +559,9 @@ io.on('connection', (socket) => {
             }
         }
 
+        // Уведомляем всех о новом чате
+        socket.broadcast.emit('chat_created_broadcast', { chat: newChat });
+        
         console.log(`💬 Новый чат создан: ${user1Data.username} ↔ ${user2Data.username}`);
     });
 
@@ -506,6 +610,9 @@ io.on('connection', (socket) => {
             }
         }
 
+        // Уведомляем всех о новом сообщении
+        socket.broadcast.emit('new_message_broadcast', { chatId, message: newMessage });
+        
         console.log(`📨 Новое сообщение в чате ${chatId} от ${message.senderId}`);
     });
 
@@ -597,6 +704,9 @@ io.on('connection', (socket) => {
             }
         }
 
+        // Уведомляем всех о завершении чата
+        socket.broadcast.emit('chat_ended_broadcast', { chatId });
+        
         console.log(`🔚 Чат завершен: ${chatId}`);
     });
 
@@ -699,12 +809,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`📊 Пользователей: ${users.length}`);
     console.log(`💬 Чатов: ${chats.length}`);
     console.log(`⭐ Оценок: ${ratings.length}`);
-    console.log(`🔗 Демо доступ:`);
-    console.log(`   👤 user / 123456`);
-    console.log(`   👂 listener / 123456`);
-    console.log(`   👑 admin / admin123`);
     console.log(`🌐 URL: http://localhost:${PORT}`);
-    console.log(`🌐 URL: http://0.0.0.0:${PORT}`);
     console.log(`💾 Данные синхронизируются через JSON файлы`);
 });
 

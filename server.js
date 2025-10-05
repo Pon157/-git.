@@ -27,13 +27,11 @@ function loadData(filename, defaultValue = []) {
     try {
         if (fs.existsSync(filename)) {
             const data = fs.readFileSync(filename, 'utf8');
-            console.log(`📁 Загружены данные из ${filename}: ${data.length} байт`);
-            return JSON.parse(data);
+            return data ? JSON.parse(data) : defaultValue;
         }
     } catch (error) {
         console.error(`❌ Ошибка загрузки ${filename}:`, error);
     }
-    console.log(`📁 Файл ${filename} не найден, используются данные по умолчанию`);
     return defaultValue;
 }
 
@@ -41,7 +39,7 @@ function loadData(filename, defaultValue = []) {
 function saveData(filename, data) {
     try {
         fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-        console.log(`💾 Данные сохранены в ${filename}: ${JSON.stringify(data).length} байт`);
+        console.log(`💾 Данные сохранены в ${filename}`);
         return true;
     } catch (error) {
         console.error(`❌ Ошибка сохранения ${filename}:`, error);
@@ -49,7 +47,7 @@ function saveData(filename, data) {
     }
 }
 
-// СИНХРОНИЗАЦИЯ ДАННЫХ - перезагружаем при каждом обращении
+// ВСЕГДА загружаем свежие данные из файлов
 function getUsers() {
     return loadData(USERS_FILE, []);
 }
@@ -132,8 +130,6 @@ function initializeDemoUsers() {
     if (hasChanges) {
         saveUsers(users);
     }
-    
-    return users;
 }
 
 // Инициализируем демо-пользователей при запуске
@@ -145,6 +141,30 @@ function generateId() {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
+// Получение пользователя по socketId
+function getUserBySocketId(socketId) {
+    const users = getUsers();
+    return users.find(u => u.socketId === socketId);
+}
+
+// Получение пользователя по ID
+function getUserById(userId) {
+    const users = getUsers();
+    return users.find(u => u.id === userId);
+}
+
+// Обновление пользователя
+function updateUser(userId, updates) {
+    const users = getUsers();
+    const userIndex = users.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...updates };
+        saveUsers(users);
+        return users[userIndex];
+    }
+    return null;
+}
+
 // Socket.IO соединения
 io.on('connection', (socket) => {
     console.log(`🔗 Новое подключение: ${socket.id}`);
@@ -153,15 +173,14 @@ io.on('connection', (socket) => {
     socket.on('restore_session', (data) => {
         console.log(`🔄 Попытка восстановления сессии:`, data);
         
-        // ВСЕГДА загружаем свежие данные из файла
-        const users = getUsers();
-        const user = users.find(u => u.id === data.userId);
+        const user = getUserById(data.userId);
         
         if (user) {
             // Обновляем статус пользователя
-            user.isOnline = true;
-            user.socketId = socket.id;
-            saveUsers(users);
+            updateUser(user.id, {
+                isOnline: true,
+                socketId: socket.id
+            });
             
             // Загружаем актуальные данные
             const currentUsers = getUsers();
@@ -186,7 +205,6 @@ io.on('connection', (socket) => {
     socket.on('register', (data) => {
         console.log(`📝 Запрос на регистрацию:`, data);
         
-        // ВСЕГДА загружаем свежие данные
         const users = getUsers();
         const { username, password, role = 'user' } = data;
         
@@ -216,10 +234,18 @@ io.on('connection', (socket) => {
         const saved = saveUsers(users);
         
         if (saved) {
-            socket.emit('registration_success');
+            socket.emit('registration_success', { user: newUser });
+            
+            // Отправляем актуальные данные
+            const currentUsers = getUsers();
+            const currentChats = getChats();
+            const currentRatings = getRatings();
+            
+            socket.emit('users_list', { users: currentUsers.filter(u => u.id !== newUser.id) });
+            socket.emit('chats_list', { chats: currentChats });
+            socket.emit('ratings_list', { ratings: currentRatings });
             
             // Уведомляем всех о новом пользователе
-            const updatedUsers = getUsers();
             socket.broadcast.emit('user_connected', { user: newUser });
             console.log(`✅ Новый пользователь зарегистрирован: ${username} (ID: ${newUser.id})`);
         } else {
@@ -232,7 +258,6 @@ io.on('connection', (socket) => {
     socket.on('login', (data) => {
         console.log(`🚪 Запрос на вход:`, data);
         
-        // ВСЕГДА загружаем свежие данные из файла
         const users = getUsers();
         const { username, password } = data;
         
@@ -240,14 +265,14 @@ io.on('connection', (socket) => {
         if (!user) {
             socket.emit('login_error', 'Неверный логин или пароль');
             console.log(`❌ Ошибка входа: неверные данные для ${username}`);
-            console.log(`📊 Доступные пользователи:`, users.map(u => u.username));
             return;
         }
 
         // Обновляем статус пользователя
-        user.isOnline = true;
-        user.socketId = socket.id;
-        saveUsers(users);
+        updateUser(user.id, {
+            isOnline: true,
+            socketId: socket.id
+        });
 
         // Загружаем актуальные данные для отправки
         const currentUsers = getUsers();
@@ -294,12 +319,25 @@ io.on('connection', (socket) => {
         const chats = getChats();
         const { user1, user2 } = data;
         
-        const user1Data = users.find(u => u.id === user1);
-        const user2Data = users.find(u => u.id === user2);
+        const user1Data = getUserById(user1);
+        const user2Data = getUserById(user2);
         
         if (!user1Data || !user2Data) {
             socket.emit('chat_error', 'Пользователь не найден');
             console.log(`❌ Ошибка создания чата: пользователь не найден`);
+            return;
+        }
+
+        // Проверяем, нет ли уже активного чата
+        const existingChat = chats.find(chat => 
+            chat.isActive && 
+            ((chat.user1 === user1 && chat.user2 === user2) || 
+             (chat.user1 === user2 && chat.user2 === user1))
+        );
+
+        if (existingChat) {
+            socket.emit('chat_exists', { chat: existingChat });
+            console.log(`💬 Чат уже существует: ${existingChat.id}`);
             return;
         }
 
@@ -364,15 +402,15 @@ io.on('connection', (socket) => {
         saveChats(chats);
 
         // Отправляем сообщение всем участникам чата
-        const user1 = users.find(u => u.id === chat.user1);
-        const user2 = users.find(u => u.id === chat.user2);
+        const user1 = getUserById(chat.user1);
+        const user2 = getUserById(chat.user2);
 
         // Отправляем отправителю
         socket.emit('new_message', { chatId, message: newMessage });
         
         // Отправляем получателю
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
-        const targetUser = users.find(u => u.id === targetUserId);
+        const targetUser = getUserById(targetUserId);
         
         if (targetUser && targetUser.socketId) {
             const targetSocket = io.sockets.sockets.get(targetUser.socketId);
@@ -410,11 +448,12 @@ io.on('connection', (socket) => {
         const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
         const avgRating = totalRating / listenerRatings.length;
 
-        const listener = users.find(u => u.id === listenerId);
+        const listener = getUserById(listenerId);
         if (listener) {
-            listener.rating = avgRating;
-            listener.ratingCount = listenerRatings.length;
-            saveUsers(users);
+            updateUser(listenerId, {
+                rating: avgRating,
+                ratingCount: listenerRatings.length
+            });
         }
 
         // Отправляем подтверждение отправителю
@@ -428,10 +467,13 @@ io.on('connection', (socket) => {
         if (listener && listener.socketId) {
             const listenerSocket = io.sockets.sockets.get(listener.socketId);
             if (listenerSocket) {
-                listenerSocket.emit('rating_submitted', {
+                listenerSocket.emit('rating_received', {
                     listenerId,
                     newRating: avgRating, 
-                    ratingCount: listenerRatings.length
+                    ratingCount: listenerRatings.length,
+                    rating,
+                    comment,
+                    fromUser: getUserById(userId)?.displayName || 'Пользователь'
                 });
                 console.log(`🔔 Уведомление об оценке отправлено слушателю: ${listener.username}`);
             }
@@ -440,20 +482,50 @@ io.on('connection', (socket) => {
         console.log(`⭐ Новая оценка для слушателя ${listenerId}: ${rating} звезд`);
     });
 
-    // Остальные обработчики остаются такими же...
-    // [ЗАВЕРШЕНИЕ ЧАТА, ДОБАВЛЕНИЕ СОТРУДНИКА, ИЗМЕНЕНИЕ РОЛИ]
+    // ЗАВЕРШЕНИЕ ЧАТА
+    socket.on('end_chat', (data) => {
+        console.log(`🔚 Завершение чата:`, data);
+        
+        const chats = getChats();
+        const { chatId } = data;
+        
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) {
+            socket.emit('chat_error', 'Чат не найден');
+            return;
+        }
+
+        chat.isActive = false;
+        chat.endTime = new Date().toISOString();
+        saveChats(chats);
+
+        // Уведомляем участников чата
+        const user1 = getUserById(chat.user1);
+        const user2 = getUserById(chat.user2);
+
+        socket.emit('chat_ended', { chatId });
+        
+        if (user2 && user2.socketId) {
+            const targetSocket = io.sockets.sockets.get(user2.socketId);
+            if (targetSocket) {
+                targetSocket.emit('chat_ended', { chatId });
+            }
+        }
+
+        console.log(`🔚 Чат завершен: ${chatId}`);
+    });
 
     // ОТКЛЮЧЕНИЕ
     socket.on('disconnect', (reason) => {
         console.log(`🔌 Отключение: ${socket.id} (причина: ${reason})`);
         
         // Обновляем статус пользователя
-        const users = getUsers();
-        const user = users.find(u => u.socketId === socket.id);
+        const user = getUserBySocketId(socket.id);
         if (user) {
-            user.isOnline = false;
-            user.socketId = null;
-            saveUsers(users);
+            updateUser(user.id, {
+                isOnline: false,
+                socketId: null
+            });
             
             socket.broadcast.emit('user_disconnected', { userId: user.id });
             console.log(`👋 Пользователь отключился: ${user.username}`);
@@ -461,7 +533,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Маршруты API
+// Маршруты API (остаются без изменений)
 app.get('/api/users', (req, res) => {
     const users = getUsers();
     res.json(users);

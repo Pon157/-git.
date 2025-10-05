@@ -198,7 +198,202 @@
             transition: var(--transition);
         }
 
-        /* АВТОРИЗАЦИЯ */
+        /* МОБИЛЬНАЯ АДАПТАЦИЯ */
+        @media (max-width: 768px) {
+            :root {
+                --font-size: 14px;
+                --border-radius: 8px;
+            }
+
+            .auth-card {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .admin-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: fixed;
+                top: 0;
+                left: -100%;
+                z-index: 1000;
+                transition: var(--transition);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+                position: fixed;
+                top: 15px;
+                left: 15px;
+                z-index: 1001;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+
+            .content-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .chat-container {
+                flex-direction: column;
+                height: 60vh;
+            }
+
+            .chats-list {
+                width: 100%;
+                height: 150px;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .listener-selection {
+                grid-template-columns: 1fr;
+                padding: 0 15px;
+                gap: 15px;
+            }
+
+            .theme-selector {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            }
+
+            .user-header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .user-stats {
+                padding: 0 15px;
+                gap: 10px;
+            }
+
+            .user-chat-container {
+                margin: 0 15px 15px;
+                height: 400px;
+            }
+
+            .settings-panel {
+                margin: 0 15px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .tab {
+                padding: 10px 15px;
+            }
+
+            .modal-content {
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+
+            .data-table {
+                font-size: 12px;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            :root {
+                --font-size: 13px;
+            }
+
+            .auth-card {
+                margin: 5px;
+                padding: 15px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .content-card {
+                padding: 15px;
+            }
+
+            .theme-selector {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .message-input-container {
+                padding: 10px;
+            }
+
+            .message-input {
+                padding: 10px 12px;
+            }
+
+            .send-btn {
+                padding: 10px 15px;
+            }
+        }
+
+        /* СКРЫТЫЕ ЭЛЕМЕНТЫ МОБИЛЬНОГО МЕНЮ */
+        .mobile-menu-btn {
+            display: none;
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        /* ОСТАЛЬНЫЕ СТИЛИ ОСТАЮТСЯ ПРЕЖНИМИ */
         .auth-container {
             display: flex;
             justify-content: center;
@@ -227,7 +422,6 @@
             font-weight: 600;
         }
 
-        /* ФОРМЫ */
         .form-group {
             margin-bottom: 25px;
         }
@@ -258,7 +452,6 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
-        /* КНОПКИ */
         .btn {
             padding: 14px 28px;
             border: none;
@@ -291,7 +484,6 @@
             font-size: 14px;
         }
 
-        /* ПАНЕЛЬ АДМИНИСТРАТОРА */
         .admin-panel {
             display: none;
             min-height: 100vh;
@@ -352,7 +544,6 @@
             border-left-color: var(--accent-color);
         }
 
-        /* ОСНОВНОЙ КОНТЕНТ */
         .main-content {
             flex: 1;
             padding: 30px;
@@ -403,7 +594,6 @@
             margin-bottom: 25px;
         }
 
-        /* СТАТИСТИКА */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -436,7 +626,6 @@
             opacity: 0.7;
         }
 
-        /* ЧАТЫ */
         .chat-container {
             display: flex;
             height: 70vh;
@@ -541,7 +730,6 @@
             background: var(--accent-color);
         }
 
-        /* ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ */
         .user-interface {
             min-height: 100vh;
             background: var(--bg-color);
@@ -595,14 +783,12 @@
             flex-direction: column;
         }
 
-        /* ИНТЕРФЕЙС СЛУШАТЕЛЯ */
         .listener-interface {
             min-height: 100vh;
             background: var(--bg-color);
             display: none;
         }
 
-        /* НАСТРОЙКИ */
         .settings-panel {
             background: var(--card-bg);
             padding: 30px;
@@ -676,7 +862,6 @@
             background: rgba(231, 76, 60, 0.1);
         }
 
-        /* ВЫБОР СЛУШАТЕЛЯ */
         .listener-selection {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -728,7 +913,6 @@
             font-size: 18px;
         }
 
-        /* РЕЙТИНГ */
         .rating-widget {
             display: flex;
             justify-content: center;
@@ -748,7 +932,6 @@
             color: #f39c12;
         }
 
-        /* ОТЗЫВЫ */
         .reviews-container {
             max-height: 400px;
             overflow-y: auto;
@@ -787,7 +970,6 @@
             line-height: 1.5;
         }
 
-        /* УВЕДОМЛЕНИЯ */
         .notification {
             position: fixed;
             top: 20px;
@@ -821,7 +1003,6 @@
             background: var(--warning-color);
         }
 
-        /* ТАБЛИЦЫ */
         .data-table {
             width: 100%;
             border-collapse: collapse;
@@ -844,7 +1025,6 @@
             background: rgba(0,0,0,0.02);
         }
 
-        /* МОДАЛЬНЫЕ ОКНА */
         .modal {
             display: none;
             position: fixed;
@@ -884,7 +1064,6 @@
             color: var(--text-color);
         }
 
-        /* АНИМАЦИИ */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -895,7 +1074,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* УТИЛИТЫ */
         .hidden {
             display: none;
         }
@@ -1003,6 +1181,9 @@
 
     <!-- ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ -->
     <div id="userInterface" class="user-interface">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
         <div class="user-header">
             <div class="user-info">
                 <div class="user-avatar" id="userAvatar">U</div>
@@ -1132,6 +1313,9 @@
 
     <!-- ИНТЕРФЕЙС СЛУШАТЕЛЯ -->
     <div id="listenerInterface" class="listener-interface">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
         <div class="user-header">
             <div class="user-info">
                 <div class="user-avatar" id="listenerAvatar">L</div>
@@ -1247,9 +1431,12 @@
 
     <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
     <div id="adminPanel" class="admin-panel">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+        <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+        
         <div class="admin-container">
             <!-- САЙДБАР -->
-            <div class="sidebar">
+            <div class="sidebar" id="adminSidebar">
                 <div class="sidebar-header">
                     <h1>Панель управления</h1>
                 </div>
@@ -1531,6 +1718,7 @@
         let chatTimer = null;
         let selectedRating = 0;
         let socket = null;
+        let isMobileMenuOpen = false;
 
         // URL сервера на Render
         const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
@@ -1545,7 +1733,12 @@
                 role: 'Владелец', 
                 isOnline: true, 
                 rating: 5.0, 
-                ratingCount: 10 
+                ratingCount: 10,
+                settings: {
+                    theme: 'sunrise',
+                    font: 'default',
+                    fontSize: 'normal'
+                }
             }
         ];
 
@@ -1576,6 +1769,7 @@
             setupEventListeners();
             loadUserPreferences();
             checkActiveSession();
+            setupMobileDetection();
         }
 
         function setupEventListeners() {
@@ -1633,14 +1827,53 @@
             });
         }
 
+        function setupMobileDetection() {
+            // Проверяем, мобильное ли устройство
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                document.body.classList.add('mobile-device');
+            }
+        }
+
         function loadUserPreferences() {
-            const theme = localStorage.getItem('theme') || 'sunrise';
-            const font = localStorage.getItem('font') || 'default';
-            const fontSize = localStorage.getItem('fontSize') || 'normal';
+            // Загружаем настройки из localStorage или используем настройки пользователя
+            let theme, font, fontSize;
+            
+            if (currentUser && currentUser.settings) {
+                theme = currentUser.settings.theme;
+                font = currentUser.settings.font;
+                fontSize = currentUser.settings.fontSize;
+            } else {
+                theme = localStorage.getItem('theme') || 'sunrise';
+                font = localStorage.getItem('font') || 'default';
+                fontSize = localStorage.getItem('fontSize') || 'normal';
+            }
             
             changeTheme(theme, false);
             changeFont(font, false);
             changeFontSize(fontSize, false);
+        }
+
+        function saveUserPreferences() {
+            if (currentUser) {
+                // Сохраняем настройки в объекте пользователя
+                currentUser.settings = {
+                    theme: localStorage.getItem('theme') || 'sunrise',
+                    font: localStorage.getItem('font') || 'default',
+                    fontSize: localStorage.getItem('fontSize') || 'normal'
+                };
+                
+                // Сохраняем пользователя в localStorage
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = currentUser;
+                    saveUsers(users);
+                }
+                
+                // Синхронизируем с сервером
+                syncUserData();
+            }
         }
 
         // ПОДКЛЮЧЕНИЕ К СЕРВЕРУ
@@ -1666,6 +1899,16 @@
             socket.on('disconnect', () => {
                 console.log('❌ Отключено от сервера');
                 showNotification('❌ Потеряно соединение с сервером', 'error');
+            });
+
+            socket.on('reconnect', () => {
+                console.log('🔄 Переподключение к серверу');
+                showNotification('🔄 Переподключение к серверу', 'info');
+                
+                // Синхронизируем данные после переподключения
+                if (currentUser) {
+                    syncUserData();
+                }
             });
 
             socket.on('login_success', (user) => {
@@ -1712,6 +1955,10 @@
             socket.on('rating_error', (error) => {
                 showNotification('❌ ' + error, 'error');
             });
+
+            socket.on('user_data_updated', (data) => {
+                handleUserDataUpdate(data);
+            });
         }
 
         // Синхронизация данных пользователя с сервером
@@ -1719,9 +1966,43 @@
             const users = getUsers();
             if (socket && socket.connected) {
                 // Отправляем данные на сервер
-                socket.emit('sync_users', { users: users });
+                socket.emit('sync_users', { 
+                    users: users,
+                    currentUser: currentUser
+                });
             }
         }
+
+        function handleUserDataUpdate(data) {
+            if (data.userId === currentUser.id) {
+                // Обновляем текущего пользователя
+                Object.assign(currentUser, data.updates);
+                localStorage.setItem('activeUser', JSON.stringify(currentUser));
+                
+                // Обновляем интерфейс
+                updateUserInterface();
+                
+                showNotification('✅ Настройки обновлены', 'success');
+            }
+        }
+
+        // МОБИЛЬНОЕ МЕНЮ
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('adminSidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            
+            if (isMobileMenuOpen) {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                isMobileMenuOpen = false;
+            } else {
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                isMobileMenuOpen = true;
+            }
+        }
+
+        // ОСТАЛЬНЫЕ ФУНКЦИИ ОСТАЮТСЯ ПРЕЖНИМИ, НО ДОБАВЛЯЕМ В НИХ ВЫЗОВЫ ДЛЯ СОХРАНЕНИЯ НАСТРОЕК
 
         // АВТОРИЗАЦИЯ И РЕГИСТРАЦИЯ
         function showAuthTab(tabName) {
@@ -1804,7 +2085,12 @@
                 role: 'user',
                 isOnline: true,
                 rating: 0,
-                ratingCount: 0
+                ratingCount: 0,
+                settings: {
+                    theme: 'sunrise',
+                    font: 'default',
+                    fontSize: 'normal'
+                }
             };
 
             users.push(newUser);
@@ -1827,6 +2113,9 @@
             
             localStorage.setItem('activeUser', JSON.stringify(user));
             
+            // Применяем настройки пользователя
+            loadUserPreferences();
+            
             // Определяем интерфейс по роли
             switch(user.role) {
                 case 'Владелец':
@@ -1841,6 +2130,27 @@
                 case 'user':
                     showUserInterface();
                     break;
+            }
+            
+            // Подключаемся к серверу
+            connectToServer();
+        }
+
+        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОЛЬЗОВАТЕЛЯ
+        function updateUserInterface() {
+            if (currentUser.role === 'user') {
+                document.getElementById('userDisplayName').textContent = currentUser.displayName;
+                document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+                document.getElementById('userAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+            } else if (currentUser.role === 'Слушатель') {
+                document.getElementById('listenerDisplayName').textContent = currentUser.displayName;
+                document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+                document.getElementById('listenerAvatar').textContent = currentUser.displayName.charAt(0).toUpperCase();
+                document.getElementById('listenerRatingValue').textContent = currentUser.rating.toFixed(1);
+                document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount;
+            } else {
+                document.getElementById('adminDisplayName').textContent = currentUser.displayName;
+                document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
             }
         }
 
@@ -2077,6 +2387,22 @@
             }
 
             const reviewText = document.getElementById('reviewText').value.trim();
+            
+            // Обновляем рейтинг слушателя
+            const users = getUsers();
+            const listenerIndex = users.findIndex(u => u.id === currentListener.id);
+            if (listenerIndex !== -1) {
+                const listener = users[listenerIndex];
+                const newRatingCount = listener.ratingCount + 1;
+                const newRating = ((listener.rating * listener.ratingCount) + selectedRating) / newRatingCount;
+                
+                users[listenerIndex].rating = newRating;
+                users[listenerIndex].ratingCount = newRatingCount;
+                saveUsers(users);
+                
+                // Синхронизируем с сервером
+                syncUserData();
+            }
             
             showNotification('✅ Оценка отправлена!', 'success');
 
@@ -2379,7 +2705,12 @@
                 role: getRoleFromValue(role),
                 isOnline: true,
                 rating: role === 'listener' ? 5.0 : 0,
-                ratingCount: role === 'listener' ? 0 : 0
+                ratingCount: role === 'listener' ? 0 : 0,
+                settings: {
+                    theme: 'sunrise',
+                    font: 'default',
+                    fontSize: 'normal'
+                }
             };
 
             users.push(newStaff);
@@ -2618,6 +2949,7 @@
             if (save) {
                 localStorage.setItem('theme', themeName);
                 updateActiveSettings();
+                saveUserPreferences();
             }
         }
 
@@ -2628,6 +2960,7 @@
             if (save) {
                 localStorage.setItem('font', fontName);
                 updateActiveSettings();
+                saveUserPreferences();
             }
         }
 
@@ -2638,12 +2971,49 @@
             if (save) {
                 localStorage.setItem('fontSize', size);
                 updateActiveSettings();
+                saveUserPreferences();
             }
         }
 
         // Функции смены пароля и имени
         function changePassword() {
-            showNotification('🔐 Функция смены пароля', 'info');
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            if (newPassword !== confirmNewPassword) {
+                showNotification('❌ Пароли не совпадают!', 'error');
+                return;
+            }
+
+            if (currentUser.password !== currentPassword) {
+                showNotification('❌ Текущий пароль неверен!', 'error');
+                return;
+            }
+
+            currentUser.password = newPassword;
+            
+            // Сохраняем изменения
+            const users = getUsers();
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                saveUsers(users);
+            }
+            
+            showNotification('✅ Пароль изменен!', 'success');
+            
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            
+            // Синхронизируем с сервером
+            syncUserData();
         }
 
         function changeListenerPassword() {
@@ -2655,7 +3025,29 @@
         }
 
         function changeDisplayName() {
-            showNotification('✏️ Функция смены имени', 'info');
+            const newName = document.getElementById('newDisplayName').value.trim();
+            if (!newName) {
+                showNotification('❌ Введите новое имя!', 'error');
+                return;
+            }
+
+            currentUser.displayName = newName;
+            
+            // Сохраняем изменения
+            const users = getUsers();
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = currentUser;
+                saveUsers(users);
+            }
+            
+            // Обновляем интерфейс
+            updateUserInterface();
+            
+            showNotification('✅ Имя изменено!', 'success');
+            
+            // Синхронизируем с сервером
+            syncUserData();
         }
 
         function changeListenerDisplayName() {
@@ -2701,6 +3093,11 @@
             document.getElementById('userInterface').style.display = 'none';
             document.getElementById('listenerInterface').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
+            
+            // Закрываем мобильное меню если открыто
+            if (isMobileMenuOpen) {
+                toggleMobileMenu();
+            }
         }
 
         function checkActiveSession() {
@@ -2718,6 +3115,14 @@
 
         function logout() {
             if (currentUser) {
+                // Устанавливаем статус офлайн
+                const users = getUsers();
+                const userIndex = users.findIndex(u => u.id === currentUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex].isOnline = false;
+                    saveUsers(users);
+                }
+                
                 localStorage.removeItem('activeUser');
             }
             if (socket) {

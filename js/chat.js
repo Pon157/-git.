@@ -179,7 +179,7 @@ function addMessageToUserChat(message, scroll = true) {
     
     const messageDiv = document.createElement('div');
     const isCurrentUser = message.senderId === currentUser.id;
-    messageDiv.className = `message ${isCurrentUser ? 'own-message' : 'other-message'}`;
+    messageDiv.className = `message ${isCurrentUser ? 'user-message' : 'listener-message'}`;
     
     messageDiv.innerHTML = `
         <div class="message-content">
@@ -209,7 +209,7 @@ function addMessageToListenerChat(message, scroll = true) {
     
     const messageDiv = document.createElement('div');
     const isCurrentUser = message.senderId === currentUser.id;
-    messageDiv.className = `message ${isCurrentUser ? 'own-message' : 'other-message'}`;
+    messageDiv.className = `message ${isCurrentUser ? 'listener-message' : 'user-message'}`;
     
     const user = users.find(u => u.id === message.senderId);
     const userName = user ? (user.displayName || user.username) : 'Пользователь';
@@ -290,46 +290,89 @@ function loadListenerChatMessages() {
     container.scrollTop = container.scrollHeight;
 }
 
-function showChatInterface() {
-    if (currentUser.role === 'user') {
-        document.getElementById('listenersTab').style.display = 'none';
-        document.getElementById('userChatSection').style.display = 'block';
-        
-        // Обновляем информацию о слушателе
-        if (currentListener) {
-            document.getElementById('currentListenerName').textContent = currentListener.displayName || currentListener.username;
-            document.getElementById('currentListenerRating').textContent = (currentListener.rating || 0).toFixed(1);
-        }
-    } else if (currentUser.role === 'listener') {
-        document.getElementById('listenerChatsTab').style.display = 'none';
-        document.getElementById('listenerChatSection').style.display = 'block';
+function loadAdminChatMessages(chat) {
+    const container = document.getElementById('adminMessagesContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!chat || !chat.messages || chat.messages.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div>💬 Нет сообщений</div>
+                <div class="empty-state-subtitle">В этом чате пока нет сообщений</div>
+            </div>
+        `;
+        return;
     }
     
-    loadChatMessages();
-    startChatTimer();
-}
-
-function loadChatMessages() {
-    if (currentUser.role === 'user') {
-        loadUserChatMessages();
-    } else if (currentUser.role === 'listener') {
-        loadListenerChatMessages();
-    }
+    chat.messages.forEach(message => {
+        const messageDiv = document.createElement('div');
+        const user = users.find(u => u.id === message.senderId);
+        const isUser = user && user.role === 'user';
+        
+        messageDiv.className = `message ${isUser ? 'user-message' : 'listener-message'}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-sender">${user ? (user.displayName || user.username) : 'Неизвестный'}</div>
+                <div class="message-text">${message.text}</div>
+                <div class="message-time">${new Date(message.timestamp).toLocaleString('ru-RU')}</div>
+            </div>
+        `;
+        container.appendChild(messageDiv);
+    });
+    
+    container.scrollTop = container.scrollHeight;
 }
 
 function endChat() {
     console.log('🚪 Завершение чата');
     
-    if (!activeChat) return;
-
-    if (currentUser.role === 'user') {
-        // Показать модалку оценки
-        showRatingModal();
-    } else {
-        // Для слушателя просто завершить чат
+    if (activeChat) {
         socket.emit('end_chat', { chatId: activeChat.id });
-        hideChatInterface();
     }
+
+    // Скрываем чат и показываем список слушателей
+    if (currentUser.role === 'user') {
+        document.getElementById('userChatSection').classList.add('hidden');
+        document.getElementById('listenersTab').classList.remove('hidden');
+    }
+    
+    // Останавливаем таймер
+    clearInterval(chatTimer);
+    
+    // Сбрасываем переменные
+    activeChat = null;
+    currentListener = null;
+    chatStartTime = null;
+    
+    showNotification('🔚 Чат завершен', 'info');
+}
+
+function submitRating() {
+    if (!activeChat || !currentListener) {
+        showNotification('❌ Нет активного чата для оценки!', 'error');
+        return;
+    }
+    
+    const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value);
+    const comment = document.getElementById('ratingComment').value.trim();
+    
+    if (!rating) {
+        showNotification('❌ Выберите оценку!', 'error');
+        return;
+    }
+
+    socket.emit('submit_rating', {
+        listenerId: currentListener.id,
+        userId: currentUser.id,
+        rating: rating,
+        comment: comment
+    });
+    
+    // Закрываем модальное окно оценки
+    closeRatingModal();
+    endChat();
 }
 
 function showRatingModal() {
@@ -343,78 +386,42 @@ function closeRatingModal() {
     document.getElementById('ratingComment').value = '';
 }
 
-function submitRating() {
-    const rating = document.querySelector('input[name="rating"]:checked');
-    const comment = document.getElementById('ratingComment').value.trim();
+function updateChatsUI() {
+    if (!currentUser) return;
 
-    if (!rating) {
-        showNotification('❌ Выберите оценку!', 'error');
-        return;
-    }
-
-    if (!activeChat || !currentUser || !currentListener) return;
-    
-    console.log('⭐ Отправка оценки:', rating.value);
-    socket.emit('submit_rating', {
-        listenerId: currentListener.id,
-        userId: currentUser.id,
-        rating: parseInt(rating.value),
-        comment: comment
-    });
-
-    // Завершаем чат
-    socket.emit('end_chat', { chatId: activeChat.id });
-    
-    closeRatingModal();
-    hideChatInterface();
-}
-
-function hideChatInterface() {
-    if (currentUser.role === 'user') {
-        document.getElementById('userChatSection').style.display = 'none';
-        document.getElementById('listenersTab').style.display = 'block';
+    if (currentUser.role === 'user' && activeChat) {
+        const updatedChat = chats.find(c => c.id === activeChat.id);
+        if (updatedChat) {
+            activeChat = updatedChat;
+            loadUserChatMessages();
+        }
     } else if (currentUser.role === 'listener') {
-        document.getElementById('listenerChatSection').style.display = 'none';
-        document.getElementById('listenerChatsTab').style.display = 'block';
-    }
-    
-    // Останавливаем таймер
-    clearInterval(chatTimer);
-    
-    // Сбрасываем переменные
-    activeChat = null;
-    currentListener = null;
-    chatStartTime = null;
-    
-    // Обновляем списки чатов
-    updateChatsDisplay();
-}
-
-function updateChatsDisplay() {
-    if (currentUser.role === 'listener') {
         updateListenerChatsList();
-    } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
-        updateAdminChatsList();
+        if (activeChat) {
+            const updatedChat = chats.find(c => c.id === activeChat.id);
+            if (updatedChat) {
+                activeChat = updatedChat;
+                loadListenerChatMessages();
+            }
+        }
     }
 }
 
-// Enter для отправки сообщений
+// Обработчики клавиш
 function initChatInputHandlers() {
-    // Для пользователя
-    const userInput = document.getElementById('userMessageInput');
-    if (userInput) {
-        userInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendUserMessage();
-        });
-    }
-
-    // Для слушателя
-    const listenerInput = document.getElementById('listenerMessageInput');
-    if (listenerInput) {
-        listenerInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendListenerMessage();
-        });
-    }
+    // Enter для отправки сообщения
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.id === 'userMessageInput' || activeElement.id === 'listenerMessageInput')) {
+                if (currentUser.role === 'user') {
+                    sendUserMessage();
+                } else if (currentUser.role === 'listener') {
+                    sendListenerMessage();
+                }
+            }
+        }
+    });
 }
 
 // Инициализация при загрузке

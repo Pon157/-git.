@@ -17,12 +17,14 @@ let messageIds = new Set();
 let connectionRetries = 0;
 const MAX_RETRIES = 5;
 
-const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://support-chat-hyv4.onrender.com';
+// Используем тот же URL что и сервер
+const SERVER_URL = window.location.origin;
 
 // Утилитарные функции
 function getRoleDisplayName(role) {
     const roles = {
-        'admin': '👑 Администратор',
+        'owner': '👑 Владелец',
+        'admin': '⚙️ Администратор',
         'listener': '🎧 Слушатель', 
         'user': '👤 Пользователь'
     };
@@ -31,6 +33,11 @@ function getRoleDisplayName(role) {
 
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
+    if (!notification) {
+        console.error('❌ Элемент уведомления не найден!');
+        return;
+    }
+    
     notification.textContent = message;
     notification.className = `notification ${type} show`;
     
@@ -40,10 +47,19 @@ function showNotification(message, type = 'info') {
 }
 
 function hideAllInterfaces() {
-    document.getElementById('authScreen').style.display = 'none';
-    document.getElementById('userInterface').style.display = 'none';
-    document.getElementById('listenerInterface').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'none';
+    const interfaces = [
+        'authScreen',
+        'userInterface', 
+        'listenerInterface',
+        'adminPanel'
+    ];
+    
+    interfaces.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
 }
 
 function forceAdminForOwner() {
@@ -53,4 +69,19 @@ function forceAdminForOwner() {
         return true;
     }
     return false;
+}
+
+function startOnlineTimer() {
+    onlineTimeStart = new Date();
+    clearInterval(onlineTimer);
+    onlineTimer = setInterval(() => {
+        if (onlineTimeStart) {
+            const now = new Date();
+            const diff = Math.floor((now - onlineTimeStart) / 1000 / 60 / 60);
+            const onlineTimeElement = document.getElementById('listenerOnlineTime');
+            if (onlineTimeElement) {
+                onlineTimeElement.textContent = diff + 'ч';
+            }
+        }
+    }, 60000);
 }

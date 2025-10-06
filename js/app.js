@@ -10,9 +10,17 @@ const app = {
 
     // Настройка обработчиков событий
     setupEventListeners() {
+        console.log('🔧 Настройка обработчиков событий...');
+        
         // Инициализация модулей
         auth.init();
         chat.init();
+        listeners.init();
+        notifications.init();
+        admin.init();
+        userSettings.init();
+        listenerSettings.init();
+        adminSettings.init();
 
         // Табы пользователя
         document.querySelectorAll('#userInterface .tab').forEach(tab => {
@@ -27,14 +35,6 @@ const app = {
             tab.addEventListener('click', function() {
                 const tabName = this.getAttribute('data-tab');
                 app.showListenerTab(tabName);
-            });
-        });
-
-        // Навигация в админке
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', function() {
-                const section = this.getAttribute('data-section');
-                admin.showSection(section);
             });
         });
     },
@@ -57,7 +57,7 @@ const app = {
             
             // Запрашиваем данные после подключения
             setTimeout(() => {
-                if (socket.connected) {
+                if (socket && socket.connected) {
                     socket.emit('get_users');
                     socket.emit('get_chats');
                     socket.emit('get_ratings');
@@ -72,6 +72,8 @@ const app = {
 
     // Настройка событий сокета
     setupSocketEvents() {
+        if (!socket) return;
+
         socket.on('connect', () => {
             console.log('✅ Успешно подключено к серверу');
             connectionRetries = 0;
@@ -80,6 +82,7 @@ const app = {
             // Восстанавливаем сессию если есть
             const savedUserId = localStorage.getItem('currentUserId');
             if (savedUserId) {
+                console.log('🔄 Восстановление сессии для пользователя:', savedUserId);
                 socket.emit('restore_session', { userId: savedUserId });
             }
         });
@@ -88,7 +91,7 @@ const app = {
             console.log('❌ Отключено от сервера:', reason);
             if (reason === 'io server disconnect') {
                 setTimeout(() => {
-                    socket.connect();
+                    if (socket) socket.connect();
                 }, 1000);
             }
         });
@@ -100,7 +103,7 @@ const app = {
             if (connectionRetries <= CONFIG.MAX_RETRIES) {
                 console.log(`🔄 Попытка переподключения ${connectionRetries}/${CONFIG.MAX_RETRIES}`);
                 setTimeout(() => {
-                    socket.connect();
+                    if (socket) socket.connect();
                 }, CONFIG.RECONNECTION_DELAY);
             } else {
                 utils.showNotification('❌ Не удалось подключиться к серверу. Проверьте интернет-соединение.', 'error');
@@ -123,41 +126,49 @@ const app = {
         });
 
         socket.on('login_error', (error) => {
+            console.error('❌ Ошибка входа:', error);
             utils.showNotification('❌ ' + error, 'error');
         });
 
         socket.on('registration_success', (data) => {
+            console.log('✅ Успешная регистрация:', data.user);
             utils.showNotification('✅ Регистрация успешна!', 'success');
             auth.handleLoginSuccess(data.user);
         });
 
         socket.on('registration_error', (error) => {
+            console.error('❌ Ошибка регистрации:', error);
             utils.showNotification('❌ ' + error, 'error');
         });
 
         socket.on('session_restored', (data) => {
             if (data.user) {
+                console.log('🔄 Сессия восстановлена:', data.user);
                 auth.handleLoginSuccess(data.user);
             }
         });
 
         // ДАННЫЕ
         socket.on('users_list', (data) => {
+            console.log('📊 Получен список пользователей:', data.users?.length);
             users = data.users || [];
-            app.updateUsersUI();
+            this.updateUsersUI();
         });
 
         socket.on('chats_list', (data) => {
+            console.log('💬 Получен список чатов:', data.chats?.length);
             chats = data.chats || [];
-            app.updateChatsUI();
+            this.updateChatsUI();
         });
 
         socket.on('ratings_list', (data) => {
+            console.log('⭐ Получен список рейтингов:', data.ratings?.length);
             ratings = data.ratings || [];
-            app.updateRatingsUI();
+            this.updateRatingsUI();
         });
 
         socket.on('notifications_list', (data) => {
+            console.log('📢 Получен список уведомлений:', data.notifications?.length);
             notifications = data.notifications || [];
             notifications.updateUI();
         });
@@ -167,12 +178,13 @@ const app = {
         });
 
         socket.on('chat_created', (data) => {
+            console.log('💬 Чат создан:', data.chat);
             const existingChat = chats.find(chat => chat.id === data.chat.id);
             if (!existingChat) {
                 chats.push(data.chat);
             }
             activeChat = data.chat;
-            app.updateChatsUI();
+            this.updateChatsUI();
             utils.showNotification(`💬 Чат начат с ${data.listenerName}`, 'success');
             
             setTimeout(() => {
@@ -182,71 +194,81 @@ const app = {
         });
 
         socket.on('user_connected', (data) => {
+            console.log('🔗 Пользователь подключился:', data.user);
             const existingIndex = users.findIndex(u => u.id === data.user.id);
             if (existingIndex !== -1) {
                 users[existingIndex] = { ...users[existingIndex], ...data.user, isOnline: true };
             } else {
                 users.push({ ...data.user, isOnline: true });
             }
-            app.updateUsersUI();
+            this.updateUsersUI();
         });
 
         socket.on('user_disconnected', (data) => {
+            console.log('🔌 Пользователь отключился:', data.userId);
             const user = users.find(u => u.id === data.userId);
             if (user) {
                 user.isOnline = false;
             }
-            app.updateUsersUI();
+            this.updateUsersUI();
         });
 
         socket.on('user_updated', (data) => {
+            console.log('📝 Пользователь обновлен:', data.user);
             const existingIndex = users.findIndex(u => u.id === data.user.id);
             if (existingIndex !== -1) {
                 users[existingIndex] = data.user;
             }
-            app.updateUsersUI();
+            this.updateUsersUI();
         });
 
         socket.on('rating_submitted', (data) => {
+            console.log('⭐ Рейтинг отправлен:', data);
             utils.showNotification('⭐ Рейтинг отправлен!', 'success');
             const listener = users.find(u => u.id === data.listenerId);
             if (listener) {
                 listener.rating = data.newRating;
                 listener.ratingCount = data.ratingCount;
             }
-            app.updateUsersUI();
+            this.updateUsersUI();
         });
 
         socket.on('rating_received', (data) => {
+            console.log('⭐ Получен новый отзыв:', data);
             chat.updateListenerReviewsData();
         });
 
         socket.on('staff_added', (data) => {
+            console.log('➕ Сотрудник добавлен:', data);
             utils.showNotification('✅ Сотрудник добавлен', 'success');
             socket.emit('get_users');
         });
 
         socket.on('staff_add_error', (error) => {
+            console.error('❌ Ошибка добавления сотрудника:', error);
             utils.showNotification('❌ ' + error, 'error');
         });
 
         socket.on('role_changed', (data) => {
+            console.log('🎭 Роль изменена:', data);
             utils.showNotification(`✅ Роль пользователя изменена на ${utils.getRoleDisplayName(data.newRole)}`, 'success');
             socket.emit('get_users');
         });
 
         socket.on('chat_ended', (data) => {
-            const chat = chats.find(c => c.id === data.chatId);
-            if (chat) {
-                chat.isActive = false;
+            console.log('🚪 Чат завершен:', data.chatId);
+            const chatObj = chats.find(c => c.id === data.chatId);
+            if (chatObj) {
+                chatObj.isActive = false;
             }
             if (activeChat && activeChat.id === data.chatId) {
                 chat.end();
             }
-            app.updateChatsUI();
+            this.updateChatsUI();
         });
 
         socket.on('profile_updated', (data) => {
+            console.log('✅ Профиль обновлен:', data.user);
             currentUser = data.user;
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             utils.updateUserInterface();
@@ -254,15 +276,18 @@ const app = {
         });
 
         socket.on('profile_update_error', (error) => {
+            console.error('❌ Ошибка обновления профиля:', error);
             utils.showNotification('❌ ' + error, 'error');
         });
 
         socket.on('notification_sent', (data) => {
+            console.log('📢 Уведомление отправлено:', data);
             utils.showNotification('✅ Техническое уведомление отправлено', 'success');
             socket.emit('get_notifications');
         });
 
         socket.on('new_notification', (data) => {
+            console.log('📢 Новое уведомление:', data);
             notifications.unshift(data.notification);
             notifications.updateUI();
             utils.showNotification(`📢 Новое уведомление: ${data.notification.title}`, 'info');
@@ -275,8 +300,9 @@ const app = {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
-        document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+        utils.hideElement('listenersTab');
+        utils.hideElement('userNotificationsTab');
+        utils.showElement(tabName === 'listeners' ? 'listenersTab' : 'userNotificationsTab');
     },
 
     // Показать таб слушателя
@@ -285,10 +311,23 @@ const app = {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
-        document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
-        document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
-        document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+        const tabs = ['listenerChatsTab', 'listenerReviewsTab', 'listenerStatsTab', 'listenerNotificationsTab'];
+        tabs.forEach(tab => utils.hideElement(tab));
+        
+        switch(tabName) {
+            case 'chats':
+                utils.showElement('listenerChatsTab');
+                break;
+            case 'reviews':
+                utils.showElement('listenerReviewsTab');
+                break;
+            case 'stats':
+                utils.showElement('listenerStatsTab');
+                break;
+            case 'notifications':
+                utils.showElement('listenerNotificationsTab');
+                break;
+        }
     },
 
     // Обновить UI пользователей
@@ -334,19 +373,6 @@ const app = {
     updateRatingsUI() {
         if (currentUser && currentUser.role === 'listener') {
             chat.updateListenerReviewsData();
-        }
-    },
-
-    // Обновить UI уведомлений
-    updateNotificationsUI() {
-        if (currentUser) {
-            if (currentUser.role === 'user') {
-                notifications.updateUserNotifications();
-            } else if (currentUser.role === 'listener') {
-                notifications.updateListenerNotifications();
-            } else if (currentUser.role === 'admin') {
-                notifications.updateSentNotifications();
-            }
         }
     }
 };

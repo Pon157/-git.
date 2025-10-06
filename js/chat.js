@@ -381,4 +381,43 @@ function hideChatInterface() {
     // Останавливаем таймер
     clearInterval(chatTimer);
     
-    // С
+    // Сбрасываем переменные
+    activeChat = null;
+    currentListener = null;
+    chatStartTime = null;
+    
+    // Обновляем списки чатов
+    updateChatsDisplay();
+}
+
+function updateChatsDisplay() {
+    if (currentUser.role === 'listener') {
+        updateListenerChatsList();
+    } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
+        updateAdminChatsList();
+    }
+}
+
+// Enter для отправки сообщений
+function initChatInputHandlers() {
+    // Для пользователя
+    const userInput = document.getElementById('userMessageInput');
+    if (userInput) {
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendUserMessage();
+        });
+    }
+
+    // Для слушателя
+    const listenerInput = document.getElementById('listenerMessageInput');
+    if (listenerInput) {
+        listenerInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendListenerMessage();
+        });
+    }
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    initChatInputHandlers();
+});

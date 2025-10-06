@@ -1,10 +1,29 @@
+// app.js
+let socket = null;
+let connectionRetries = 0;
+let currentUser = null;
+let users = [];
+let chats = [];
+let ratings = [];
+let notifications = [];
+let activeChat = null;
+let currentListener = null;
+let chatStartTime = null;
+let chatTimer = null;
+let onlineTimeStart = null;
+let onlineTimer = null;
+
 // Основной модуль приложения
 const app = {
     // Инициализация приложения
     init() {
         console.log('🚀 Инициализация приложения...');
         this.setupEventListeners();
-        settings.loadUserPreferences();
+        
+        if (typeof settings !== 'undefined') {
+            settings.loadUserPreferences();
+        }
+        
         this.connectToServer();
     },
 
@@ -13,21 +32,23 @@ const app = {
         console.log('🔧 Настройка обработчиков событий...');
         
         // Инициализация модулей
-        auth.init();
-        chat.init();
-        listeners.init();
-        notifications.init();
-        admin.init();
-        userSettings.init();
-        listenerSettings.init();
-        adminSettings.init();
+        if (typeof auth !== 'undefined') auth.init();
+        if (typeof chat !== 'undefined') chat.init();
+        if (typeof listeners !== 'undefined') listeners.init();
+        if (typeof notifications !== 'undefined') notifications.init();
+        if (typeof admin !== 'undefined') admin.init();
+        if (typeof userSettings !== 'undefined') userSettings.init();
+        if (typeof listenerSettings !== 'undefined') listenerSettings.init();
+        if (typeof adminSettings !== 'undefined') adminSettings.init();
 
         // Табы пользователя - делегирование
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('tab') && e.target.closest('#userInterface')) {
                 const tabName = e.target.getAttribute('data-tab');
                 console.log('👤 Переключение таба пользователя:', tabName);
-                auth.showUserTab(tabName);
+                if (typeof auth !== 'undefined') {
+                    auth.showUserTab(tabName);
+                }
             }
         });
 
@@ -36,7 +57,9 @@ const app = {
             if (e.target.classList.contains('tab') && e.target.closest('#listenerInterface')) {
                 const tabName = e.target.getAttribute('data-tab');
                 console.log('🎧 Переключение таба слушателя:', tabName);
-                auth.showListenerTab(tabName);
+                if (typeof auth !== 'undefined') {
+                    auth.showListenerTab(tabName);
+                }
             }
         });
 
@@ -45,7 +68,9 @@ const app = {
             if (e.target.classList.contains('nav-item') && e.target.hasAttribute('data-section')) {
                 const section = e.target.getAttribute('data-section');
                 console.log('👑 Переключение секции админки:', section);
-                admin.showSection(section);
+                if (typeof admin !== 'undefined') {
+                    admin.showSection(section);
+                }
             }
         });
     },
@@ -64,6 +89,9 @@ const app = {
                 reconnectionDelayMax: 5000
             });
 
+            // Делаем socket глобально доступным
+            window.socket = socket;
+            
             this.setupSocketEvents();
 
         } catch (error) {
@@ -134,31 +162,41 @@ const app = {
         // ОСНОВНЫЕ ОБРАБОТЧИКИ СОБЫТИЙ
         socket.on('login_success', (data) => {
             console.log('✅ Успешный вход:', data.user);
-            auth.handleLoginSuccess(data.user);
+            if (typeof auth !== 'undefined') {
+                auth.handleLoginSuccess(data.user);
+            }
         });
 
         socket.on('login_error', (error) => {
             console.error('❌ Ошибка входа:', error);
             utils.showNotification('❌ ' + error, 'error');
-            auth.restoreAuthButtons();
+            if (typeof auth !== 'undefined') {
+                auth.restoreAuthButtons();
+            }
         });
 
         socket.on('registration_success', (data) => {
             console.log('✅ Успешная регистрация:', data.user);
             utils.showNotification('✅ Регистрация успешна!', 'success');
-            auth.handleLoginSuccess(data.user);
+            if (typeof auth !== 'undefined') {
+                auth.handleLoginSuccess(data.user);
+            }
         });
 
         socket.on('registration_error', (error) => {
             console.error('❌ Ошибка регистрации:', error);
             utils.showNotification('❌ ' + error, 'error');
-            auth.restoreAuthButtons();
+            if (typeof auth !== 'undefined') {
+                auth.restoreAuthButtons();
+            }
         });
 
         socket.on('session_restored', (data) => {
             if (data.user) {
                 console.log('🔄 Сессия восстановлена:', data.user);
-                auth.handleLoginSuccess(data.user);
+                if (typeof auth !== 'undefined') {
+                    auth.handleLoginSuccess(data.user);
+                }
             }
         });
 
@@ -184,12 +222,16 @@ const app = {
         socket.on('notifications_list', (data) => {
             console.log('📢 Получен список уведомлений:', data.notifications?.length);
             notifications = data.notifications || [];
-            notifications.updateUI();
+            if (typeof notifications !== 'undefined') {
+                notifications.updateUI();
+            }
         });
 
         socket.on('new_message', (data) => {
             console.log('📨 Новое сообщение:', data);
-            chat.handleNewMessage(data);
+            if (typeof chat !== 'undefined') {
+                chat.handleNewMessage(data);
+            }
         });
 
         socket.on('chat_created', (data) => {
@@ -251,7 +293,9 @@ const app = {
 
         socket.on('rating_received', (data) => {
             console.log('⭐ Получен новый отзыв:', data);
-            chat.updateListenerReviewsData();
+            if (typeof chat !== 'undefined') {
+                chat.updateListenerReviewsData();
+            }
         });
 
         socket.on('staff_added', (data) => {
@@ -278,7 +322,9 @@ const app = {
                 chatObj.isActive = false;
             }
             if (activeChat && activeChat.id === data.chatId) {
-                chat.end();
+                if (typeof chat !== 'undefined') {
+                    chat.end();
+                }
             }
             this.updateChatsUI();
         });
@@ -305,7 +351,9 @@ const app = {
         socket.on('new_notification', (data) => {
             console.log('📢 Новое уведомление:', data);
             notifications.unshift(data.notification);
-            notifications.updateUI();
+            if (typeof notifications !== 'undefined') {
+                notifications.updateUI();
+            }
             utils.showNotification(`📢 Новое уведомление: ${data.notification.title}`, 'info');
         });
     },
@@ -315,13 +363,19 @@ const app = {
         if (!currentUser) return;
 
         if (currentUser.role === 'user') {
-            listeners.loadCards();
+            if (typeof listeners !== 'undefined') {
+                listeners.loadCards();
+            }
         } else if (currentUser.role === 'listener') {
-            chat.updateListenerChatsList();
-            chat.updateListenerReviewsData();
-            chat.updateListenerStats();
-        } else if (currentUser.role === 'admin') {
-            admin.updateData();
+            if (typeof chat !== 'undefined') {
+                chat.updateListenerChatsList();
+                chat.updateListenerReviewsData();
+                chat.updateListenerStats();
+            }
+        } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
+            if (typeof admin !== 'undefined') {
+                admin.updateData();
+            }
         }
     },
 
@@ -332,18 +386,22 @@ const app = {
                 const updatedChat = chats.find(c => c.id === activeChat.id);
                 if (updatedChat) {
                     activeChat = updatedChat;
-                    chat.loadUserChatMessages();
-                }
-            } else if (currentUser.role === 'listener') {
-                chat.updateListenerChatsList();
-                if (activeChat) {
-                    const updatedChat = chats.find(c => c.id === activeChat.id);
-                    if (updatedChat) {
-                        activeChat = updatedChat;
-                        chat.loadListenerChatMessages();
+                    if (typeof chat !== 'undefined') {
+                        chat.loadUserChatMessages();
                     }
                 }
-            } else if (currentUser.role === 'admin') {
+            } else if (currentUser.role === 'listener') {
+                if (typeof chat !== 'undefined') {
+                    chat.updateListenerChatsList();
+                    if (activeChat) {
+                        const updatedChat = chats.find(c => c.id === activeChat.id);
+                        if (updatedChat) {
+                            activeChat = updatedChat;
+                            chat.loadListenerChatMessages();
+                        }
+                    }
+                }
+            } else if ((currentUser.role === 'admin' || currentUser.role === 'owner') && typeof admin !== 'undefined') {
                 admin.updateAdminChatsList();
             }
         }
@@ -352,14 +410,11 @@ const app = {
     // Обновить UI рейтингов
     updateRatingsUI() {
         if (currentUser && currentUser.role === 'listener') {
-            chat.updateListenerReviewsData();
+            if (typeof chat !== 'undefined') {
+                chat.updateListenerReviewsData();
+            }
         }
     }
 };
-
-// Инициализация приложения при загрузке DOM
-document.addEventListener('DOMContentLoaded', function() {
-    app.init();
-});
 
 console.log('🎉 Приложение полностью загружено и готово к работе!');

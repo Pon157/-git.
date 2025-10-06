@@ -1,5 +1,70 @@
-// Модуль аутентификации
+// auth.js
+let currentUser = null;
+let onlineTimeStart = null;
+let onlineTimer = null;
+
 const auth = {
+    // Инициализация модуля аутентификации
+    init() {
+        console.log('🔐 Инициализация модуля аутентификации...');
+        
+        // Восстановление сессии если есть
+        const savedUser = localStorage.getItem('currentUser');
+        const savedUserId = localStorage.getItem('currentUserId');
+        
+        if (savedUser && savedUserId) {
+            try {
+                currentUser = JSON.parse(savedUser);
+                console.log('🔄 Найдена сохраненная сессия:', currentUser.username);
+                
+                // Автоматически показываем соответствующий интерфейс
+                if (socket && socket.connected) {
+                    socket.emit('restore_session', { userId: savedUserId });
+                }
+            } catch (e) {
+                console.error('❌ Ошибка восстановления сессии:', e);
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUserId');
+            }
+        }
+        
+        this.setupAuthEventListeners();
+    },
+
+    // Настройка обработчиков событий для аутентификации
+    setupAuthEventListeners() {
+        console.log('🔧 Настройка обработчиков аутентификации...');
+        
+        // Обработчики для кнопок входа
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                console.log('🖱️ Клик по кнопке входа');
+                this.login();
+            });
+        }
+        
+        // Обработчики для кнопок регистрации
+        const registerBtn = document.getElementById('registerBtn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', () => {
+                console.log('🖱️ Клик по кнопке регистрации');
+                this.register();
+            });
+        }
+        
+        // Обработчики для табов авторизации
+        document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.getAttribute('data-tab');
+                console.log('🔀 Переключение таба:', tabName);
+                this.showAuthTab(tabName);
+            });
+        });
+        
+        console.log('✅ Обработчики аутентификации настроены');
+    },
+
     // Показать таб авторизации
     showAuthTab(tabName) {
         console.log('🔀 Переключение на таб:', tabName);
@@ -153,7 +218,7 @@ const auth = {
             this.showUserInterface();
         } else if (user.role === 'listener') {
             this.showListenerInterface();
-        } else if (user.role === 'admin') {
+        } else if (user.role === 'admin' || user.role === 'owner') {
             this.showAdminPanel();
         }
     },
@@ -183,9 +248,15 @@ const auth = {
         document.getElementById('userRole').textContent = utils.getRoleDisplayName(currentUser.role);
         document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
         
-        userSettings.showThemeSettings();
-        listeners.loadCards();
-        notifications.updateUserNotifications();
+        if (typeof userSettings !== 'undefined') {
+            userSettings.showThemeSettings();
+        }
+        if (typeof listeners !== 'undefined') {
+            listeners.loadCards();
+        }
+        if (typeof notifications !== 'undefined') {
+            notifications.updateUserNotifications();
+        }
         
         // Показываем вкладку слушателей по умолчанию
         this.showUserTab('listeners');
@@ -203,11 +274,17 @@ const auth = {
         document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
         document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
         
-        listenerSettings.showThemeSettings();
-        chat.updateListenerChatsList();
-        chat.updateListenerReviewsData();
-        chat.updateListenerStats();
-        notifications.updateListenerNotifications();
+        if (typeof listenerSettings !== 'undefined') {
+            listenerSettings.showThemeSettings();
+        }
+        if (typeof chat !== 'undefined') {
+            chat.updateListenerChatsList();
+            chat.updateListenerReviewsData();
+            chat.updateListenerStats();
+        }
+        if (typeof notifications !== 'undefined') {
+            notifications.updateListenerNotifications();
+        }
         
         // Показываем вкладку чатов по умолчанию
         this.showListenerTab('chats');
@@ -224,11 +301,17 @@ const auth = {
         document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
         document.getElementById('adminRole').textContent = utils.getRoleDisplayName(currentUser.role);
         
-        admin.updateData();
-        adminSettings.showThemeSettings();
+        if (typeof admin !== 'undefined') {
+            admin.updateData();
+        }
+        if (typeof adminSettings !== 'undefined') {
+            adminSettings.showThemeSettings();
+        }
         
         // Показываем dashboard по умолчанию
-        admin.showSection('dashboard');
+        if (typeof admin !== 'undefined') {
+            admin.showSection('dashboard');
+        }
     },
 
     // Показать таб пользователя
@@ -240,8 +323,12 @@ const auth = {
 
         document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
         document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
-        document.getElementById('userSettings').classList.add('hidden');
-        document.getElementById('userChatSection').classList.add('hidden');
+        
+        const userSettings = document.getElementById('userSettings');
+        const userChatSection = document.getElementById('userChatSection');
+        
+        if (userSettings) userSettings.classList.add('hidden');
+        if (userChatSection) userChatSection.classList.add('hidden');
     },
 
     // Показать таб слушателя
@@ -255,7 +342,9 @@ const auth = {
         document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
         document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
         document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
-        document.getElementById('listenerSettings').classList.add('hidden');
+        
+        const listenerSettings = document.getElementById('listenerSettings');
+        if (listenerSettings) listenerSettings.classList.add('hidden');
     },
 
     // Запуск таймера онлайн времени
@@ -284,7 +373,9 @@ const auth = {
         localStorage.removeItem('currentUser');
         currentUser = null;
         
-        clearInterval(chatTimer);
+        if (typeof chat !== 'undefined') {
+            clearInterval(chatTimer);
+        }
         clearInterval(onlineTimer);
         
         utils.hideAllInterfaces();
@@ -292,3 +383,5 @@ const auth = {
         utils.showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
     }
 };
+
+console.log('🔐 Модуль аутентификации загружен');

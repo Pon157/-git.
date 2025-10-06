@@ -7,6 +7,8 @@ const auth = {
 
     // Настройка обработчиков событий
     setupEventListeners() {
+        console.log('🔧 Настройка обработчиков аутентификации...');
+        
         // Табы авторизации
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
@@ -16,46 +18,39 @@ const auth = {
         });
 
         // Кнопки авторизации
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        
-        if (loginBtn) {
-            loginBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                auth.login();
-            });
-        }
-        
-        if (registerBtn) {
-            registerBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                auth.register();
-            });
-        }
+        document.getElementById('loginBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Кнопка входа нажата');
+            this.login();
+        });
+
+        document.getElementById('registerBtn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Кнопка регистрации нажата');
+            this.register();
+        });
 
         // Обработчики Enter
-        const authPassword = document.getElementById('authPassword');
-        const regPasswordConfirm = document.getElementById('regPasswordConfirm');
-        
-        if (authPassword) {
-            authPassword.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    auth.login();
-                }
-            });
-        }
+        document.getElementById('authPassword')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.login();
+            }
+        });
 
-        if (regPasswordConfirm) {
-            regPasswordConfirm.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    auth.register();
-                }
-            });
-        }
+        document.getElementById('regPasswordConfirm')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.register();
+            }
+        });
+
+        // Кнопки выхода
+        document.getElementById('userLogoutBtn')?.addEventListener('click', () => this.logout());
+        document.getElementById('listenerLogoutBtn')?.addEventListener('click', () => this.logout());
+        document.getElementById('adminLogoutBtn')?.addEventListener('click', () => this.logout());
     },
 
     // Показать таб авторизации
@@ -64,8 +59,9 @@ const auth = {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
-        document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
+        utils.hideElement('loginForm');
+        utils.hideElement('registerForm');
+        utils.showElement(tabName === 'login' ? 'loginForm' : 'registerForm');
     },
 
     // Вход в систему
@@ -80,6 +76,8 @@ const auth = {
 
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
+
+        console.log('📝 Данные для входа:', { username, password });
 
         if (!username || !password) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -100,8 +98,10 @@ const auth = {
         }
 
         if (socket && socket.connected) {
+            console.log('📤 Отправка запроса на вход...');
             socket.emit('login', { username, password });
         } else {
+            console.error('❌ Сокет не подключен!');
             utils.showNotification('❌ Нет соединения с сервером', 'error');
         }
     },
@@ -120,6 +120,8 @@ const auth = {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
         const passwordConfirm = passwordConfirmInput.value.trim();
+
+        console.log('📝 Данные для регистрации:', { username, password });
 
         if (!username || !password || !passwordConfirm) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -150,18 +152,21 @@ const auth = {
         }
 
         if (socket && socket.connected) {
+            console.log('📤 Отправка запроса на регистрацию...');
             socket.emit('register', { 
                 username, 
                 password,
                 role: 'user'
             });
         } else {
+            console.error('❌ Сокет не подключен!');
             utils.showNotification('❌ Нет соединения с сервером', 'error');
         }
     },
 
     // Обработка успешного входа
     handleLoginSuccess(user) {
+        console.log('🎉 Успешный вход, пользователь:', user);
         currentUser = user;
         
         // Сохраняем сессию
@@ -185,6 +190,7 @@ const auth = {
 
     // Показать интерфейс пользователя
     showUserInterface() {
+        console.log('👤 Показ интерфейса пользователя');
         utils.hideAllInterfaces();
         document.getElementById('userInterface').style.display = 'block';
         
@@ -199,6 +205,7 @@ const auth = {
 
     // Показать интерфейс слушателя
     showListenerInterface() {
+        console.log('🎧 Показ интерфейса слушателя');
         utils.hideAllInterfaces();
         document.getElementById('listenerInterface').style.display = 'block';
         
@@ -219,6 +226,7 @@ const auth = {
 
     // Показать админ панель
     showAdminPanel() {
+        console.log('👑 Показ админ панели');
         utils.hideAllInterfaces();
         document.getElementById('adminPanel').style.display = 'block';
         
@@ -247,6 +255,7 @@ const auth = {
 
     // Выход из системы
     logout() {
+        console.log('🚪 Выход из системы');
         if (socket) {
             socket.disconnect();
         }

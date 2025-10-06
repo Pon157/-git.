@@ -404,34 +404,64 @@
                     </div>
                 </div>
 
-                <!-- ПОЛЬЗОВАТЕЛИ -->
-                <div id="usersSection" class="content-section hidden">
-                    <div class="content-card">
-                        <h3 class="mb-20">👥 Управление пользователями</h3>
-                        <div class="header-actions" style="margin-bottom: 20px;">
-                            <button class="btn btn-primary" onclick="showAddStaffModal()">➕ Добавить сотрудника</button>
-                        </div>
-                        <table class="data-table" id="usersTable">
-                            <thead>
-                                <tr>
-                                    <th>👤 Логин</th>
-                                    <th>📛 Имя</th>
-                                    <th>🎭 Роль</th>
-                                    <th>🔗 Статус</th>
-                                    <th>⚡ Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td colspan="5" class="text-center" style="padding: 40px; color: #7f8c8d;">
-                                        <div class="loading"></div>
-                                        <p style="margin-top: 10px;">Загрузка пользователей...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+              <!-- ПОЛЬЗОВАТЕЛИ -->
+<div id="usersSection" class="content-section hidden">
+    <div class="content-card">
+        <h3 class="mb-20">👥 Управление пользователями</h3>
+        <!-- УБИРАЕМ КНОПКУ ОТСЮДА -->
+        <table class="data-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th>👤 Логин</th>
+                    <th>📛 Имя</th>
+                    <th>🎭 Роль</th>
+                    <th>🔗 Статус</th>
+                    <th>⚡ Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5" class="text-center" style="padding: 40px; color: #7f8c8d;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 10px;">Загрузка пользователей...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ПЕРСОНАЛ -->
+<div id="staffSection" class="content-section hidden">
+    <div class="content-card">
+        <h3 class="mb-20">🎧 Управление персоналом</h3>
+        <div class="header-actions" style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="showAddStaffModal()">
+                <span>➕ Добавить сотрудника</span>
+            </button>
+        </div>
+        <table class="data-table" id="staffTable">
+            <thead>
+                <tr>
+                    <th>👤 Логин</th>
+                    <th>📛 Имя</th>
+                    <th>🎭 Роль</th>
+                    <th>🔗 Статус</th>
+                    <th>⭐ Рейтинг</th>
+                    <th>⚡ Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="6" class="text-center" style="padding: 40px; color: #7f8c8d;">
+                        <div class="loading"></div>
+                        <p style="margin-top: 10px;">Загрузка персонала...</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
                 <!-- ПЕРСОНАЛ -->
                 <div id="staffSection" class="content-section hidden">

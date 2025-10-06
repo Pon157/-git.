@@ -1,7 +1,7 @@
 {
   "name": "chat-system",
-  "version": "1.0.0",
-  "description": "Система чата с поддержкой слушателей",
+  "version": "2.0.0",
+  "description": "Полнофункциональная система чата с поддержкой слушателей",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -15,7 +15,7 @@
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
-  "keywords": ["chat", "socket.io", "express"],
-  "author": "Your Name",
+  "keywords": ["chat", "socket.io", "express", "support", "listeners"],
+  "author": "System Owner",
   "license": "MIT"
 }

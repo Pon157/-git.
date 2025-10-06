@@ -7,27 +7,26 @@ const chat = {
 
     // Настройка обработчиков событий
     setupEventListeners() {
-        // Обработчики Enter для полей ввода сообщений
-        const userMessageInput = document.getElementById('userMessageInput');
-        const listenerMessageInput = document.getElementById('listenerMessageInput');
+        console.log('🔧 Настройка обработчиков чата...');
         
-        if (userMessageInput) {
-            userMessageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    chat.sendUserMessage();
-                }
-            });
-        }
+        // Обработчики Enter для полей ввода сообщений
+        document.getElementById('userMessageInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.sendUserMessage();
+            }
+        });
 
-        if (listenerMessageInput) {
-            listenerMessageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    chat.sendListenerMessage();
-                }
-            });
-        }
+        document.getElementById('listenerMessageInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.sendListenerMessage();
+            }
+        });
+
+        // Кнопки отправки сообщений
+        document.getElementById('userSendBtn')?.addEventListener('click', () => this.sendUserMessage());
+        document.getElementById('listenerSendBtn')?.addEventListener('click', () => this.sendListenerMessage());
 
         // Обработчики рейтинга
         document.querySelectorAll('.rating-star').forEach(star => {
@@ -36,6 +35,10 @@ const chat = {
                 chat.updateRatingStars(selectedRating);
             });
         });
+
+        // Кнопки чата
+        document.getElementById('submitRatingBtn')?.addEventListener('click', () => this.submitRating());
+        document.getElementById('endChatBtn')?.addEventListener('click', () => this.end());
     },
 
     // Отправить сообщение от пользователя
@@ -59,6 +62,8 @@ const chat = {
             timestamp: new Date()
         };
 
+        console.log('📤 Отправка сообщения:', message);
+        
         // Добавляем сообщение сразу в интерфейс отправителя
         this.addMessageToUserChat(message);
         
@@ -91,6 +96,8 @@ const chat = {
             timestamp: new Date()
         };
 
+        console.log('📤 Отправка сообщения от слушателя:', message);
+        
         // Добавляем сообщение сразу в интерфейс отправителя
         this.addMessageToListenerChat(message);
         
@@ -104,8 +111,11 @@ const chat = {
 
     // Обработка нового сообщения
     handleNewMessage(data) {
+        console.log('📨 Обработка нового сообщения:', data);
+        
         // Проверяем, не было ли уже обработано это сообщение
         if (messageIds.has(data.message.id)) {
+            console.log('⚠️ Сообщение уже обработано, пропускаем:', data.message.id);
             return;
         }
         
@@ -134,6 +144,7 @@ const chat = {
     // Добавить сообщение в чат пользователя
     addMessageToUserChat(message) {
         const container = document.getElementById('userMessagesContainer');
+        if (!container) return;
         
         // Очищаем приветственное сообщение
         if (container.children.length === 1 && container.children[0].textContent.includes('Чат начат')) {
@@ -156,6 +167,7 @@ const chat = {
     // Добавить сообщение в чат слушателя
     addMessageToListenerChat(message, scroll = true) {
         const container = document.getElementById('listenerMessagesContainer');
+        if (!container) return;
         
         // Очищаем приветственное сообщение
         if (container.children.length === 1 && container.children[0].textContent.includes('Выберите чат')) {
@@ -179,6 +191,8 @@ const chat = {
     // Загрузить сообщения пользователя
     loadUserChatMessages() {
         const container = document.getElementById('userMessagesContainer');
+        if (!container) return;
+        
         container.innerHTML = '';
         
         if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) {
@@ -202,6 +216,8 @@ const chat = {
     // Загрузить сообщения слушателя
     loadListenerChatMessages() {
         const container = document.getElementById('listenerMessagesContainer');
+        if (!container) return;
+        
         container.innerHTML = '';
         
         if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) {
@@ -223,7 +239,10 @@ const chat = {
     // Обновить счетчик сообщений
     updateMessageCount() {
         if (activeChat && activeChat.messages) {
-            document.getElementById('messageCount').textContent = activeChat.messages.length;
+            const element = document.getElementById('messageCount');
+            if (element) {
+                element.textContent = activeChat.messages.length;
+            }
         }
     },
 
@@ -246,7 +265,9 @@ const chat = {
             return;
         }
 
-        const reviewText = document.getElementById('reviewText').value.trim();
+        const reviewText = document.getElementById('reviewText')?.value.trim() || '';
+        
+        console.log('⭐ Отправка оценки:', { rating: selectedRating, listenerId: currentListener.id });
         
         socket.emit('submit_rating', {
             listenerId: currentListener.id,
@@ -259,18 +280,20 @@ const chat = {
 
         selectedRating = 0;
         this.updateRatingStars(0);
-        document.getElementById('reviewText').value = '';
+        const reviewTextElement = document.getElementById('reviewText');
+        if (reviewTextElement) reviewTextElement.value = '';
         this.end();
     },
 
     // Завершить чат
     end() {
+        console.log('🚪 Завершение чата');
         if (activeChat) {
             socket.emit('end_chat', { chatId: activeChat.id });
         }
 
-        document.getElementById('userChatSection').classList.add('hidden');
-        document.getElementById('listenersTab').classList.remove('hidden');
+        utils.hideElement('userChatSection');
+        utils.showElement('listenersTab');
         clearInterval(chatTimer);
         activeChat = null;
         currentListener = null;
@@ -286,14 +309,18 @@ const chat = {
             const diff = Math.floor((now - chatStartTime) / 1000);
             const minutes = Math.floor(diff / 60);
             const seconds = diff % 60;
-            document.getElementById('chatDuration').textContent = 
-                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            const durationElement = document.getElementById('chatDuration');
+            if (durationElement) {
+                durationElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
         }, 1000);
     },
 
     // Обновить список чатов слушателя
     updateListenerChatsList() {
         const container = document.getElementById('listenerChatsList');
+        if (!container) return;
+        
         const listenerChats = chats.filter(chat => 
             (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id)) && 
             chat.isActive
@@ -339,7 +366,8 @@ const chat = {
         document.querySelectorAll('.chat-item').forEach(item => {
             item.classList.remove('active');
         });
-        document.querySelector(`.chat-item[data-chat-id="${chatId}"]`).classList.add('active');
+        const selectedItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+        if (selectedItem) selectedItem.classList.add('active');
         
         this.loadListenerChatMessages();
     },
@@ -353,6 +381,7 @@ const chat = {
     // Обновить отзывы слушателя
     updateListenerReviews(ratingsData) {
         const container = document.getElementById('listenerReviewsContainer');
+        if (!container) return;
         
         if (!ratingsData || ratingsData.length === 0) {
             container.innerHTML = `
@@ -395,8 +424,12 @@ const chat = {
         const completedChats = listenerChats.filter(chat => !chat.isActive);
         const totalMessages = listenerChats.reduce((total, chat) => total + (chat.messages?.length || 0), 0);
         
-        document.getElementById('listenerTotalChats').textContent = completedChats.length;
-        document.getElementById('listenerAvgRating').textContent = (currentUser.rating || 0).toFixed(1);
-        document.getElementById('listenerResponseTime').textContent = '45с';
+        const totalChatsElement = document.getElementById('listenerTotalChats');
+        const avgRatingElement = document.getElementById('listenerAvgRating');
+        const responseTimeElement = document.getElementById('listenerResponseTime');
+        
+        if (totalChatsElement) totalChatsElement.textContent = completedChats.length;
+        if (avgRatingElement) avgRatingElement.textContent = (currentUser.rating || 0).toFixed(1);
+        if (responseTimeElement) responseTimeElement.textContent = '45с';
     }
 };

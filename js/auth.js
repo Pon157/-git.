@@ -136,4 +136,29 @@ function showListenerInterface() {
     document.getElementById('listenerInterface').style.display = 'block';
     
     // Обновляем информацию слушателя
-    document.getElementById('listenerDisplayName').textContent = currentUser
+    document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
+    document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+    document.getElementById('listenerAvatar').textContent = currentUser.avatar || '🎧';
+    document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
+    document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
+    
+    // Загружаем данные
+    updateListenerChatsList();
+    
+    showNotification('Добро пожаловать в интерфейс слушателя!', 'success');
+}
+
+function showAdminPanel() {
+    console.log('Показ админ панели');
+    hideAllInterfaces();
+    document.getElementById('adminPanel').style.display = 'block';
+    
+    // Обновляем информацию администратора
+    document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
+    document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
+    
+    // Загружаем данные
+    updateAdminData();
+    
+    showNotification('Добро пожаловать в панель администратора!', 'success');
+}

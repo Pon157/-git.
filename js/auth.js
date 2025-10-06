@@ -33,23 +33,33 @@ function login() {
 
     // Показываем загрузку
     const loginBtn = document.getElementById('loginBtn');
+    let originalText = '';
     if (loginBtn) {
-        const originalText = loginBtn.innerHTML;
+        originalText = loginBtn.innerHTML;
         loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
         loginBtn.disabled = true;
-        
-        setTimeout(() => {
-            loginBtn.innerHTML = originalText;
-            loginBtn.disabled = false;
-        }, 3000);
     }
 
     if (socket && socket.connected) {
         console.log('📤 Отправка запроса на вход...');
         socket.emit('login', { username, password });
+        
+        // Автоматическое восстановление кнопки через 5 секунд на всякий случай
+        setTimeout(() => {
+            if (loginBtn && loginBtn.innerHTML.includes('loading')) {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+                showNotification('⚠️ Превышено время ожидания ответа от сервера', 'error');
+            }
+        }, 5000);
     } else {
         console.error('❌ Сокет не подключен!');
         showNotification('❌ Нет соединения с сервером', 'error');
+        // Восстанавливаем кнопку
+        if (loginBtn) {
+            loginBtn.innerHTML = originalText;
+            loginBtn.disabled = false;
+        }
     }
 }
 
@@ -89,15 +99,11 @@ function register() {
 
     // Показываем загрузку
     const registerBtn = document.getElementById('registerBtn');
+    let originalText = '';
     if (registerBtn) {
-        const originalText = registerBtn.innerHTML;
+        originalText = registerBtn.innerHTML;
         registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
         registerBtn.disabled = true;
-        
-        setTimeout(() => {
-            registerBtn.innerHTML = originalText;
-            registerBtn.disabled = false;
-        }, 3000);
     }
 
     if (socket && socket.connected) {
@@ -107,9 +113,23 @@ function register() {
             password,
             role: 'user'
         });
+        
+        // Автоматическое восстановление кнопки через 5 секунд
+        setTimeout(() => {
+            if (registerBtn && registerBtn.innerHTML.includes('loading')) {
+                registerBtn.innerHTML = originalText;
+                registerBtn.disabled = false;
+                showNotification('⚠️ Превышено время ожидания ответа от сервера', 'error');
+            }
+        }, 5000);
     } else {
         console.error('❌ Сокет не подключен!');
         showNotification('❌ Нет соединения с сервером', 'error');
+        // Восстанавливаем кнопку
+        if (registerBtn) {
+            registerBtn.innerHTML = originalText;
+            registerBtn.disabled = false;
+        }
     }
 }
 
@@ -123,6 +143,18 @@ function handleLoginSuccess(user) {
     
     showNotification(`✅ Добро пожаловать, ${user.displayName || user.username}!`, 'success');
     
+    // Восстанавливаем кнопки
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    if (loginBtn) {
+        loginBtn.innerHTML = '<span>🚪 Войти</span>';
+        loginBtn.disabled = false;
+    }
+    if (registerBtn) {
+        registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+        registerBtn.disabled = false;
+    }
+    
     // Запускаем отсчет времени онлайн
     startOnlineTimer();
     
@@ -131,7 +163,7 @@ function handleLoginSuccess(user) {
         showUserInterface();
     } else if (user.role === 'listener') {
         showListenerInterface();
-    } else if (user.role === 'admin') {
+    } else if (user.role === 'admin' || user.role === 'owner') {
         showAdminPanel();
     }
     
@@ -154,4 +186,9 @@ function logout() {
     hideAllInterfaces();
     document.getElementById('authScreen').style.display = 'flex';
     showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
+    
+    // Переподключаем сокет для нового входа
+    setTimeout(() => {
+        connectToServer();
+    }, 1000);
 }

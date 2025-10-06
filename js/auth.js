@@ -171,6 +171,60 @@ function handleLoginSuccess(user) {
     setTimeout(forceAdminForOwner, 100);
 }
 
+// ФУНКЦИИ ПОКАЗА ИНТЕРФЕЙСОВ
+function showUserInterface() {
+    console.log('👤 Показ интерфейса пользователя');
+    hideAllInterfaces();
+    document.getElementById('userInterface').style.display = 'block';
+    
+    // Обновляем информацию пользователя
+    document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
+    document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+    document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
+    
+    // Загружаем данные
+    loadListenerCards();
+    updateUserNotifications();
+    
+    showNotification('👤 Добро пожаловать в интерфейс пользователя!', 'success');
+}
+
+function showListenerInterface() {
+    console.log('🎧 Показ интерфейса слушателя');
+    hideAllInterfaces();
+    document.getElementById('listenerInterface').style.display = 'block';
+    
+    // Обновляем информацию слушателя
+    document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
+    document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+    document.getElementById('listenerAvatar').textContent = currentUser.avatar || '🎧';
+    document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
+    document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
+    
+    // Загружаем данные
+    updateListenerChatsList();
+    updateListenerReviewsData();
+    updateListenerStats();
+    updateListenerNotifications();
+    
+    showNotification('🎧 Добро пожаловать в интерфейс слушателя!', 'success');
+}
+
+function showAdminPanel() {
+    console.log('👑 Показ админ панели');
+    hideAllInterfaces();
+    document.getElementById('adminPanel').style.display = 'block';
+    
+    // Обновляем информацию администратора
+    document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
+    document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
+    
+    // Загружаем данные
+    updateAdminData();
+    
+    showNotification('👑 Добро пожаловать в панель администратора!', 'success');
+}
+
 function logout() {
     console.log('🚪 Выход из системы');
     if (socket) {

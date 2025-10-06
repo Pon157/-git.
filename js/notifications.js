@@ -2,15 +2,17 @@
 const notifications = {
     // Отправить техническое уведомление
     sendTechnical() {
-        const title = document.getElementById('notificationTitle').value.trim();
-        const text = document.getElementById('notificationText').value.trim();
-        const type = document.getElementById('notificationType').value;
-        const recipients = document.getElementById('notificationRecipients').value;
+        const title = document.getElementById('notificationTitle')?.value.trim();
+        const text = document.getElementById('notificationText')?.value.trim();
+        const type = document.getElementById('notificationType')?.value;
+        const recipients = document.getElementById('notificationRecipients')?.value;
 
         if (!title || !text) {
             utils.showNotification('❌ Заполните все поля!', 'error');
             return;
         }
+
+        console.log('📢 Отправка технического уведомления:', { title, text, type, recipients });
         
         if (socket && socket.connected) {
             socket.emit('send_technical_notification', {
@@ -48,6 +50,8 @@ const notifications = {
     // Обновить уведомления пользователя
     updateUserNotifications() {
         const container = document.getElementById('userNotificationsContainer');
+        if (!container) return;
+        
         const userNotifications = notifications.filter(notification => 
             notification.recipients === 'all' || notification.recipients === 'users'
         );
@@ -83,6 +87,8 @@ const notifications = {
     // Обновить уведомления слушателя
     updateListenerNotifications() {
         const container = document.getElementById('listenerNotificationsContainer');
+        if (!container) return;
+        
         const listenerNotifications = notifications.filter(notification => 
             notification.recipients === 'all' || notification.recipients === 'listeners'
         );
@@ -118,6 +124,7 @@ const notifications = {
     // Обновить отправленные уведомления
     updateSentNotifications() {
         const container = document.getElementById('sentNotificationsContainer');
+        if (!container) return;
         
         if (notifications.length === 0) {
             container.innerHTML = '<div style="text-align: center; padding: 20px; color: #7f8c8d;">📢 Уведомлений пока нет</div>';
@@ -141,5 +148,30 @@ const notifications = {
                 </div>
             </div>
         `).join('');
+    },
+
+    // Обновить UI уведомлений
+    updateUI() {
+        if (!currentUser) return;
+
+        if (currentUser.role === 'user') {
+            this.updateUserNotifications();
+        } else if (currentUser.role === 'listener') {
+            this.updateListenerNotifications();
+        } else if (currentUser.role === 'admin') {
+            this.updateSentNotifications();
+        }
+    },
+
+    // Инициализация
+    init() {
+        this.setupEventListeners();
+    },
+
+    // Настройка обработчиков событий
+    setupEventListeners() {
+        document.getElementById('sendNotificationBtn')?.addEventListener('click', () => {
+            this.sendTechnical();
+        });
     }
 };

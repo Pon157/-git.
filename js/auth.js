@@ -171,6 +171,20 @@ function handleLoginSuccess(user) {
     setTimeout(forceAdminForOwner, 100);
 }
 
+function forceAdminForOwner() {
+    if (currentUser && currentUser.role === 'owner') {
+        console.log('👑 Принудительный показ админ панели для владельца');
+        showAdminPanel();
+        
+        // Принудительное обновление данных
+        setTimeout(() => {
+            if (socket && socket.connected) {
+                socket.emit('force_refresh_data');
+            }
+        }, 500);
+    }
+}
+
 // ФУНКЦИИ ПОКАЗА ИНТЕРФЕЙСОВ
 function showUserInterface() {
     console.log('👤 Показ интерфейса пользователя');

@@ -3,6 +3,8 @@ const listeners = {
     // Загрузить карточки слушателей
     loadCards() {
         const container = document.getElementById('listenerCards');
+        if (!container) return;
+        
         const listeners = users.filter(u => 
             (u.role === 'listener' || u.role === 'admin') && 
             u.id !== currentUser.id && 
@@ -69,6 +71,8 @@ const listeners = {
 
         currentListener = listener;
         
+        console.log('💬 Начало чата с:', listener.displayName || listener.username);
+        
         // Создаем новый чат через сервер
         socket.emit('create_chat', {
             user1: currentUser.id,
@@ -76,14 +80,29 @@ const listeners = {
         });
 
         // Показываем чат
-        document.getElementById('listenersTab').classList.add('hidden');
-        document.getElementById('userNotificationsTab').classList.add('hidden');
-        document.getElementById('userChatSection').classList.remove('hidden');
+        utils.hideElement('listenersTab');
+        utils.hideElement('userNotificationsTab');
+        utils.showElement('userChatSection');
         
-        document.getElementById('currentListenerRating').textContent = (listener.rating || 0).toFixed(1);
+        const ratingElement = document.getElementById('currentListenerRating');
+        if (ratingElement) {
+            ratingElement.textContent = (listener.rating || 0).toFixed(1);
+        }
         
         // Запускаем таймер
         chatStartTime = new Date();
         chat.startChatTimer();
+    },
+
+    // Инициализация
+    init() {
+        this.setupEventListeners();
+    },
+
+    // Настройка обработчиков событий
+    setupEventListeners() {
+        document.getElementById('randomListenerBtn')?.addEventListener('click', () => {
+            this.selectRandom();
+        });
     }
 };

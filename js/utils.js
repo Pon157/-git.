@@ -30,36 +30,37 @@ function getRoleDisplayName(role) {
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
     if (!notification) {
-        // Создаем элемент уведомления если его нет
-        const notificationEl = document.createElement('div');
-        notificationEl.id = 'notification';
-        notificationEl.className = 'notification';
-        document.body.appendChild(notificationEl);
+        console.error('❌ Элемент уведомления не найден!');
+        return;
     }
     
-    const notificationElement = document.getElementById('notification');
-    notificationElement.textContent = message;
-    notificationElement.className = `notification ${type} show`;
+    notification.textContent = message;
+    notification.className = `notification ${type} show`;
     
     setTimeout(() => {
-        notificationElement.classList.remove('show');
+        notification.classList.remove('show');
     }, 4000);
 }
 
 function hideAllInterfaces() {
-    const interfaces = [
-        'authScreen',
-        'userInterface', 
-        'listenerInterface',
-        'adminPanel'
-    ];
+    console.log('🎯 Скрытие всех интерфейсов');
     
+    // Скрываем все интерфейсы
+    const interfaces = ['userInterface', 'listenerInterface', 'adminPanel'];
     interfaces.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
+            element.style.display = 'none';
             element.classList.add('hidden');
         }
     });
+    
+    // Показываем только авторизацию
+    const authScreen = document.getElementById('authScreen');
+    if (authScreen) {
+        authScreen.style.display = 'flex';
+        authScreen.classList.remove('hidden');
+    }
 }
 
 function logout() {
@@ -75,10 +76,6 @@ function logout() {
     clearInterval(onlineTimer);
     
     hideAllInterfaces();
-    const authScreen = document.getElementById('authScreen');
-    if (authScreen) {
-        authScreen.classList.remove('hidden');
-    }
     showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
 }
 
@@ -89,7 +86,7 @@ function saveUserPreferences(theme, font, fontSize) {
 }
 
 function loadUserPreferences() {
-    const theme = localStorage.getItem('theme') || 'sunrise';
+    const theme = localStorage.getItem('theme') || 'light';
     const font = localStorage.getItem('font') || 'default';
     const fontSize = localStorage.getItem('fontSize') || 'normal';
     
@@ -97,7 +94,8 @@ function loadUserPreferences() {
 }
 
 function updateRatingStars(rating) {
-    document.querySelectorAll('.rating-star').forEach((star, index) => {
+    const stars = document.querySelectorAll('.rating-star');
+    stars.forEach((star, index) => {
         star.classList.toggle('active', index < rating);
     });
 }
@@ -167,4 +165,90 @@ function forceAdminForOwner() {
         return true;
     }
     return false;
+}
+
+// Функции показа интерфейсов
+function showUserInterface() {
+    console.log('👤 Показ интерфейса пользователя');
+    hideAllInterfaces();
+    const userInterface = document.getElementById('userInterface');
+    if (userInterface) {
+        userInterface.style.display = 'block';
+        userInterface.classList.remove('hidden');
+    }
+    
+    updateUserInterface();
+    showUserThemeSettings();
+    loadListenerCards();
+    updateUserNotifications();
+}
+
+function showListenerInterface() {
+    console.log('🎧 Показ интерфейса слушателя');
+    hideAllInterfaces();
+    const listenerInterface = document.getElementById('listenerInterface');
+    if (listenerInterface) {
+        listenerInterface.style.display = 'block';
+        listenerInterface.classList.remove('hidden');
+    }
+    
+    updateListenerInterface();
+    showListenerThemeSettings();
+    updateListenerChatsList();
+    updateListenerReviewsData();
+    updateListenerStats();
+    updateListenerNotifications();
+    startOnlineTimer();
+}
+
+function showAdminPanel() {
+    console.log('👑 Показ админ панели');
+    hideAllInterfaces();
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) {
+        adminPanel.style.display = 'block';
+        adminPanel.classList.remove('hidden');
+    }
+    
+    updateAdminInterface();
+    updateAdminData();
+    showAdminThemeSettings();
+}
+
+function updateUserInterface() {
+    if (!currentUser) return;
+    
+    const displayName = document.getElementById('userDisplayName');
+    const role = document.getElementById('userRole');
+    const avatar = document.getElementById('userAvatar');
+    
+    if (displayName) displayName.textContent = currentUser.displayName || currentUser.username;
+    if (role) role.textContent = getRoleDisplayName(currentUser.role);
+    if (avatar) avatar.textContent = currentUser.avatar || '👤';
+}
+
+function updateListenerInterface() {
+    if (!currentUser) return;
+    
+    const displayName = document.getElementById('listenerDisplayName');
+    const role = document.getElementById('listenerRole');
+    const avatar = document.getElementById('listenerAvatar');
+    const ratingValue = document.getElementById('listenerRatingValue');
+    const ratingCount = document.getElementById('listenerRatingCount');
+    
+    if (displayName) displayName.textContent = currentUser.displayName || currentUser.username;
+    if (role) role.textContent = getRoleDisplayName(currentUser.role);
+    if (avatar) avatar.textContent = currentUser.avatar || '👤';
+    if (ratingValue) ratingValue.textContent = (currentUser.rating || 0).toFixed(1);
+    if (ratingCount) ratingCount.textContent = currentUser.ratingCount || 0;
+}
+
+function updateAdminInterface() {
+    if (!currentUser) return;
+    
+    const displayName = document.getElementById('adminDisplayName');
+    const role = document.getElementById('adminRole');
+    
+    if (displayName) displayName.textContent = currentUser.displayName || currentUser.username;
+    if (role) role.textContent = getRoleDisplayName(currentUser.role);
 }

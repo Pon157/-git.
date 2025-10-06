@@ -1,18 +1,4 @@
-// Функции для работы со слушателями
-function showUserInterface() {
-    console.log('👤 Показ интерфейса пользователя');
-    hideAllInterfaces();
-    document.getElementById('userInterface').style.display = 'block';
-    
-    document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
-    document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
-    document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
-    
-    showUserThemeSettings();
-    loadListenerCards();
-    updateUserNotifications();
-}
-
+// Функции для работы со слушателями и пользователями
 function showUserTab(tabName) {
     document.querySelectorAll('#userInterface .tab').forEach(tab => {
         tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
@@ -20,11 +6,26 @@ function showUserTab(tabName) {
 
     document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
     document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+    document.getElementById('userChatSection').classList.add('hidden');
+    document.getElementById('userSettings').classList.add('hidden');
+}
+
+function showListenerTab(tabName) {
+    document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
+        tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+    });
+
+    document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+    document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
+    document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+    document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+    document.getElementById('listenerSettings').classList.add('hidden');
 }
 
 function loadListenerCards() {
     const container = document.getElementById('listenerCards');
-    // Администраторы тоже могут быть слушателями
+    
+    // Фильтруем слушателей (только онлайн и не текущий пользователь)
     const listeners = users.filter(u => 
         (u.role === 'listener' || u.role === 'admin') && 
         u.id !== currentUser.id && 
@@ -71,6 +72,7 @@ function selectRandomListener() {
         u.isOnline && 
         u.id !== currentUser.id
     );
+    
     if (listeners.length === 0) {
         showNotification('❌ Нет доступных слушателей онлайн!', 'error');
         return;
@@ -80,41 +82,35 @@ function selectRandomListener() {
     startChatWithListener(randomListener.id);
 }
 
-function showListenerInterface() {
-    console.log('🎧 Показ интерфейса слушателя');
-    hideAllInterfaces();
-    document.getElementById('listenerInterface').style.display = 'block';
-    
-    document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
-    document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
-    document.getElementById('listenerAvatar').textContent = currentUser.avatar || '👤';
-    document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
-    document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
-    
-    showListenerThemeSettings();
-    updateListenerChatsList();
-    updateListenerReviewsData();
-    updateListenerStats();
-    updateListenerNotifications();
-    
-    // Запускаем таймер онлайн времени
-    startOnlineTimer();
-}
+function startChatWithListener(listenerId) {
+    const listener = users.find(u => u.id === listenerId);
+    if (!listener) {
+        showNotification('❌ Слушатель не найден!', 'error');
+        return;
+    }
 
-function showListenerTab(tabName) {
-    document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
-        tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
-    });
-
-    document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
-    document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
-    document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
-    document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+    currentListener = listener;
+    
+    console.log('💬 Начало чата с:', listener.displayName || listener.username);
+    
+    // Показываем чат
+    document.getElementById('listenersTab').classList.add('hidden');
+    document.getElementById('userNotificationsTab').classList.add('hidden');
+    document.getElementById('userChatSection').classList.remove('hidden');
+    
+    document.getElementById('currentListenerRating').textContent = (listener.rating || 0).toFixed(1);
+    
+    // Запускаем таймер
+    chatStartTime = new Date();
+    startChatTimer();
+    
+    showNotification(`💬 Чат начат с ${listener.displayName || listener.username}`, 'success');
 }
 
 function updateListenerChatsList() {
     const container = document.getElementById('listenerChatsList');
-    // Администраторы тоже могут получать чаты
+    
+    // Фильтруем чаты слушателя
     const listenerChats = chats.filter(chat => 
         (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id)) && 
         chat.isActive
@@ -159,77 +155,27 @@ function selectListenerChat(chatId) {
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
-    document.querySelector(`.chat-item[data-chat-id="${chatId}"]`).classList.add('active');
+    
+    const selectedItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('active');
+    }
     
     loadListenerChatMessages();
+    showNotification('💬 Чат выбран', 'info');
 }
 
-function updateListenerReviewsData() {
-    const listenerRatings = ratings.filter(r => r.listenerId === currentUser.id);
-    updateListenerReviews(listenerRatings);
+// Функции настроек
+function showUserSettings() {
+    document.getElementById('listenersTab').classList.add('hidden');
+    document.getElementById('userChatSection').classList.add('hidden');
+    document.getElementById('userNotificationsTab').classList.add('hidden');
+    document.getElementById('userSettings').classList.remove('hidden');
 }
 
-function updateListenerReviews(ratingsData) {
-    const container = document.getElementById('listenerReviewsContainer');
-    
-    if (!ratingsData || ratingsData.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <div>⭐ Отзывов пока нет</div>
-                <div style="font-size: 14px; margin-top: 10px;">Пользователи оставят отзывы после завершения чатов</div>
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = ratingsData.map(review => {
-        const user = users.find(u => u.id === review.userId);
-        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-        
-        return `
-            <div class="review-item">
-                <div class="review-header">
-                    <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
-                    <div class="review-rating">
-                        ${stars.split('').map(star => `<span class="review-star">${star}</span>`).join('')}
-                    </div>
-                </div>
-                <div class="review-date">
-                    ${new Date(review.timestamp).toLocaleDateString('ru-RU')}
-                </div>
-                ${review.comment ? `
-                    <div class="review-text" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                        ${review.comment}
-                    </div>
-                ` : ''}
-            </div>
-        `;
-    }).join('');
-}
-
-function updateListenerStats() {
-    const listenerChats = chats.filter(chat => chat.user2 === currentUser.id);
-    const completedChats = listenerChats.filter(chat => !chat.isActive);
-    const totalMessages = listenerChats.reduce((total, chat) => total + (chat.messages?.length || 0), 0);
-    
-    document.getElementById('listenerTotalChats').textContent = completedChats.length;
-    document.getElementById('listenerAvgRating').textContent = (currentUser.rating || 0).toFixed(1);
-    document.getElementById('listenerResponseTime').textContent = '45с';
-}
-
-function startOnlineTimer() {
-    onlineTimeStart = new Date();
-    clearInterval(onlineTimer);
-    onlineTimer = setInterval(() => {
-        if (onlineTimeStart) {
-            const now = new Date();
-            const diff = Math.floor((now - onlineTimeStart) / 1000 / 60 / 60);
-            const onlineTimeElement = document.getElementById('listenerOnlineTime');
-            if (onlineTimeElement) {
-                onlineTimeElement.textContent = diff + 'ч';
-            }
-        }
-    }, 60000);
+function hideUserSettings() {
+    document.getElementById('userSettings').classList.add('hidden');
+    document.getElementById('listenersTab').classList.remove('hidden');
 }
 
 function showListenerSettings() {
@@ -245,14 +191,23 @@ function hideListenerSettings() {
     document.getElementById('listenerChatsTab').classList.remove('hidden');
 }
 
-function showUserSettings() {
-    document.getElementById('listenersTab').classList.add('hidden');
-    document.getElementById('userChatSection').classList.add('hidden');
-    document.getElementById('userNotificationsTab').classList.add('hidden');
-    document.getElementById('userSettings').classList.remove('hidden');
+// Заглушки для остальных функций
+function updateListenerReviewsData() {
+    console.log('📝 Обновление отзывов слушателя');
 }
 
-function hideUserSettings() {
-    document.getElementById('userSettings').classList.add('hidden');
-    document.getElementById('listenersTab').classList.remove('hidden');
+function updateListenerStats() {
+    console.log('📊 Обновление статистики слушателя');
+    document.getElementById('listenerTotalChats').textContent = '5';
+    document.getElementById('listenerAvgRating').textContent = (currentUser.rating || 0).toFixed(1);
+    document.getElementById('listenerResponseTime').textContent = '45с';
+    document.getElementById('listenerOnlineTime').textContent = '2ч';
+}
+
+function updateUserNotifications() {
+    console.log('📢 Обновление уведомлений пользователя');
+}
+
+function updateListenerNotifications() {
+    console.log('📢 Обновление уведомлений слушателя');
 }

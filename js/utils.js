@@ -29,13 +29,20 @@ function getRoleDisplayName(role) {
 
 function showNotification(message, type = 'info') {
     const notification = document.getElementById('notification');
-    if (!notification) return;
+    if (!notification) {
+        // Создаем элемент уведомления если его нет
+        const notificationEl = document.createElement('div');
+        notificationEl.id = 'notification';
+        notificationEl.className = 'notification';
+        document.body.appendChild(notificationEl);
+    }
     
-    notification.textContent = message;
-    notification.className = `notification ${type} show`;
+    const notificationElement = document.getElementById('notification');
+    notificationElement.textContent = message;
+    notificationElement.className = `notification ${type} show`;
     
     setTimeout(() => {
-        notification.classList.remove('show');
+        notificationElement.classList.remove('show');
     }, 4000);
 }
 
@@ -68,7 +75,10 @@ function logout() {
     clearInterval(onlineTimer);
     
     hideAllInterfaces();
-    document.getElementById('authScreen').classList.remove('hidden');
+    const authScreen = document.getElementById('authScreen');
+    if (authScreen) {
+        authScreen.classList.remove('hidden');
+    }
     showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
 }
 

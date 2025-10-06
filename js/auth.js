@@ -10,39 +10,57 @@ const auth = {
     setupEventListeners() {
         console.log('🔧 Настройка обработчиков аутентификации...');
         
-        // Делегирование событий для табов
+        // Делегирование событий для всего документа
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('tab')) {
+            console.log('🖱️ Клик по элементу:', e.target);
+            
+            // Обработка табов
+            if (e.target.classList.contains('tab') && e.target.hasAttribute('data-tab')) {
                 const tabName = e.target.getAttribute('data-tab');
+                console.log('🔀 Переключение таба:', tabName);
                 this.showAuthTab(tabName);
             }
-        });
-
-        // Обработчики для кнопок входа и регистрации
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'loginBtn' || e.target.closest('#loginBtn')) {
+            
+            // Обработка кнопки входа
+            if (e.target.id === 'loginBtn') {
+                console.log('🎯 Кнопка входа нажата напрямую');
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🖱️ Кнопка входа нажата');
                 this.login();
             }
             
-            if (e.target.id === 'registerBtn' || e.target.closest('#registerBtn')) {
+            // Обработка кнопки регистрации
+            if (e.target.id === 'registerBtn') {
+                console.log('🎯 Кнопка регистрации нажата напрямую');
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🖱️ Кнопка регистрации нажата');
                 this.register();
+            }
+            
+            // Обработка span внутри кнопок
+            if (e.target.parentElement && 
+                (e.target.parentElement.id === 'loginBtn' || e.target.parentElement.id === 'registerBtn')) {
+                console.log('🎯 Клик по span внутри кнопки');
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.target.parentElement.id === 'loginBtn') {
+                    this.login();
+                } else {
+                    this.register();
+                }
             }
         });
 
-        // Обработчики Enter
+        // Обработчики Enter для полей ввода
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (e.target.id === 'authPassword') {
+                    console.log('⌨️ Enter в поле пароля входа');
                     e.preventDefault();
                     this.login();
                 }
                 if (e.target.id === 'regPasswordConfirm') {
+                    console.log('⌨️ Enter в поле подтверждения пароля');
                     e.preventDefault();
                     this.register();
                 }
@@ -52,6 +70,7 @@ const auth = {
         // Кнопки выхода
         document.addEventListener('click', (e) => {
             if (e.target.id === 'userLogoutBtn' || e.target.id === 'listenerLogoutBtn' || e.target.id === 'adminLogoutBtn') {
+                console.log('🚪 Выход из системы');
                 this.logout();
             }
         });
@@ -60,10 +79,13 @@ const auth = {
     // Показать таб авторизации
     showAuthTab(tabName) {
         console.log('🔀 Переключение на таб:', tabName);
+        
+        // Обновляем активные табы
         document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
+        // Показываем/скрываем формы
         if (tabName === 'login') {
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('registerForm').classList.add('hidden');
@@ -89,7 +111,7 @@ const auth = {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
 
-        console.log('📝 Данные для входа:', { username, password: '***' });
+        console.log('📝 Данные для входа:', { username, password: password ? '***' : 'empty' });
 
         if (!username || !password) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -98,8 +120,9 @@ const auth = {
 
         // Показываем загрузку
         const loginBtn = document.getElementById('loginBtn');
+        let originalText = '';
         if (loginBtn) {
-            const originalText = loginBtn.innerHTML;
+            originalText = loginBtn.innerHTML;
             loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
             loginBtn.disabled = true;
         }
@@ -113,8 +136,10 @@ const auth = {
             
             // Восстанавливаем кнопку
             if (loginBtn) {
-                loginBtn.innerHTML = originalText;
-                loginBtn.disabled = false;
+                setTimeout(() => {
+                    loginBtn.innerHTML = originalText;
+                    loginBtn.disabled = false;
+                }, 2000);
             }
         }
     },
@@ -137,7 +162,7 @@ const auth = {
         const password = passwordInput.value.trim();
         const passwordConfirm = passwordConfirmInput.value.trim();
 
-        console.log('📝 Данные для регистрации:', { username, password: '***' });
+        console.log('📝 Данные для регистрации:', { username, password: password ? '***' : 'empty' });
 
         if (!username || !password || !passwordConfirm) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -156,8 +181,9 @@ const auth = {
 
         // Показываем загрузку
         const registerBtn = document.getElementById('registerBtn');
+        let originalText = '';
         if (registerBtn) {
-            const originalText = registerBtn.innerHTML;
+            originalText = registerBtn.innerHTML;
             registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
             registerBtn.disabled = true;
         }
@@ -175,8 +201,10 @@ const auth = {
             
             // Восстанавливаем кнопку
             if (registerBtn) {
-                registerBtn.innerHTML = originalText;
-                registerBtn.disabled = false;
+                setTimeout(() => {
+                    registerBtn.innerHTML = originalText;
+                    registerBtn.disabled = false;
+                }, 2000);
             }
         }
     },
@@ -193,16 +221,7 @@ const auth = {
         utils.showNotification(`✅ Добро пожаловать, ${user.displayName || user.username}!`, 'success');
         
         // Восстанавливаем кнопки
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        if (loginBtn) {
-            loginBtn.innerHTML = '<span>🚪 Войти</span>';
-            loginBtn.disabled = false;
-        }
-        if (registerBtn) {
-            registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
-            registerBtn.disabled = false;
-        }
+        this.restoreAuthButtons();
         
         // Запускаем отсчет времени онлайн
         this.startOnlineTimer();
@@ -217,18 +236,30 @@ const auth = {
         }
     },
 
+    // Восстановить кнопки аутентификации
+    restoreAuthButtons() {
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        
+        if (loginBtn) {
+            loginBtn.innerHTML = '<span>🚪 Войти</span>';
+            loginBtn.disabled = false;
+        }
+        if (registerBtn) {
+            registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+            registerBtn.disabled = false;
+        }
+    },
+
     // Показать интерфейс пользователя
     showUserInterface() {
         console.log('👤 Показ интерфейса пользователя');
         utils.hideAllInterfaces();
-        const userInterface = document.getElementById('userInterface');
-        if (userInterface) {
-            userInterface.style.display = 'block';
-        }
+        document.getElementById('userInterface').style.display = 'block';
         
-        utils.updateElementText('userDisplayName', currentUser.displayName || currentUser.username);
-        utils.updateElementText('userRole', utils.getRoleDisplayName(currentUser.role));
-        utils.updateElementText('userAvatar', currentUser.avatar || '👤');
+        document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
+        document.getElementById('userRole').textContent = utils.getRoleDisplayName(currentUser.role);
+        document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
         
         userSettings.showThemeSettings();
         listeners.loadCards();
@@ -239,16 +270,13 @@ const auth = {
     showListenerInterface() {
         console.log('🎧 Показ интерфейса слушателя');
         utils.hideAllInterfaces();
-        const listenerInterface = document.getElementById('listenerInterface');
-        if (listenerInterface) {
-            listenerInterface.style.display = 'block';
-        }
+        document.getElementById('listenerInterface').style.display = 'block';
         
-        utils.updateElementText('listenerDisplayName', currentUser.displayName || currentUser.username);
-        utils.updateElementText('listenerRole', utils.getRoleDisplayName(currentUser.role));
-        utils.updateElementText('listenerAvatar', currentUser.avatar || '👤');
-        utils.updateElementText('listenerRatingValue', (currentUser.rating || 0).toFixed(1));
-        utils.updateElementText('listenerRatingCount', currentUser.ratingCount || 0);
+        document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
+        document.getElementById('listenerRole').textContent = utils.getRoleDisplayName(currentUser.role);
+        document.getElementById('listenerAvatar').textContent = currentUser.avatar || '👤';
+        document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
+        document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
         
         listenerSettings.showThemeSettings();
         chat.updateListenerChatsList();
@@ -263,13 +291,10 @@ const auth = {
     showAdminPanel() {
         console.log('👑 Показ админ панели');
         utils.hideAllInterfaces();
-        const adminPanel = document.getElementById('adminPanel');
-        if (adminPanel) {
-            adminPanel.style.display = 'block';
-        }
+        document.getElementById('adminPanel').style.display = 'block';
         
-        utils.updateElementText('adminDisplayName', currentUser.displayName || currentUser.username);
-        utils.updateElementText('adminRole', utils.getRoleDisplayName(currentUser.role));
+        document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
+        document.getElementById('adminRole').textContent = utils.getRoleDisplayName(currentUser.role);
         
         admin.updateData();
         adminSettings.showThemeSettings();
@@ -305,10 +330,8 @@ const auth = {
         clearInterval(onlineTimer);
         
         utils.hideAllInterfaces();
-        const authScreen = document.getElementById('authScreen');
-        if (authScreen) {
-            authScreen.style.display = 'flex';
-        }
+        document.getElementById('authScreen').style.display = 'flex';
         utils.showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
     }
 };
+  

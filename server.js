@@ -288,7 +288,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ВХОД - ИСПРАВЛЕНА ПРОВЕРКА ПАРОЛЯ
+    // ВХОД
     socket.on('login', (data) => {
         console.log(`🚪 Запрос на вход:`, data);
         
@@ -300,11 +300,8 @@ io.on('connection', (socket) => {
             return;
         }
         
-        const user = users.find(u => u.username === username);
-        
-        // ИСПРАВЛЕНА ПРОВЕРКА ПАРОЛЯ
-        if (!user || user.password !== password) {
-            console.log('❌ Неверный логин или пароль для пользователя:', username);
+        const user = users.find(u => u.username === username && u.password === password);
+        if (!user) {
             socket.emit('login_error', 'Неверный логин или пароль');
             return;
         }
@@ -437,14 +434,14 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ДОБАВЛЕНИЕ СОТРУДНИКА - ИСПРАВЛЕНА ПРОВЕРКА ПРАВ
+    // ДОБАВЛЕНИЕ СОТРУДНИКА
     socket.on('register_staff', (data) => {
         console.log(`➕ Добавление сотрудника:`, data);
         
         const users = getUsers();
         const { username, password, displayName, role } = data;
 
-        // ПРОВЕРКА ПРАВ - только owner и admin могут добавлять персонал
+        // Проверка прав - только owner и admin могут добавлять персонал
         const currentUser = getUserBySocketId(socket.id);
         if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
             socket.emit('staff_add_error', 'Недостаточно прав для добавления персонала');
@@ -476,7 +473,20 @@ io.on('connection', (socket) => {
         
         if (saved) {
             socket.emit('staff_added', { user: newStaff });
-            socket.broadcast.emit('user_connected', { user: newStaff });
+            
+            // Отправляем обновленный список всем администраторам
+            const admins = users.filter(u => u.role === 'admin' || u.role === 'owner');
+            admins.forEach(admin => {
+                if (admin.socketId) {
+                    const adminSocket = io.sockets.sockets.get(admin.socketId);
+                    if (adminSocket) {
+                        adminSocket.emit('staff_added', { user: newStaff });
+                        adminSocket.emit('users_list', { users: users.filter(u => u.id !== admin.id) });
+                    }
+                }
+            });
+            
+            console.log(`✅ Добавлен новый сотрудник: ${username} (${role})`);
         } else {
             socket.emit('staff_add_error', 'Ошибка сохранения сотрудника');
         }
@@ -502,6 +512,18 @@ io.on('connection', (socket) => {
         if (updatedUser) {
             socket.emit('role_changed', { userId, newRole, user: updatedUser });
             socket.broadcast.emit('user_updated', { user: updatedUser });
+            
+            // Обновляем данные для всех администраторов
+            const users = getUsers();
+            const admins = users.filter(u => u.role === 'admin' || u.role === 'owner');
+            admins.forEach(admin => {
+                if (admin.socketId) {
+                    const adminSocket = io.sockets.sockets.get(admin.socketId);
+                    if (adminSocket) {
+                        adminSocket.emit('users_list', { users: users.filter(u => u.id !== admin.id) });
+                    }
+                }
+            });
         } else {
             socket.emit('role_change_error', 'Ошибка изменения роли');
         }
@@ -587,6 +609,44 @@ io.on('connection', (socket) => {
     socket.on('get_notifications', () => {
         const notifications = getNotifications();
         socket.emit('notifications_list', { notifications });
+    });
+
+    // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ДАННЫХ
+    socket.on('force_refresh_data', () => {
+        console.log(`🔄 Принудительное обновление данных для: ${socket.id}`);
+        
+        const user = getUserBySocketId(socket.id);
+        if (!user) return;
+
+        const currentUsers = getUsers();
+        const currentChats = getChats();
+        const currentRatings = getRatings();
+        const currentNotifications = getNotifications();
+        
+        // Отправляем все данные заново
+        socket.emit('users_list', { 
+            users: currentUsers.filter(u => u.id !== user.id) 
+        });
+        
+        if (user.role === 'admin' || user.role === 'owner') {
+            socket.emit('chats_list', { 
+                chats: currentChats 
+            });
+        } else {
+            socket.emit('chats_list', { 
+                chats: currentChats.filter(chat => 
+                    chat.user1 === user.id || chat.user2 === user.id
+                )
+            });
+        }
+        
+        socket.emit('ratings_list', { 
+            ratings: currentRatings 
+        });
+
+        socket.emit('notifications_list', {
+            notifications: currentNotifications
+        });
     });
 
     // СОЗДАНИЕ ЧАТА

@@ -23,19 +23,30 @@ const app = {
         adminSettings.init();
 
         // Табы пользователя
-        document.querySelectorAll('#userInterface .tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                app.showUserTab(tabName);
-            });
+        this.delegateEvent('#userInterface .tab', 'click', (e) => {
+            const tabName = e.target.getAttribute('data-tab');
+            this.showUserTab(tabName);
         });
 
         // Табы слушателя
-        document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                app.showListenerTab(tabName);
-            });
+        this.delegateEvent('#listenerInterface .tab', 'click', (e) => {
+            const tabName = e.target.getAttribute('data-tab');
+            this.showListenerTab(tabName);
+        });
+
+        // Навигация админки
+        this.delegateEvent('.nav-item', 'click', (e) => {
+            const section = e.target.getAttribute('data-section');
+            admin.showSection(section);
+        });
+    },
+
+    // Делегирование событий
+    delegateEvent(selector, event, handler) {
+        document.addEventListener(event, function(e) {
+            if (e.target.matches(selector)) {
+                handler(e);
+            }
         });
     },
 
@@ -54,16 +65,6 @@ const app = {
             });
 
             this.setupSocketEvents();
-            
-            // Запрашиваем данные после подключения
-            setTimeout(() => {
-                if (socket && socket.connected) {
-                    socket.emit('get_users');
-                    socket.emit('get_chats');
-                    socket.emit('get_ratings');
-                    socket.emit('get_notifications');
-                }
-            }, 1000);
 
         } catch (error) {
             console.error('💥 Критическая ошибка при подключении:', error);
@@ -78,6 +79,12 @@ const app = {
             console.log('✅ Успешно подключено к серверу');
             connectionRetries = 0;
             utils.showNotification('✅ Подключено к серверу', 'success');
+            
+            // Запрашиваем данные после подключения
+            socket.emit('get_users');
+            socket.emit('get_chats');
+            socket.emit('get_ratings');
+            socket.emit('get_notifications');
             
             // Восстанавливаем сессию если есть
             const savedUserId = localStorage.getItem('currentUserId');
@@ -122,6 +129,7 @@ const app = {
 
         // ОСНОВНЫЕ ОБРАБОТЧИКИ СОБЫТИЙ
         socket.on('login_success', (data) => {
+            console.log('✅ Успешный вход:', data.user);
             auth.handleLoginSuccess(data.user);
         });
 

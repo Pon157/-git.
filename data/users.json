@@ -1,1 +1,55 @@
-
+[
+  {
+    "id": "user-1",
+    "username": "owner",
+    "password": "owner2024",
+    "role": "owner",
+    "displayName": "Владелец Системы",
+    "avatar": "👑",
+    "rating": 5,
+    "ratingCount": 0,
+    "isOnline": false,
+    "socketId": null,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "isSuperAdmin": true
+  },
+  {
+    "id": "user-2",
+    "username": "admin",
+    "password": "admin123",
+    "role": "admin",
+    "displayName": "Администратор",
+    "avatar": "⚙️",
+    "rating": 5,
+    "ratingCount": 0,
+    "isOnline": false,
+    "socketId": null,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user-3",
+    "username": "user",
+    "password": "123456",
+    "role": "user",
+    "displayName": "Тестовый Пользователь",
+    "avatar": "👤",
+    "rating": 0,
+    "ratingCount": 0,
+    "isOnline": false,
+    "socketId": null,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user-4",
+    "username": "listener",
+    "password": "123456",
+    "role": "listener",
+    "displayName": "Анна Слушатель",
+    "avatar": "🎧",
+    "rating": 4.8,
+    "ratingCount": 15,
+    "isOnline": false,
+    "socketId": null,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+]

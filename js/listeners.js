@@ -293,12 +293,6 @@ function updateListenerStats() {
     const totalMessages = listenerChats.reduce((total, chat) => total + (chat.messages?.length || 0), 0);
     const avgMessagesPerChat = completedChats > 0 ? (totalMessages / completedChats).toFixed(1) : 0;
     
-    // Среднее время ответа (заглушка)
-    const avgResponseTime = '45с';
-    
-    // Общее время онлайн (заглушка)
-    const totalOnlineTime = '2ч 15м';
-    
     // Обновляем элементы
     const stats = [
         { id: 'listenerTotalChats', value: completedChats },
@@ -306,8 +300,7 @@ function updateListenerStats() {
         { id: 'listenerAvgRating', value: (currentUser.rating || 0).toFixed(1) },
         { id: 'listenerTotalMessages', value: totalMessages },
         { id: 'listenerAvgMessages', value: avgMessagesPerChat },
-        { id: 'listenerResponseTime', value: avgResponseTime },
-        { id: 'listenerOnlineTime', value: totalOnlineTime }
+        { id: 'listenerResponseTime', value: '45с' }
     ];
     
     stats.forEach(stat => {
@@ -543,11 +536,3 @@ function updateRatingsUI() {
         updateListenerStats();
     }
 }
-
-// Инициализация слушателя
-document.addEventListener('DOMContentLoaded', function() {
-    // Показать чаты по умолчанию
-    if (document.getElementById('listenerInterface').style.display === 'block') {
-        showListenerTab('chats');
-    }
-});

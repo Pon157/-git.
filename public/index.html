@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат система</title>
+    <title>Чат система поддержки</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/themes.css">
 </head>
@@ -11,7 +11,7 @@
     <!-- ЭКРАН АВТОРИЗАЦИИ -->
     <div id="authScreen" class="auth-container">
         <div class="auth-card">
-            <h2 class="auth-title">Чат система</h2>
+            <h2 class="auth-title">Чат система поддержки</h2>
             
             <div class="tabs">
                 <div class="tab active" data-tab="login">Вход</div>
@@ -54,28 +54,7 @@
         </div>
     </div>
 
-    <!-- ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ -->
-    <div id="userInterface" class="user-interface">
-        <!-- Содержимое интерфейса пользователя -->
-    </div>
-
-    <!-- ИНТЕРФЕЙС СЛУШАТЕЛЯ -->
-    <div id="listenerInterface" class="listener-interface">
-        <!-- Содержимое интерфейса слушателя -->
-    </div>
-
-    <!-- ПАНЕЛЬ АДМИНИСТРАТОРА -->
-    <div id="adminPanel" class="admin-panel">
-        <!-- Содержимое админ панели -->
-    </div>
-
-    <!-- МОДАЛЬНОЕ ОКНО ДОБАВЛЕНИЯ СОТРУДНИКА -->
-    <div id="addStaffModal" class="modal">
-        <!-- Содержимое модального окна -->
-    </div>
-
-    <!-- УВЕДОМЛЕНИЯ -->
-    <div class="notification" id="notification"></div>
+    <!-- Остальные интерфейсы... -->
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="js/utils.js"></script>
@@ -86,5 +65,15 @@
     <script src="js/notifications.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/app.js"></script>
+
+    <script>
+        // Отладочная информация
+        console.log('🔄 Загружен index.html');
+        console.log('📋 Доступные элементы:');
+        console.log('- loginBtn:', document.getElementById('loginBtn'));
+        console.log('- registerBtn:', document.getElementById('registerBtn'));
+        console.log('- authUsername:', document.getElementById('authUsername'));
+        console.log('- authPassword:', document.getElementById('authPassword'));
+    </script>
 </body>
 </html>

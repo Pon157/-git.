@@ -1,40 +1,58 @@
-// Утилиты приложения
+// utils.js
 const utils = {
     // Показать уведомление
-    showNotification(message, type = 'info') {
+    showNotification(message, type = 'info', duration = 5000) {
         const notification = document.getElementById('notification');
-        if (!notification) {
-            // Создаем уведомление если его нет
-            const notificationDiv = document.createElement('div');
-            notificationDiv.id = 'notification';
-            notificationDiv.className = 'notification';
-            document.body.appendChild(notificationDiv);
-        }
-        
-        const notifElement = document.getElementById('notification');
-        notifElement.textContent = message;
-        notifElement.className = `notification ${type} show`;
+        if (!notification) return;
+
+        notification.textContent = message;
+        notification.className = `notification ${type} show`;
         
         setTimeout(() => {
-            notifElement.classList.remove('show');
-        }, 4000);
+            notification.classList.remove('show');
+        }, duration);
     },
 
     // Скрыть все интерфейсы
     hideAllInterfaces() {
-        const interfaces = ['authScreen', 'userInterface', 'listenerInterface', 'adminPanel'];
+        const interfaces = [
+            'authScreen',
+            'userInterface', 
+            'listenerInterface',
+            'adminPanel'
+        ];
+        
         interfaces.forEach(id => {
             const element = document.getElementById(id);
-            if (element) element.style.display = 'none';
+            if (element) {
+                element.style.display = 'none';
+            }
         });
+    },
+
+    // Показать элемент
+    showElement(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.remove('hidden');
+        }
+    },
+
+    // Скрыть элемент
+    hideElement(elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.classList.add('hidden');
+        }
     },
 
     // Получить отображаемое имя роли
     getRoleDisplayName(role) {
         const roles = {
-            'admin': '👑 Администратор',
-            'listener': '🎧 Слушатель', 
-            'user': '👤 Пользователь'
+            'user': 'Пользователь',
+            'listener': 'Слушатель', 
+            'admin': 'Администратор',
+            'owner': 'Владелец'
         };
         return roles[role] || role;
     },
@@ -42,76 +60,58 @@ const utils = {
     // Обновить интерфейс пользователя
     updateUserInterface() {
         if (!currentUser) return;
-
-        const elements = [
-            { id: 'userDisplayName', text: currentUser.displayName || currentUser.username },
-            { id: 'listenerDisplayName', text: currentUser.displayName || currentUser.username },
-            { id: 'adminDisplayName', text: currentUser.displayName || currentUser.username },
-            { id: 'userAvatar', text: currentUser.avatar || '👤' },
-            { id: 'listenerAvatar', text: currentUser.avatar || '👤' }
-        ];
-
-        elements.forEach(element => {
-            this.updateElementText(element.id, element.text);
-        });
-    },
-
-    // Обновить текст элемента
-    updateElementText(elementId, text) {
-        const element = document.getElementById(elementId);
-        if (element) element.textContent = text;
+        
+        if (currentUser.role === 'user') {
+            const displayName = document.getElementById('userDisplayName');
+            const role = document.getElementById('userRole');
+            const avatar = document.getElementById('userAvatar');
+            
+            if (displayName) displayName.textContent = currentUser.displayName || currentUser.username;
+            if (role) role.textContent = this.getRoleDisplayName(currentUser.role);
+            if (avatar) avatar.textContent = currentUser.avatar || '👤';
+        } else if (currentUser.role === 'listener') {
+            const displayName = document.getElementById('listenerDisplayName');
+            const role = document.getElementById('listenerRole');
+            const avatar = document.getElementById('listenerAvatar');
+            const ratingValue = document.getElementById('listenerRatingValue');
+            const ratingCount = document.getElementById('listenerRatingCount');
+            
+            if (displayName) displayName.textContent = currentUser.displayName || currentUser.username;
+            if (role) role.textContent = this.getRoleDisplayName(currentUser.role);
+            if (avatar) avatar.textContent = currentUser.avatar || '👤';
+            if (ratingValue) ratingValue.textContent = (currentUser.rating || 0).toFixed(1);
+            if (ratingCount) ratingCount.textContent = currentUser.ratingCount || 0;
+        }
     },
 
     // Форматирование времени
-    formatTime(date) {
-        return new Date(date).toLocaleTimeString('ru-RU', { 
+    formatTime(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('ru-RU', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
     },
 
     // Форматирование даты
-    formatDate(date) {
-        return new Date(date).toLocaleDateString('ru-RU');
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
     },
 
-    // Генерация ID
-    generateId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    },
-
-    // Проверка онлайн статуса
-    isUserOnline(userId) {
-        const user = users.find(u => u.id === userId);
-        return user ? user.isOnline : false;
-    },
-
-    // Получить пользователя по ID
-    getUserById(userId) {
-        return users.find(u => u.id === userId);
-    },
-
-    // Показать элемент
-    showElement(id) {
-        const element = document.getElementById(id);
-        if (element) element.classList.remove('hidden');
-    },
-
-    // Скрыть элемент
-    hideElement(id) {
-        const element = document.getElementById(id);
-        if (element) element.classList.add('hidden');
-    },
-
-    // Показать только определенный элемент
-    showOnly(elementId) {
-        const elementsToHide = ['listenersTab', 'userChatSection', 'userNotificationsTab', 'userSettings'];
-        elementsToHide.forEach(id => this.hideElement(id));
-        this.showElement(elementId);
-    },
-
-    // Проверить существует ли элемент
-    elementExists(id) {
-        return !!document.getElementById(id);
+    // Экранирование HTML
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 };
+
+console.log('🔧 Утилиты загружены');

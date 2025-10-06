@@ -14,7 +14,7 @@ const auth = {
         document.addEventListener('click', (e) => {
             console.log('🖱️ Клик по элементу:', e.target);
             
-            // Обработка табов
+            // Обработка табов авторизации
             if (e.target.classList.contains('tab') && e.target.hasAttribute('data-tab')) {
                 const tabName = e.target.getAttribute('data-tab');
                 console.log('🔀 Переключение таба:', tabName);
@@ -22,32 +22,25 @@ const auth = {
             }
             
             // Обработка кнопки входа
-            if (e.target.id === 'loginBtn') {
-                console.log('🎯 Кнопка входа нажата напрямую');
+            if (e.target.id === 'loginBtn' || e.target.closest('#loginBtn')) {
+                console.log('🎯 Кнопка входа нажата');
                 e.preventDefault();
                 e.stopPropagation();
                 this.login();
             }
             
             // Обработка кнопки регистрации
-            if (e.target.id === 'registerBtn') {
-                console.log('🎯 Кнопка регистрации нажата напрямую');
+            if (e.target.id === 'registerBtn' || e.target.closest('#registerBtn')) {
+                console.log('🎯 Кнопка регистрации нажата');
                 e.preventDefault();
                 e.stopPropagation();
                 this.register();
             }
             
-            // Обработка span внутри кнопок
-            if (e.target.parentElement && 
-                (e.target.parentElement.id === 'loginBtn' || e.target.parentElement.id === 'registerBtn')) {
-                console.log('🎯 Клик по span внутри кнопки');
-                e.preventDefault();
-                e.stopPropagation();
-                if (e.target.parentElement.id === 'loginBtn') {
-                    this.login();
-                } else {
-                    this.register();
-                }
+            // Обработка кнопок выхода
+            if (e.target.id === 'userLogoutBtn' || e.target.id === 'listenerLogoutBtn' || e.target.id === 'adminLogoutBtn') {
+                console.log('🚪 Выход из системы');
+                this.logout();
             }
         });
 
@@ -64,14 +57,6 @@ const auth = {
                     e.preventDefault();
                     this.register();
                 }
-            }
-        });
-
-        // Кнопки выхода
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'userLogoutBtn' || e.target.id === 'listenerLogoutBtn' || e.target.id === 'adminLogoutBtn') {
-                console.log('🚪 Выход из системы');
-                this.logout();
             }
         });
     },
@@ -264,6 +249,9 @@ const auth = {
         userSettings.showThemeSettings();
         listeners.loadCards();
         notifications.updateUserNotifications();
+        
+        // Показываем вкладку слушателей по умолчанию
+        this.showUserTab('listeners');
     },
 
     // Показать интерфейс слушателя
@@ -284,6 +272,9 @@ const auth = {
         chat.updateListenerStats();
         notifications.updateListenerNotifications();
         
+        // Показываем вкладку чатов по умолчанию
+        this.showListenerTab('chats');
+        
         this.startOnlineTimer();
     },
 
@@ -298,6 +289,36 @@ const auth = {
         
         admin.updateData();
         adminSettings.showThemeSettings();
+        
+        // Показываем dashboard по умолчанию
+        admin.showSection('dashboard');
+    },
+
+    // Показать таб пользователя
+    showUserTab(tabName) {
+        console.log('👤 Переключение на таб пользователя:', tabName);
+        document.querySelectorAll('#userInterface .tab').forEach(tab => {
+            tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+        });
+
+        document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
+        document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+        document.getElementById('userSettings').classList.add('hidden');
+        document.getElementById('userChatSection').classList.add('hidden');
+    },
+
+    // Показать таб слушателя
+    showListenerTab(tabName) {
+        console.log('🎧 Переключение на таб слушателя:', tabName);
+        document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
+            tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+        });
+
+        document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+        document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
+        document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+        document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+        document.getElementById('listenerSettings').classList.add('hidden');
     },
 
     // Запуск таймера онлайн времени
@@ -334,4 +355,3 @@ const auth = {
         utils.showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
     }
 };
-  

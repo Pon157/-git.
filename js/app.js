@@ -1,239 +1,311 @@
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+// Основной файл приложения
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Инициализация приложения...');
+    initializeApp();
 });
 
-app.use(cors());
-app.use(express.json());
-
-// Временное хранилище данных (в реальном приложении используйте базу данных)
-let users = [
-    {
-        id: '1',
-        username: 'admin',
-        password: 'admin123',
-        displayName: 'Администратор',
-        role: 'admin',
-        avatar: '👑',
-        rating: 5.0,
-        ratingCount: 10,
-        isOnline: false
-    },
-    {
-        id: '2', 
-        username: 'listener1',
-        password: '123456',
-        displayName: 'Анна Слушатель',
-        role: 'listener',
-        avatar: '👩',
-        rating: 4.8,
-        ratingCount: 25,
-        isOnline: false
-    }
-];
-
-let chats = [];
-let ratings = [];
-let notifications = [];
-
-// Генератор ID
-function generateId() {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+function initializeApp() {
+    setupAuthEventListeners();
+    setupChatEventListeners();
+    setupSettingsEventListeners();
+    loadUserPreferences();
+    connectToServer();
 }
 
-// Socket соединения
-io.on('connection', (socket) => {
-    console.log('🔗 Новое подключение:', socket.id);
+function loadUserPreferences() {
+    const { theme, font, fontSize } = loadUserPreferences();
+    changeTheme(theme, false);
+    changeFont(font, false);
+    changeFontSize(fontSize, false);
+}
 
-    // Авторизация
-    socket.on('login', (data) => {
-        const user = users.find(u => u.username === data.username && u.password === data.password);
-        if (user) {
-            user.isOnline = true;
-            user.socketId = socket.id;
-            socket.emit('login_success', { user });
-            socket.broadcast.emit('user_connected', { user });
-            console.log('✅ Успешный вход:', user.username);
-        } else {
-            socket.emit('login_error', 'Неверный логин или пароль');
-        }
-    });
-
-    // Регистрация
-    socket.on('register', (data) => {
-        const existingUser = users.find(u => u.username === data.username);
-        if (existingUser) {
-            socket.emit('registration_error', 'Пользователь с таким логином уже существует');
-            return;
-        }
-
-        const newUser = {
-            id: generateId(),
-            username: data.username,
-            password: data.password,
-            displayName: data.username,
-            role: data.role || 'user',
-            avatar: '👤',
-            rating: 0,
-            ratingCount: 0,
-            isOnline: true,
-            socketId: socket.id
-        };
-
-        users.push(newUser);
-        socket.emit('registration_success', { user: newUser });
-        socket.broadcast.emit('user_connected', { user: newUser });
-        console.log('✅ Новый пользователь:', newUser.username);
-    });
-
-    // Восстановление сессии
-    socket.on('restore_session', (data) => {
-        const user = users.find(u => u.id === data.userId);
-        if (user) {
-            user.isOnline = true;
-            user.socketId = socket.id;
-            socket.emit('login_success', { user });
-            socket.broadcast.emit('user_connected', { user });
-        }
-    });
-
-    // Получение данных
-    socket.on('get_users', () => {
-        socket.emit('users_list', { users });
-    });
-
-    socket.on('get_chats', () => {
-        socket.emit('chats_list', { chats });
-    });
-
-    socket.on('get_ratings', () => {
-        socket.emit('ratings_list', { ratings });
-    });
-
-    socket.on('get_notifications', () => {
-        socket.emit('notifications_list', { notifications });
-    });
-
-    // Создание чата
-    socket.on('create_chat', (data) => {
-        const chat = {
-            id: generateId(),
-            user1: data.user1,
-            user2: data.user2,
-            startTime: new Date(),
-            isActive: true,
-            messages: []
-        };
-
-        chats.push(chat);
+function connectToServer() {
+    try {
+        console.log('🔌 Подключение к серверу:', SERVER_URL);
         
-        const listener = users.find(u => u.id === data.user2);
-        socket.emit('chat_created', { 
-            chat, 
-            listenerName: listener?.displayName || 'Слушатель' 
-        });
-        
-        // Уведомляем слушателя
-        const listenerSocket = io.sockets.sockets.get(listener?.socketId);
-        if (listenerSocket) {
-            listenerSocket.emit('chat_created', { 
-                chat, 
-                listenerName: listener?.displayName || 'Слушатель' 
-            });
-        }
-    });
-
-    // Отправка сообщения
-    socket.on('send_message', (data) => {
-        const chat = chats.find(c => c.id === data.chatId);
-        if (chat) {
-            const message = {
-                ...data.message,
-                id: generateId()
-            };
-            
-            if (!chat.messages) chat.messages = [];
-            chat.messages.push(message);
-            
-            // Отправляем сообщение всем участникам чата
-            io.emit('new_message', {
-                chatId: data.chatId,
-                message: message
-            });
-        }
-    });
-
-    // Отправка оценки
-    socket.on('submit_rating', (data) => {
-        const rating = {
-            id: generateId(),
-            listenerId: data.listenerId,
-            userId: data.userId,
-            rating: data.rating,
-            comment: data.comment,
-            timestamp: new Date()
-        };
-
-        ratings.push(rating);
-        
-        // Обновляем рейтинг слушателя
-        const listenerRatings = ratings.filter(r => r.listenerId === data.listenerId);
-        const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
-        const avgRating = totalRating / listenerRatings.length;
-        
-        const listener = users.find(u => u.id === data.listenerId);
-        if (listener) {
-            listener.rating = avgRating;
-            listener.ratingCount = listenerRatings.length;
-        }
-
-        socket.emit('rating_submitted', {
-            rating,
-            newRating: avgRating,
-            ratingCount: listenerRatings.length
+        socket = io(SERVER_URL, {
+            transports: ['websocket', 'polling'],
+            timeout: 10000,
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 1000,
         });
 
-        // Уведомляем слушателя
-        const listenerSocket = io.sockets.sockets.get(listener?.socketId);
-        if (listenerSocket) {
-            listenerSocket.emit('rating_received', { rating });
+        setupSocketEventListeners();
+
+    } catch (error) {
+        console.error('💥 Критическая ошибка при подключении:', error);
+        showNotification('❌ Ошибка подключения к серверу', 'error');
+    }
+}
+
+function setupSocketEventListeners() {
+    socket.on('connect', () => {
+        console.log('✅ Успешно подключено к серверу');
+        showNotification('✅ Подключено к серверу', 'success');
+        
+        // Восстанавливаем сессию если есть
+        const savedUserId = localStorage.getItem('currentUserId');
+        if (savedUserId) {
+            console.log('🔄 Восстановление сессии для пользователя:', savedUserId);
+            socket.emit('restore_session', { userId: savedUserId });
         }
     });
 
-    // Обновление профиля
-    socket.on('update_profile', (data) => {
-        const user = users.find(u => u.id === data.userId);
-        if (user) {
-            Object.assign(user, data);
-            socket.emit('profile_updated', { user });
-            socket.broadcast.emit('user_updated', { user });
+    socket.on('disconnect', (reason) => {
+        console.log('❌ Отключено от сервера:', reason);
+        showNotification('❌ Соединение с сервером потеряно', 'error');
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Ошибка подключения:', error);
+        showNotification('❌ Ошибка подключения к серверу', 'error');
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('🔁 Переподключение успешно, попытка:', attemptNumber);
+        showNotification('✅ Соединение восстановлено', 'success');
+    });
+
+    // Обработчики авторизации
+    socket.on('login_success', (data) => {
+        console.log('✅ Успешный вход:', data.user);
+        handleLoginSuccess(data.user);
+    });
+
+    socket.on('login_error', (error) => {
+        console.error('❌ Ошибка входа:', error);
+        showNotification('❌ ' + error, 'error');
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.innerHTML = '<span>🚪 Войти</span>';
+            loginBtn.disabled = false;
+        }
+    });
+
+    socket.on('registration_success', (data) => {
+        console.log('✅ Успешная регистрация:', data.user);
+        showNotification('✅ Регистрация успешна!', 'success');
+        handleLoginSuccess(data.user);
+    });
+
+    socket.on('registration_error', (error) => {
+        console.error('❌ Ошибка регистрации:', error);
+        showNotification('❌ ' + error, 'error');
+        const registerBtn = document.getElementById('registerBtn');
+        if (registerBtn) {
+            registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+            registerBtn.disabled = false;
+        }
+    });
+
+    socket.on('session_restored', (data) => {
+        if (data.user) {
+            console.log('🔄 Сессия восстановлена:', data.user);
+            handleLoginSuccess(data.user);
+        }
+    });
+
+    // Обработчики данных
+    socket.on('users_list', (data) => {
+        console.log('📊 Получен список пользователей:', data.users?.length);
+        users = data.users || [];
+        updateUsersUI();
+    });
+
+    socket.on('chats_list', (data) => {
+        console.log('💬 Получен список чатов:', data.chats?.length);
+        chats = data.chats || [];
+        updateChatsUI();
+    });
+
+    socket.on('ratings_list', (data) => {
+        console.log('⭐ Получен список рейтингов:', data.ratings?.length);
+        ratings = data.ratings || [];
+        updateRatingsUI();
+    });
+
+    socket.on('notifications_list', (data) => {
+        console.log('📢 Получен список уведомлений:', data.notifications?.length);
+        notifications = data.notifications || [];
+        updateNotificationsUI();
+    });
+
+    // Обработчики чата
+    socket.on('new_message', (data) => {
+        console.log('📨 Новое сообщение:', data);
+        handleNewMessage(data);
+    });
+
+    socket.on('chat_created', (data) => {
+        console.log('💬 Чат создан:', data.chat);
+        const existingChat = chats.find(chat => chat.id === data.chat.id);
+        if (!existingChat) {
+            chats.push(data.chat);
+        }
+        activeChat = data.chat;
+        updateChatsUI();
+        showNotification(`💬 Чат начат с ${data.listenerName}`, 'success');
+        
+        // Фокусируемся на поле ввода сообщения
+        setTimeout(() => {
+            const input = document.getElementById('userMessageInput');
+            if (input) input.focus();
+        }, 100);
+    });
+
+    socket.on('user_connected', (data) => {
+        console.log('🔗 Пользователь подключился:', data.user);
+        const existingIndex = users.findIndex(u => u.id === data.user.id);
+        if (existingIndex !== -1) {
+            users[existingIndex] = { ...users[existingIndex], ...data.user, isOnline: true };
         } else {
-            socket.emit('profile_update_error', 'Пользователь не найден');
+            users.push({ ...data.user, isOnline: true });
         }
+        updateUsersUI();
     });
 
-    // Отключение
-    socket.on('disconnect', () => {
-        console.log('🔌 Отключение:', socket.id);
-        const user = users.find(u => u.socketId === socket.id);
+    socket.on('user_disconnected', (data) => {
+        console.log('🔌 Пользователь отключился:', data.userId);
+        const user = users.find(u => u.id === data.userId);
         if (user) {
             user.isOnline = false;
-            user.socketId = null;
-            socket.broadcast.emit('user_disconnected', { userId: user.id });
         }
+        updateUsersUI();
     });
-});
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на порту ${PORT}`);
-});
+    socket.on('user_updated', (data) => {
+        console.log('📝 Пользователь обновлен:', data.user);
+        const existingIndex = users.findIndex(u => u.id === data.user.id);
+        if (existingIndex !== -1) {
+            users[existingIndex] = data.user;
+        }
+        updateUsersUI();
+    });
+
+    socket.on('rating_submitted', (data) => {
+        console.log('⭐ Рейтинг отправлен:', data);
+        showNotification('⭐ Рейтинг отправлен!', 'success');
+        const listener = users.find(u => u.id === data.listenerId);
+        if (listener) {
+            listener.rating = data.newRating;
+            listener.ratingCount = data.ratingCount;
+        }
+        updateUsersUI();
+    });
+
+    socket.on('rating_received', (data) => {
+        console.log('⭐ Получен новый отзыв:', data);
+        updateListenerReviewsData();
+    });
+
+    socket.on('staff_added', (data) => {
+        console.log('➕ Сотрудник добавлен:', data);
+        showNotification('✅ Сотрудник добавлен', 'success');
+        socket.emit('get_users');
+    });
+
+    socket.on('staff_add_error', (error) => {
+        console.error('❌ Ошибка добавления сотрудника:', error);
+        showNotification('❌ ' + error, 'error');
+    });
+
+    socket.on('role_changed', (data) => {
+        console.log('🎭 Роль изменена:', data);
+        showNotification(`✅ Роль пользователя изменена на ${getRoleDisplayName(data.newRole)}`, 'success');
+        socket.emit('get_users');
+    });
+
+    socket.on('chat_ended', (data) => {
+        console.log('🚪 Чат завершен:', data.chatId);
+        const chat = chats.find(c => c.id === data.chatId);
+        if (chat) {
+            chat.isActive = false;
+        }
+        if (activeChat && activeChat.id === data.chatId) {
+            endChat();
+        }
+        updateChatsUI();
+    });
+
+    socket.on('profile_updated', (data) => {
+        console.log('✅ Профиль обновлен:', data.user);
+        currentUser = data.user;
+        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        updateUserInterface();
+        showNotification('✅ Профиль успешно обновлен', 'success');
+    });
+
+    socket.on('profile_update_error', (error) => {
+        console.error('❌ Ошибка обновления профиля:', error);
+        showNotification('❌ ' + error, 'error');
+    });
+
+    socket.on('notification_sent', (data) => {
+        console.log('📢 Уведомление отправлено:', data);
+        showNotification('✅ Техническое уведомление отправлено', 'success');
+        socket.emit('get_notifications');
+    });
+
+    socket.on('new_notification', (data) => {
+        console.log('📢 Новое уведомление:', data);
+        notifications.unshift(data.notification);
+        updateNotificationsUI();
+        showNotification(`📢 Новое уведомление: ${data.notification.title}`, 'info');
+    });
+
+    // Запрашиваем данные после подключения
+    setTimeout(() => {
+        if (socket && socket.connected) {
+            socket.emit('get_users');
+            socket.emit('get_chats');
+            socket.emit('get_ratings');
+            socket.emit('get_notifications');
+        }
+    }, 1000);
+}
+
+function updateUsersUI() {
+    if (!currentUser) return;
+
+    if (currentUser.role === 'user') {
+        loadListenerCards();
+    } else if (currentUser.role === 'listener') {
+        updateListenerChatsList();
+        updateListenerReviewsData();
+        updateListenerStats();
+    } else if (currentUser.role === 'admin') {
+        updateAdminData();
+    }
+}
+
+function updateChatsUI() {
+    if (currentUser) {
+        if (currentUser.role === 'user' && activeChat) {
+            const updatedChat = chats.find(c => c.id === activeChat.id);
+            if (updatedChat) {
+                activeChat = updatedChat;
+                loadUserChatMessages();
+            }
+        } else if (currentUser.role === 'listener') {
+            updateListenerChatsList();
+            if (activeChat) {
+                const updatedChat = chats.find(c => c.id === activeChat.id);
+                if (updatedChat) {
+                    activeChat = updatedChat;
+                    loadListenerChatMessages();
+                }
+            }
+        } else if (currentUser.role === 'admin') {
+            updateAdminChatsList();
+        }
+    }
+}
+
+function updateRatingsUI() {
+    if (currentUser && currentUser.role === 'listener') {
+        updateListenerReviewsData();
+    }
+}
+
+console.log('🎉 Приложение полностью загружено и готово к работе!');

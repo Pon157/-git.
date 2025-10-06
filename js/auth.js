@@ -1,7 +1,7 @@
 // Функции авторизации и регистрации
 function showAuthTab(tabName) {
     console.log('🔀 Переключение на таб:', tabName);
-    document.querySelectorAll('.tab').forEach(tab => {
+    document.querySelectorAll('.auth-tab').forEach(tab => {
         tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
     });
 
@@ -10,7 +10,7 @@ function showAuthTab(tabName) {
 }
 
 function login() {
-    console.log('=== ВЫЗВАНА ФУНКЦИЯ LOGIN ===');
+    console.log('=== ВХОД В СИСТЕМУ ===');
     
     const usernameInput = document.getElementById('authUsername');
     const passwordInput = document.getElementById('authPassword');
@@ -24,7 +24,7 @@ function login() {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
 
-    console.log('📝 Данные для входа:', { username, password });
+    console.log('📝 Данные для входа:', { username });
 
     if (!username || !password) {
         showNotification('❌ Заполните все поля!', 'error');
@@ -36,7 +36,7 @@ function login() {
     let originalText = '';
     if (loginBtn) {
         originalText = loginBtn.innerHTML;
-        loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
+        loginBtn.innerHTML = '<div class="loading-spinner"></div><span>Вход...</span>';
         loginBtn.disabled = true;
     }
 
@@ -44,9 +44,9 @@ function login() {
         console.log('📤 Отправка запроса на вход...');
         socket.emit('login', { username, password });
         
-        // Автоматическое восстановление кнопки через 5 секунд на всякий случай
+        // Автоматическое восстановление кнопки через 5 секунд
         setTimeout(() => {
-            if (loginBtn && loginBtn.innerHTML.includes('loading')) {
+            if (loginBtn && loginBtn.disabled) {
                 loginBtn.innerHTML = originalText;
                 loginBtn.disabled = false;
                 showNotification('⚠️ Превышено время ожидания ответа от сервера', 'error');
@@ -55,7 +55,6 @@ function login() {
     } else {
         console.error('❌ Сокет не подключен!');
         showNotification('❌ Нет соединения с сервером', 'error');
-        // Восстанавливаем кнопку
         if (loginBtn) {
             loginBtn.innerHTML = originalText;
             loginBtn.disabled = false;
@@ -64,11 +63,13 @@ function login() {
 }
 
 function register() {
-    console.log('=== ВЫЗВАНА ФУНКЦИЯ REGISTER ===');
+    console.log('=== РЕГИСТРАЦИЯ ===');
     
     const usernameInput = document.getElementById('regUsername');
     const passwordInput = document.getElementById('regPassword');
     const passwordConfirmInput = document.getElementById('regPasswordConfirm');
+    const emailInput = document.getElementById('regEmail');
+    const displayNameInput = document.getElementById('regDisplayName');
     
     if (!usernameInput || !passwordInput || !passwordConfirmInput) {
         console.error('❌ Элементы формы регистрации не найдены!');
@@ -79,11 +80,13 @@ function register() {
     const username = usernameInput.value.trim();
     const password = passwordInput.value.trim();
     const passwordConfirm = passwordConfirmInput.value.trim();
+    const email = emailInput ? emailInput.value.trim() : '';
+    const displayName = displayNameInput ? displayNameInput.value.trim() : '';
 
-    console.log('📝 Данные для регистрации:', { username, password });
+    console.log('📝 Данные для регистрации:', { username, email, displayName });
 
     if (!username || !password || !passwordConfirm) {
-        showNotification('❌ Заполните все поля!', 'error');
+        showNotification('❌ Заполните обязательные поля!', 'error');
         return;
     }
 
@@ -97,12 +100,17 @@ function register() {
         return;
     }
 
+    if (username.length < 3) {
+        showNotification('❌ Логин должен быть не менее 3 символов!', 'error');
+        return;
+    }
+
     // Показываем загрузку
     const registerBtn = document.getElementById('registerBtn');
     let originalText = '';
     if (registerBtn) {
         originalText = registerBtn.innerHTML;
-        registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
+        registerBtn.innerHTML = '<div class="loading-spinner"></div><span>Регистрация...</span>';
         registerBtn.disabled = true;
     }
 
@@ -111,12 +119,14 @@ function register() {
         socket.emit('register', { 
             username, 
             password,
+            email,
+            displayName,
             role: 'user'
         });
         
         // Автоматическое восстановление кнопки через 5 секунд
         setTimeout(() => {
-            if (registerBtn && registerBtn.innerHTML.includes('loading')) {
+            if (registerBtn && registerBtn.disabled) {
                 registerBtn.innerHTML = originalText;
                 registerBtn.disabled = false;
                 showNotification('⚠️ Превышено время ожидания ответа от сервера', 'error');
@@ -125,7 +135,6 @@ function register() {
     } else {
         console.error('❌ Сокет не подключен!');
         showNotification('❌ Нет соединения с сервером', 'error');
-        // Восстанавливаем кнопку
         if (registerBtn) {
             registerBtn.innerHTML = originalText;
             registerBtn.disabled = false;
@@ -133,19 +142,44 @@ function register() {
     }
 }
 
-function handleLoginSuccess(user) {
-    console.log('🎉 Успешный вход, пользователь:', user);
-    currentUser = user;
+function handleLoginSuccess(data) {
+    console.log('🎉 Успешная авторизация, пользователь:', data.user);
+    currentUser = data.user;
     
     // Сохраняем сессию
-    localStorage.setItem('currentUserId', user.id);
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    localStorage.setItem('currentUserId', data.user.id);
+    localStorage.setItem('currentUser', JSON.stringify(data.user));
     
-    showNotification(`✅ Добро пожаловать, ${user.displayName || user.username}!`, 'success');
+    // Сохраняем настройки системы
+    if (data.settings) {
+        systemSettings = data.settings;
+        applySystemSettings();
+    }
+    
+    showNotification(`✅ Добро пожаловать, ${data.user.displayName || data.user.username}!`, 'success');
     
     // Восстанавливаем кнопки
+    resetAuthButtons();
+    
+    // Запускаем отсчет времени онлайн
+    startOnlineTimer();
+    
+    // Определяем интерфейс по роли
+    setTimeout(() => {
+        if (data.user.role === 'user') {
+            showUserInterface();
+        } else if (data.user.role === 'listener') {
+            showListenerInterface();
+        } else if (data.user.role === 'admin' || data.user.role === 'owner') {
+            showAdminPanel();
+        }
+    }, 100);
+}
+
+function resetAuthButtons() {
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
+    
     if (loginBtn) {
         loginBtn.innerHTML = '<span>🚪 Войти</span>';
         loginBtn.disabled = false;
@@ -153,35 +187,6 @@ function handleLoginSuccess(user) {
     if (registerBtn) {
         registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
         registerBtn.disabled = false;
-    }
-    
-    // Запускаем отсчет времени онлайн
-    startOnlineTimer();
-    
-    // Определяем интерфейс по роли
-    if (user.role === 'user') {
-        showUserInterface();
-    } else if (user.role === 'listener') {
-        showListenerInterface();
-    } else if (user.role === 'admin' || user.role === 'owner') {
-        showAdminPanel();
-    }
-    
-    // Принудительный переход для владельца
-    setTimeout(forceAdminForOwner, 100);
-}
-
-function forceAdminForOwner() {
-    if (currentUser && currentUser.role === 'owner') {
-        console.log('👑 Принудительный показ админ панели для владельца');
-        showAdminPanel();
-        
-        // Принудительное обновление данных
-        setTimeout(() => {
-            if (socket && socket.connected) {
-                socket.emit('force_refresh_data');
-            }
-        }, 500);
     }
 }
 
@@ -192,9 +197,7 @@ function showUserInterface() {
     document.getElementById('userInterface').style.display = 'block';
     
     // Обновляем информацию пользователя
-    document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
-    document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
-    document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
+    updateUserProfileUI();
     
     // Загружаем данные
     loadListenerCards();
@@ -209,11 +212,7 @@ function showListenerInterface() {
     document.getElementById('listenerInterface').style.display = 'block';
     
     // Обновляем информацию слушателя
-    document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
-    document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
-    document.getElementById('listenerAvatar').textContent = currentUser.avatar || '🎧';
-    document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
-    document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
+    updateListenerProfileUI();
     
     // Загружаем данные
     updateListenerChatsList();
@@ -230,8 +229,7 @@ function showAdminPanel() {
     document.getElementById('adminPanel').style.display = 'block';
     
     // Обновляем информацию администратора
-    document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
-    document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
+    updateAdminProfileUI();
     
     // Загружаем данные
     updateAdminData();
@@ -239,24 +237,74 @@ function showAdminPanel() {
     showNotification('👑 Добро пожаловать в панель администратора!', 'success');
 }
 
-function logout() {
-    console.log('🚪 Выход из системы');
-    if (socket) {
-        socket.disconnect();
+function updateUserProfileUI() {
+    if (!currentUser) return;
+    
+    const elements = [
+        { id: 'userDisplayName', value: currentUser.displayName || currentUser.username },
+        { id: 'userRole', value: getRoleDisplayName(currentUser.role) },
+        { id: 'userAvatar', value: currentUser.avatar || '👤' },
+        { id: 'userEmail', value: currentUser.email || 'Не указан' },
+        { id: 'userJoinDate', value: new Date(currentUser.createdAt).toLocaleDateString('ru-RU') }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.textContent = element.value;
+        }
+    });
+}
+
+function updateListenerProfileUI() {
+    if (!currentUser) return;
+    
+    const elements = [
+        { id: 'listenerDisplayName', value: currentUser.displayName || currentUser.username },
+        { id: 'listenerRole', value: getRoleDisplayName(currentUser.role) },
+        { id: 'listenerAvatar', value: currentUser.avatar || '🎧' },
+        { id: 'listenerRatingValue', value: (currentUser.rating || 0).toFixed(1) },
+        { id: 'listenerRatingCount', value: currentUser.ratingCount || 0 },
+        { id: 'listenerEmail', value: currentUser.email || 'Не указан' }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.textContent = element.value;
+        }
+    });
+}
+
+function updateAdminProfileUI() {
+    if (!currentUser) return;
+    
+    const elements = [
+        { id: 'adminDisplayName', value: currentUser.displayName || currentUser.username },
+        { id: 'adminRole', value: getRoleDisplayName(currentUser.role) },
+        { id: 'adminAvatar', value: currentUser.avatar || '⚙️' },
+        { id: 'adminEmail', value: currentUser.email || 'Не указан' }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.textContent = element.value;
+        }
+    });
+}
+
+// Принудительный переход для владельца
+function forceAdminForOwner() {
+    if (currentUser && currentUser.role === 'owner') {
+        console.log('👑 Принудительный показ админ панели для владельца');
+        showAdminPanel();
+        
+        // Принудительное обновление данных
+        setTimeout(() => {
+            if (socket && socket.connected) {
+                socket.emit('force_refresh_data');
+            }
+        }, 500);
     }
-    localStorage.removeItem('currentUserId');
-    localStorage.removeItem('currentUser');
-    currentUser = null;
-    
-    clearInterval(chatTimer);
-    clearInterval(onlineTimer);
-    
-    hideAllInterfaces();
-    document.getElementById('authScreen').style.display = 'flex';
-    showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
-    
-    // Переподключаем сокет для нового входа
-    setTimeout(() => {
-        connectToServer();
-    }, 1000);
 }

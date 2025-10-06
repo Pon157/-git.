@@ -8,10 +8,10 @@ function showAdminPanel() {
     
     updateAdminProfileUI();
     updateAdminData();
-    showAdminSection('dashboard');
+    showSection('dashboard');
 }
 
-function showAdminSection(section) {
+function showSection(section) {
     console.log('📂 Переключение на раздел:', section);
     
     // Обновляем навигацию
@@ -20,7 +20,7 @@ function showAdminSection(section) {
     });
 
     // Скрываем все разделы
-    document.querySelectorAll('.admin-section').forEach(sec => {
+    document.querySelectorAll('.content-section').forEach(sec => {
         sec.classList.add('hidden');
     });
 
@@ -52,8 +52,6 @@ function showAdminSection(section) {
     switch(section) {
         case 'dashboard':
             updateAdminStats();
-            updateOnlineUsersList();
-            updateQuickStats();
             break;
         case 'chats':
             updateAdminChatsList();
@@ -70,9 +68,6 @@ function showAdminSection(section) {
         case 'systemSettings':
             loadSystemSettings();
             break;
-        case 'adminSettings':
-            loadAdminProfileSettings();
-            break;
     }
 }
 
@@ -81,7 +76,6 @@ function updateAdminData() {
     
     updateAdminStats();
     updateOnlineUsersList();
-    updateQuickStats();
     updateUsersTable();
     updateStaffTable();
     updateAdminChatsList();
@@ -146,42 +140,6 @@ function updateOnlineUsersList() {
     `).join('');
 }
 
-function updateQuickStats() {
-    // Подсчет сообщений за сегодня
-    const today = new Date().toDateString();
-    const messagesToday = chats.reduce((total, chat) => {
-        if (chat.messages) {
-            const todayMessages = chat.messages.filter(msg => 
-                new Date(msg.timestamp).toDateString() === today
-            );
-            return total + todayMessages.length;
-        }
-        return total;
-    }, 0);
-    
-    // Новые пользователи за сегодня
-    const newUsersToday = users.filter(user => 
-        new Date(user.createdAt).toDateString() === today
-    ).length;
-    
-    // Средняя продолжительность чата
-    const endedChats = chats.filter(chat => !chat.isActive && chat.endTime);
-    let avgDuration = '0м';
-    if (endedChats.length > 0) {
-        const totalDuration = endedChats.reduce((total, chat) => {
-            const start = new Date(chat.startTime);
-            const end = new Date(chat.endTime);
-            return total + (end - start);
-        }, 0);
-        const avgMinutes = Math.floor(totalDuration / endedChats.length / 60000);
-        avgDuration = `${avgMinutes}м`;
-    }
-    
-    document.getElementById('messagesToday').textContent = messagesToday;
-    document.getElementById('newUsersToday').textContent = newUsersToday;
-    document.getElementById('avgChatDuration').textContent = avgDuration;
-}
-
 function updateUsersTable() {
     const tbody = document.querySelector('#usersTable tbody');
     const regularUsers = users.filter(u => u.role === 'user');
@@ -237,7 +195,7 @@ function updateStaffTable() {
     if (staff.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="empty-state">
+                <td colspan="6" class="empty-state">
                     😔 Персонал не найден
                 </td>
             </tr>
@@ -263,8 +221,7 @@ function updateStaffTable() {
                     ${staffMember.isOnline ? '● Онлайн' : '○ Офлайн'}
                 </span>
             </td>
-            <td>${(staffMember.rating || 0).toFixed(1)} ⭐</td>
-            <td>${staffMember.ratingCount || 0}</td>
+            <td>${(staffMember.rating || 0).toFixed(1)} ⭐ (${staffMember.ratingCount || 0})</td>
             <td>
                 ${staffMember.role !== 'admin' && staffMember.role !== 'owner' ? 
                     `<button class="btn btn-small btn-outline" onclick="demoteToUser('${staffMember.id}')" 
@@ -300,7 +257,7 @@ function updateAdminChatsList() {
             chat.messages[chat.messages.length - 1] : null;
         
         return `
-            <div class="chat-item ${chat.isActive ? 'active-chat' : 'ended-chat'} ${activeChat && activeChat.id === chat.id ? 'selected' : ''}" 
+            <div class="chat-item ${chat.isActive ? 'active-chat' : 'ended-chat'}" 
                  onclick="selectAdminChat('${chat.id}')">
                 <div class="chat-header">
                     <div class="chat-users">
@@ -571,9 +528,18 @@ function saveSystemSettings() {
     }
 }
 
+// Принудительное обновление данных
+function forceRefreshAdminData() {
+    console.log('🔄 Принудительное обновление данных админ панели');
+    if (socket && socket.connected) {
+        socket.emit('force_refresh_data');
+        showNotification('🔄 Данные обновляются...', 'info');
+    }
+}
+
 // Настройки профиля администратора
 function showAdminSettings() {
-    showAdminSection('adminSettings');
+    showSection('adminSettings');
     loadAdminProfileSettings();
 }
 
@@ -583,18 +549,6 @@ function loadAdminProfileSettings() {
     document.getElementById('adminProfileName').value = currentUser.displayName || '';
     document.getElementById('adminProfileEmail').value = currentUser.email || '';
     document.getElementById('adminProfileAvatar').value = currentUser.avatar || '👤';
-    
-    // Загружаем настройки уведомлений
-    if (currentUser.settings) {
-        const settings = currentUser.settings;
-        document.getElementById('adminNotifications').checked = settings.notifications !== false;
-        document.getElementById('adminSound').checked = settings.sound !== false;
-        
-        const themeSelect = document.getElementById('adminTheme');
-        if (themeSelect) {
-            themeSelect.value = settings.theme || 'light';
-        }
-    }
 }
 
 function saveAdminProfile() {
@@ -602,25 +556,12 @@ function saveAdminProfile() {
     const email = document.getElementById('adminProfileEmail').value.trim();
     const avatar = document.getElementById('adminProfileAvatar').value.trim();
     const newPassword = document.getElementById('adminProfilePassword').value;
-    const notifications = document.getElementById('adminNotifications').checked;
-    const sound = document.getElementById('adminSound').checked;
-    const theme = document.getElementById('adminTheme').value;
 
-    const updates = {
-        displayName: displayName || currentUser.username,
-        email: email,
-        avatar: avatar,
-        settings: {
-            ...currentUser.settings,
-            notifications: notifications,
-            sound: sound,
-            theme: theme
-        }
-    };
-
-    if (newPassword) {
-        updates.password = newPassword;
-    }
+    const updates = {};
+    if (displayName) updates.displayName = displayName;
+    if (email) updates.email = email;
+    if (avatar) updates.avatar = avatar;
+    if (newPassword) updates.password = newPassword;
 
     if (Object.keys(updates).length === 0) {
         showNotification('ℹ️ Нет изменений для сохранения', 'info');
@@ -635,26 +576,5 @@ function saveAdminProfile() {
         
         // Очищаем поле пароля
         document.getElementById('adminProfilePassword').value = '';
-        
-        // Сохраняем тему
-        localStorage.setItem('theme', theme);
-        document.body.setAttribute('data-theme', theme);
     }
 }
-
-// Принудительное обновление данных
-function forceRefreshAdminData() {
-    console.log('🔄 Принудительное обновление данных админ панели');
-    if (socket && socket.connected) {
-        socket.emit('force_refresh_data');
-        showNotification('🔄 Данные обновляются...', 'info');
-    }
-}
-
-// Инициализация админки
-document.addEventListener('DOMContentLoaded', function() {
-    // Показать dashboard по умолчанию
-    if (document.getElementById('adminPanel').style.display === 'block') {
-        showAdminSection('dashboard');
-    }
-});

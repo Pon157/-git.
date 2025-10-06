@@ -2,6 +2,7 @@
 const auth = {
     // Инициализация модуля
     init() {
+        console.log('🔧 Инициализация модуля аутентификации...');
         this.setupEventListeners();
     },
 
@@ -9,67 +10,78 @@ const auth = {
     setupEventListeners() {
         console.log('🔧 Настройка обработчиков аутентификации...');
         
-        // Табы авторизации
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabName = this.getAttribute('data-tab');
-                auth.showAuthTab(tabName);
-            });
-        });
-
-        // Кнопки авторизации
-        document.getElementById('loginBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🖱️ Кнопка входа нажата');
-            this.login();
-        });
-
-        document.getElementById('registerBtn')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('🖱️ Кнопка регистрации нажата');
-            this.register();
-        });
-
-        // Обработчики Enter
-        document.getElementById('authPassword')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.login();
+        // Делегирование событий для табов
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab')) {
+                const tabName = e.target.getAttribute('data-tab');
+                this.showAuthTab(tabName);
             }
         });
 
-        document.getElementById('regPasswordConfirm')?.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        // Обработчики для кнопок входа и регистрации
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'loginBtn' || e.target.closest('#loginBtn')) {
                 e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Кнопка входа нажата');
+                this.login();
+            }
+            
+            if (e.target.id === 'registerBtn' || e.target.closest('#registerBtn')) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ Кнопка регистрации нажата');
                 this.register();
             }
         });
 
+        // Обработчики Enter
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (e.target.id === 'authPassword') {
+                    e.preventDefault();
+                    this.login();
+                }
+                if (e.target.id === 'regPasswordConfirm') {
+                    e.preventDefault();
+                    this.register();
+                }
+            }
+        });
+
         // Кнопки выхода
-        document.getElementById('userLogoutBtn')?.addEventListener('click', () => this.logout());
-        document.getElementById('listenerLogoutBtn')?.addEventListener('click', () => this.logout());
-        document.getElementById('adminLogoutBtn')?.addEventListener('click', () => this.logout());
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'userLogoutBtn' || e.target.id === 'listenerLogoutBtn' || e.target.id === 'adminLogoutBtn') {
+                this.logout();
+            }
+        });
     },
 
     // Показать таб авторизации
     showAuthTab(tabName) {
+        console.log('🔀 Переключение на таб:', tabName);
         document.querySelectorAll('.tab').forEach(tab => {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        utils.hideElement('loginForm');
-        utils.hideElement('registerForm');
-        utils.showElement(tabName === 'login' ? 'loginForm' : 'registerForm');
+        if (tabName === 'login') {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+        } else {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
     },
 
     // Вход в систему
     login() {
+        console.log('=== ВЫЗВАНА ФУНКЦИЯ LOGIN ===');
+        
         const usernameInput = document.getElementById('authUsername');
         const passwordInput = document.getElementById('authPassword');
         
         if (!usernameInput || !passwordInput) {
+            console.error('❌ Элементы формы входа не найдены!');
             utils.showNotification('❌ Ошибка формы!', 'error');
             return;
         }
@@ -77,7 +89,7 @@ const auth = {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
 
-        console.log('📝 Данные для входа:', { username, password });
+        console.log('📝 Данные для входа:', { username, password: '***' });
 
         if (!username || !password) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -90,11 +102,6 @@ const auth = {
             const originalText = loginBtn.innerHTML;
             loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
             loginBtn.disabled = true;
-            
-            setTimeout(() => {
-                loginBtn.innerHTML = originalText;
-                loginBtn.disabled = false;
-            }, 3000);
         }
 
         if (socket && socket.connected) {
@@ -103,16 +110,25 @@ const auth = {
         } else {
             console.error('❌ Сокет не подключен!');
             utils.showNotification('❌ Нет соединения с сервером', 'error');
+            
+            // Восстанавливаем кнопку
+            if (loginBtn) {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
         }
     },
 
     // Регистрация
     register() {
+        console.log('=== ВЫЗВАНА ФУНКЦИЯ REGISTER ===');
+        
         const usernameInput = document.getElementById('regUsername');
         const passwordInput = document.getElementById('regPassword');
         const passwordConfirmInput = document.getElementById('regPasswordConfirm');
         
         if (!usernameInput || !passwordInput || !passwordConfirmInput) {
+            console.error('❌ Элементы формы регистрации не найдены!');
             utils.showNotification('❌ Ошибка формы!', 'error');
             return;
         }
@@ -121,7 +137,7 @@ const auth = {
         const password = passwordInput.value.trim();
         const passwordConfirm = passwordConfirmInput.value.trim();
 
-        console.log('📝 Данные для регистрации:', { username, password });
+        console.log('📝 Данные для регистрации:', { username, password: '***' });
 
         if (!username || !password || !passwordConfirm) {
             utils.showNotification('❌ Заполните все поля!', 'error');
@@ -144,11 +160,6 @@ const auth = {
             const originalText = registerBtn.innerHTML;
             registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
             registerBtn.disabled = true;
-            
-            setTimeout(() => {
-                registerBtn.innerHTML = originalText;
-                registerBtn.disabled = false;
-            }, 3000);
         }
 
         if (socket && socket.connected) {
@@ -161,6 +172,12 @@ const auth = {
         } else {
             console.error('❌ Сокет не подключен!');
             utils.showNotification('❌ Нет соединения с сервером', 'error');
+            
+            // Восстанавливаем кнопку
+            if (registerBtn) {
+                registerBtn.innerHTML = originalText;
+                registerBtn.disabled = false;
+            }
         }
     },
 
@@ -174,6 +191,18 @@ const auth = {
         localStorage.setItem('currentUser', JSON.stringify(user));
         
         utils.showNotification(`✅ Добро пожаловать, ${user.displayName || user.username}!`, 'success');
+        
+        // Восстанавливаем кнопки
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        if (loginBtn) {
+            loginBtn.innerHTML = '<span>🚪 Войти</span>';
+            loginBtn.disabled = false;
+        }
+        if (registerBtn) {
+            registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+            registerBtn.disabled = false;
+        }
         
         // Запускаем отсчет времени онлайн
         this.startOnlineTimer();
@@ -192,11 +221,14 @@ const auth = {
     showUserInterface() {
         console.log('👤 Показ интерфейса пользователя');
         utils.hideAllInterfaces();
-        document.getElementById('userInterface').style.display = 'block';
+        const userInterface = document.getElementById('userInterface');
+        if (userInterface) {
+            userInterface.style.display = 'block';
+        }
         
-        document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
-        document.getElementById('userRole').textContent = utils.getRoleDisplayName(currentUser.role);
-        document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
+        utils.updateElementText('userDisplayName', currentUser.displayName || currentUser.username);
+        utils.updateElementText('userRole', utils.getRoleDisplayName(currentUser.role));
+        utils.updateElementText('userAvatar', currentUser.avatar || '👤');
         
         userSettings.showThemeSettings();
         listeners.loadCards();
@@ -207,13 +239,16 @@ const auth = {
     showListenerInterface() {
         console.log('🎧 Показ интерфейса слушателя');
         utils.hideAllInterfaces();
-        document.getElementById('listenerInterface').style.display = 'block';
+        const listenerInterface = document.getElementById('listenerInterface');
+        if (listenerInterface) {
+            listenerInterface.style.display = 'block';
+        }
         
-        document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
-        document.getElementById('listenerRole').textContent = utils.getRoleDisplayName(currentUser.role);
-        document.getElementById('listenerAvatar').textContent = currentUser.avatar || '👤';
-        document.getElementById('listenerRatingValue').textContent = (currentUser.rating || 0).toFixed(1);
-        document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || 0;
+        utils.updateElementText('listenerDisplayName', currentUser.displayName || currentUser.username);
+        utils.updateElementText('listenerRole', utils.getRoleDisplayName(currentUser.role));
+        utils.updateElementText('listenerAvatar', currentUser.avatar || '👤');
+        utils.updateElementText('listenerRatingValue', (currentUser.rating || 0).toFixed(1));
+        utils.updateElementText('listenerRatingCount', currentUser.ratingCount || 0);
         
         listenerSettings.showThemeSettings();
         chat.updateListenerChatsList();
@@ -228,10 +263,13 @@ const auth = {
     showAdminPanel() {
         console.log('👑 Показ админ панели');
         utils.hideAllInterfaces();
-        document.getElementById('adminPanel').style.display = 'block';
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel) {
+            adminPanel.style.display = 'block';
+        }
         
-        document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
-        document.getElementById('adminRole').textContent = utils.getRoleDisplayName(currentUser.role);
+        utils.updateElementText('adminDisplayName', currentUser.displayName || currentUser.username);
+        utils.updateElementText('adminRole', utils.getRoleDisplayName(currentUser.role));
         
         admin.updateData();
         adminSettings.showThemeSettings();
@@ -267,7 +305,10 @@ const auth = {
         clearInterval(onlineTimer);
         
         utils.hideAllInterfaces();
-        document.getElementById('authScreen').style.display = 'flex';
+        const authScreen = document.getElementById('authScreen');
+        if (authScreen) {
+            authScreen.style.display = 'flex';
+        }
         utils.showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
     }
 };

@@ -21,67 +21,50 @@ function setupEventListeners() {
         });
     });
 
-    // Табы пользователя
-    document.querySelectorAll('#userInterface .tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            showUserTab(tabName);
-        });
-    });
-
-    // Табы слушателя
-    document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            showListenerTab(tabName);
-        });
-    });
-
-    // Кнопки авторизации
+    // Кнопки авторизации - ДОБАВЛЯЕМ ПРОВЕРКУ СУЩЕСТВОВАНИЯ ЭЛЕМЕНТОВ
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
     
     if (loginBtn) {
+        console.log('✅ Кнопка входа найдена, добавляем обработчик');
         loginBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🖱️ Кнопка входа нажата');
             login();
         });
+    } else {
+        console.error('❌ Кнопка входа не найдена!');
     }
     
     if (registerBtn) {
+        console.log('✅ Кнопка регистрации найдена, добавляем обработчик');
         registerBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('🖱️ Кнопка регистрации нажата');
             register();
         });
+    } else {
+        console.error('❌ Кнопка регистрации не найдена!');
     }
 
-    // Навигация в админке
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const section = this.getAttribute('data-section');
-            showSection(section);
-        });
-    });
-
-    // Рейтинг
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.addEventListener('click', function() {
-            selectedRating = parseInt(this.getAttribute('data-rating'));
-            updateRatingStars(selectedRating);
-        });
-    });
-
-    // Обработчики Enter
+    // Обработчики Enter для форм
+    const authUsername = document.getElementById('authUsername');
     const authPassword = document.getElementById('authPassword');
-    const userMessageInput = document.getElementById('userMessageInput');
-    const listenerMessageInput = document.getElementById('listenerMessageInput');
+    const regUsername = document.getElementById('regUsername');
+    const regPassword = document.getElementById('regPassword');
     const regPasswordConfirm = document.getElementById('regPasswordConfirm');
     
-    if (authPassword) {
+    // Обработчик Enter для логина
+    if (authUsername && authPassword) {
+        authUsername.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                login();
+            }
+        });
+        
         authPassword.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -90,30 +73,16 @@ function setupEventListeners() {
         });
     }
     
-    if (userMessageInput) {
-        userMessageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendUserMessage();
-            }
-        });
-    }
-
-    if (listenerMessageInput) {
-        listenerMessageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendListenerMessage();
-            }
-        });
-    }
-
-    if (regPasswordConfirm) {
-        regPasswordConfirm.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                register();
-            }
+    // Обработчик Enter для регистрации
+    if (regUsername && regPassword && regPasswordConfirm) {
+        const registerFields = [regUsername, regPassword, regPasswordConfirm];
+        registerFields.forEach(field => {
+            field.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    register();
+                }
+            });
         });
     }
 
@@ -202,6 +171,13 @@ function connectToServer() {
         socket.on('login_error', (error) => {
             console.error('❌ Ошибка входа:', error);
             showNotification('❌ ' + error, 'error');
+            
+            // Восстанавливаем кнопку входа
+            const loginBtn = document.getElementById('loginBtn');
+            if (loginBtn) {
+                loginBtn.innerHTML = '<span>🚪 Войти</span>';
+                loginBtn.disabled = false;
+            }
         });
 
         socket.on('registration_success', (data) => {
@@ -213,6 +189,13 @@ function connectToServer() {
         socket.on('registration_error', (error) => {
             console.error('❌ Ошибка регистрации:', error);
             showNotification('❌ ' + error, 'error');
+            
+            // Восстанавливаем кнопку регистрации
+            const registerBtn = document.getElementById('registerBtn');
+            if (registerBtn) {
+                registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+                registerBtn.disabled = false;
+            }
         });
 
         socket.on('session_restored', (data) => {
@@ -393,9 +376,19 @@ function updateUsersUI() {
         updateListenerChatsList();
         updateListenerReviewsData();
         updateListenerStats();
-    } else if (currentUser.role === 'admin') {
+    } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
         updateAdminData();
     }
+}
+
+function loadUserPreferences() {
+    const theme = localStorage.getItem('theme') || 'sunrise';
+    const font = localStorage.getItem('font') || 'default';
+    const fontSize = localStorage.getItem('fontSize') || 'normal';
+    
+    changeTheme(theme, false);
+    changeFont(font, false);
+    changeFontSize(fontSize, false);
 }
 
 console.log('🎉 Приложение полностью загружено и готово к работе!');

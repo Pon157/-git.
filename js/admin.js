@@ -1,81 +1,227 @@
-// Функции админ панели
+// Функции для админ панели
+let currentSection = 'dashboard';
+
+function showAdminPanel() {
+    console.log('👑 Показ админ панели');
+    hideAllInterfaces();
+    document.getElementById('adminPanel').style.display = 'block';
+    
+    updateAdminProfileUI();
+    updateAdminData();
+    showAdminSection('dashboard');
+}
+
 function showAdminSection(section) {
-    console.log('Переключение на раздел:', section);
+    console.log('📂 Переключение на раздел:', section);
     
-    // Скрыть все разделы
-    document.querySelectorAll('.admin-section').forEach(sec => {
-        sec.classList.add('hidden');
-    });
-    
-    // Показать выбранный
-    const target = document.getElementById(section + 'Section');
-    if (target) {
-        target.classList.remove('hidden');
-    }
-    
-    // Обновить навигацию
+    // Обновляем навигацию
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.toggle('active', item.getAttribute('data-section') === section);
     });
+
+    // Скрываем все разделы
+    document.querySelectorAll('.admin-section').forEach(sec => {
+        sec.classList.add('hidden');
+    });
+
+    // Показываем выбранный раздел
+    const targetSection = document.getElementById(section + 'Section');
+    if (targetSection) {
+        targetSection.classList.remove('hidden');
+    }
     
-    // Загрузить данные для раздела
+    // Обновляем заголовок
+    const titles = {
+        dashboard: '📊 Статистика системы',
+        chats: '💬 Все чаты',
+        users: '👥 Управление пользователями',
+        staff: '🎧 Управление персоналом',
+        notifications: '📢 Технические уведомления',
+        adminSettings: '⚙️ Настройки профиля',
+        systemSettings: '🔧 Системные настройки'
+    };
+    
+    const titleElement = document.getElementById('contentTitle');
+    if (titleElement) {
+        titleElement.textContent = titles[section] || section;
+    }
+    
+    currentSection = section;
+    
+    // Загружаем данные для раздела
     switch(section) {
-        case 'users':
-            loadUsersSection();
-            break;
-        case 'staff':
-            loadStaffSection();
+        case 'dashboard':
+            updateAdminStats();
+            updateOnlineUsersList();
+            updateQuickStats();
             break;
         case 'chats':
-            loadChatsSection();
+            updateAdminChatsList();
+            break;
+        case 'users':
+            updateUsersTable();
+            break;
+        case 'staff':
+            updateStaffTable();
+            break;
+        case 'notifications':
+            updateSentNotifications();
+            break;
+        case 'systemSettings':
+            loadSystemSettings();
+            break;
+        case 'adminSettings':
+            loadAdminProfileSettings();
             break;
     }
 }
 
-function loadUsersSection() {
+function updateAdminData() {
+    console.log('🔄 Обновление данных админ панели');
+    
+    updateAdminStats();
+    updateOnlineUsersList();
+    updateQuickStats();
     updateUsersTable();
-}
-
-function loadStaffSection() {
     updateStaffTable();
+    updateAdminChatsList();
+    updateSentNotifications();
 }
 
-function loadChatsSection() {
-    updateAdminChats();
+function updateAdminStats() {
+    const regularUsers = users.filter(u => u.role === 'user');
+    const staff = users.filter(u => u.role === 'listener' || u.role === 'admin');
+    const onlineUsers = users.filter(u => u.isOnline);
+    const activeChats = chats.filter(c => c.isActive);
+    const totalMessages = chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0);
+    
+    // Обновляем статистику
+    const stats = [
+        { id: 'totalUsers', value: regularUsers.length },
+        { id: 'totalListeners', value: staff.filter(u => u.role === 'listener').length },
+        { id: 'activeChats', value: activeChats.length },
+        { id: 'onlineUsers', value: onlineUsers.length },
+        { id: 'messagesToday', value: totalMessages },
+        { id: 'newUsersToday', value: regularUsers.length }
+    ];
+    
+    stats.forEach(stat => {
+        const element = document.getElementById(stat.id);
+        if (element) {
+            element.textContent = stat.value;
+        }
+    });
+    
+    // Средний рейтинг слушателей
+    const listenersWithRatings = staff.filter(u => u.role === 'listener' && u.ratingCount > 0);
+    const avgRating = listenersWithRatings.length > 0 ? 
+        listenersWithRatings.reduce((sum, listener) => sum + (listener.rating || 0), 0) / listenersWithRatings.length : 0;
+    
+    const avgRatingElement = document.getElementById('avgRating');
+    if (avgRatingElement) {
+        avgRatingElement.textContent = avgRating.toFixed(1);
+    }
+}
+
+function updateOnlineUsersList() {
+    const container = document.getElementById('onlineUsersList');
+    const onlineUsers = users.filter(u => u.isOnline);
+    
+    if (!container) return;
+    
+    if (onlineUsers.length === 0) {
+        container.innerHTML = '<div class="empty-state">Нет пользователей онлайн</div>';
+        return;
+    }
+    
+    container.innerHTML = onlineUsers.map(user => `
+        <div class="online-user-item">
+            <div class="user-status online"></div>
+            <div class="user-info">
+                <div class="user-name">${user.displayName || user.username}</div>
+                <div class="user-role">${getRoleDisplayName(user.role)}</div>
+            </div>
+            <div class="user-avatar">${user.avatar || '👤'}</div>
+        </div>
+    `).join('');
+}
+
+function updateQuickStats() {
+    // Подсчет сообщений за сегодня
+    const today = new Date().toDateString();
+    const messagesToday = chats.reduce((total, chat) => {
+        if (chat.messages) {
+            const todayMessages = chat.messages.filter(msg => 
+                new Date(msg.timestamp).toDateString() === today
+            );
+            return total + todayMessages.length;
+        }
+        return total;
+    }, 0);
+    
+    // Новые пользователи за сегодня
+    const newUsersToday = users.filter(user => 
+        new Date(user.createdAt).toDateString() === today
+    ).length;
+    
+    // Средняя продолжительность чата
+    const endedChats = chats.filter(chat => !chat.isActive && chat.endTime);
+    let avgDuration = '0м';
+    if (endedChats.length > 0) {
+        const totalDuration = endedChats.reduce((total, chat) => {
+            const start = new Date(chat.startTime);
+            const end = new Date(chat.endTime);
+            return total + (end - start);
+        }, 0);
+        const avgMinutes = Math.floor(totalDuration / endedChats.length / 60000);
+        avgDuration = `${avgMinutes}м`;
+    }
+    
+    document.getElementById('messagesToday').textContent = messagesToday;
+    document.getElementById('newUsersToday').textContent = newUsersToday;
+    document.getElementById('avgChatDuration').textContent = avgDuration;
 }
 
 function updateUsersTable() {
     const tbody = document.querySelector('#usersTable tbody');
-    if (!tbody) return;
-
     const regularUsers = users.filter(u => u.role === 'user');
     
+    if (!tbody) return;
+    
     if (regularUsers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет пользователей</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty-state">
+                    😔 Пользователи не найдены
+                </td>
+            </tr>
+        `;
         return;
     }
-
+    
     tbody.innerHTML = regularUsers.map(user => `
         <tr>
             <td>
-                <div class="user-info">
-                    <span class="avatar">${user.avatar || '👤'}</span>
+                <div class="user-cell">
+                    <span class="user-avatar-small">${user.avatar || '👤'}</span>
                     <div>
-                        <div class="username">${user.username}</div>
-                        <div class="display-name">${user.displayName}</div>
+                        <div class="user-name">${user.displayName || user.username}</div>
+                        <div class="user-username">@${user.username}</div>
                     </div>
                 </div>
             </td>
-            <td>${user.email || '-'}</td>
+            <td>${user.email || 'Не указан'}</td>
             <td>
-                <span class="status ${user.isOnline ? 'online' : 'offline'}">
+                <span class="status-badge ${user.isOnline ? 'online' : 'offline'}">
                     ${user.isOnline ? '● Онлайн' : '○ Офлайн'}
                 </span>
             </td>
-            <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+            <td>${new Date(user.createdAt).toLocaleDateString('ru-RU')}</td>
+            <td>${new Date(user.lastSeen).toLocaleDateString('ru-RU')}</td>
             <td>
-                <button class="btn btn-small" onclick="promoteToListener('${user.id}')">
-                    🎧 Слушатель
+                <button class="btn btn-small btn-primary" onclick="promoteToListener('${user.id}')" 
+                        title="Сделать слушателем">
+                    🎧 Назначить
                 </button>
             </td>
         </tr>
@@ -84,125 +230,161 @@ function updateUsersTable() {
 
 function updateStaffTable() {
     const tbody = document.querySelector('#staffTable tbody');
+    const staff = users.filter(u => u.role === 'listener' || u.role === 'admin' || u.role === 'owner');
+    
     if (!tbody) return;
-
-    const staff = users.filter(u => u.role === 'listener' || u.role === 'admin');
     
     if (staff.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">Нет персонала</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-state">
+                    😔 Персонал не найден
+                </td>
+            </tr>
+        `;
         return;
     }
-
-    tbody.innerHTML = staff.map(staff => `
+    
+    tbody.innerHTML = staff.map(staffMember => `
         <tr>
             <td>
-                <div class="user-info">
-                    <span class="avatar">${staff.avatar}</span>
+                <div class="user-cell">
+                    <span class="user-avatar-small">${staffMember.avatar || '👤'}</span>
                     <div>
-                        <div class="username">${staff.username}</div>
-                        <div class="display-name">${staff.displayName}</div>
+                        <div class="user-name">${staffMember.displayName || staffMember.username}</div>
+                        <div class="user-username">@${staffMember.username}</div>
                     </div>
                 </div>
             </td>
-            <td>${staff.email || '-'}</td>
-            <td>${getRoleDisplay(staff.role)}</td>
+            <td>${staffMember.email || 'Не указан'}</td>
+            <td>${getRoleDisplayName(staffMember.role)}</td>
             <td>
-                <span class="status ${staff.isOnline ? 'online' : 'offline'}">
-                    ${staff.isOnline ? '● Онлайн' : '○ Офлайн'}
+                <span class="status-badge ${staffMember.isOnline ? 'online' : 'offline'}">
+                    ${staffMember.isOnline ? '● Онлайн' : '○ Офлайн'}
                 </span>
             </td>
+            <td>${(staffMember.rating || 0).toFixed(1)} ⭐</td>
+            <td>${staffMember.ratingCount || 0}</td>
             <td>
-                ${staff.role !== 'admin' ? `
-                    <button class="btn btn-small btn-outline" onclick="demoteToUser('${staff.id}')">
-                        👤 Пользователь
-                    </button>
-                ` : '<span class="role-badge">Админ</span>'}
+                ${staffMember.role !== 'admin' && staffMember.role !== 'owner' ? 
+                    `<button class="btn btn-small btn-outline" onclick="demoteToUser('${staffMember.id}')" 
+                            title="Вернуть в пользователи">
+                        👤 Вернуть
+                    </button>` : 
+                    '<span class="role-badge admin">👑 Администратор</span>'
+                }
             </td>
         </tr>
     `).join('');
 }
 
-function updateAdminChats() {
+function updateAdminChatsList() {
     const container = document.getElementById('adminChatsList');
+    
     if (!container) return;
-
+    
     if (chats.length === 0) {
-        container.innerHTML = '<div class="empty-state">Нет чатов</div>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div>😔 Чаты отсутствуют</div>
+                <div class="empty-state-subtitle">В системе пока нет чатов</div>
+            </div>
+        `;
         return;
     }
-
+    
     container.innerHTML = chats.map(chat => {
         const user1 = users.find(u => u.id === chat.user1);
         const user2 = users.find(u => u.id === chat.user2);
-        const lastMessage = chat.messages && chat.messages.length > 0 
-            ? chat.messages[chat.messages.length - 1] 
-            : null;
-
+        const lastMessage = chat.messages && chat.messages.length > 0 ? 
+            chat.messages[chat.messages.length - 1] : null;
+        
         return `
-            <div class="chat-item">
+            <div class="chat-item ${chat.isActive ? 'active-chat' : 'ended-chat'} ${activeChat && activeChat.id === chat.id ? 'selected' : ''}" 
+                 onclick="selectAdminChat('${chat.id}')">
                 <div class="chat-header">
                     <div class="chat-users">
-                        <span class="user">${user1?.displayName || 'Пользователь'}</span>
-                        <span class="connector">↔</span>
-                        <span class="user listener">${user2?.displayName || 'Слушатель'}</span>
+                        <span class="user-badge">${user1 ? (user1.displayName || user1.username) : 'Пользователь'}</span>
+                        <span class="chat-connector">↔</span>
+                        <span class="user-badge listener">${user2 ? (user2.displayName || user2.username) : 'Слушатель'}</span>
                     </div>
-                    <span class="chat-status ${chat.isActive ? 'active' : 'ended'}">
-                        ${chat.isActive ? '● Активен' : '○ Завершен'}
-                    </span>
+                    <div class="chat-status ${chat.isActive ? 'status-active' : 'status-ended'}">
+                        ${chat.isActive ? '● Активный' : '○ Завершен'}
+                    </div>
+                </div>
+                <div class="chat-info">
+                    <span class="message-count">${chat.messages ? chat.messages.length : 0} сообщ.</span>
+                    <span class="chat-date">${new Date(chat.startTime).toLocaleDateString('ru-RU')}</span>
                 </div>
                 ${lastMessage ? `
                     <div class="last-message">
                         ${lastMessage.text.substring(0, 50)}${lastMessage.text.length > 50 ? '...' : ''}
                     </div>
                 ` : ''}
-                <div class="chat-info">
-                    <span>Сообщений: ${chat.messages?.length || 0}</span>
-                    <span>${new Date(chat.startTime).toLocaleDateString()}</span>
-                </div>
             </div>
         `;
     }).join('');
 }
 
-function getRoleDisplay(role) {
-    const roles = {
-        'owner': '👑 Владелец',
-        'admin': '⚙️ Админ', 
-        'listener': '🎧 Слушатель',
-        'user': '👤 Пользователь'
-    };
-    return roles[role] || role;
+function selectAdminChat(chatId) {
+    const chat = chats.find(c => c.id === chatId);
+    if (!chat) return;
+    
+    // Обновляем выделение
+    document.querySelectorAll('.chat-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    const selectedItem = document.querySelector(`.chat-item[onclick="selectAdminChat('${chatId}')"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('selected');
+    }
+    
+    loadAdminChatMessages(chat);
 }
 
-function promoteToListener(userId) {
-    if (!socket || !socket.connected) {
-        showNotification('Нет соединения', 'error');
+function loadAdminChatMessages(chat) {
+    const container = document.getElementById('adminMessagesContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (!chat || !chat.messages || chat.messages.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div>💬 Нет сообщений</div>
+                <div class="empty-state-subtitle">В этом чате пока нет сообщений</div>
+            </div>
+        `;
         return;
     }
-
-    console.log('Повышение пользователя:', userId);
-    socket.emit('change_role', { userId, newRole: 'listener' });
-    showNotification('Пользователь повышен до слушателя', 'success');
+    
+    chat.messages.forEach(message => {
+        const user = users.find(u => u.id === message.senderId);
+        const isUser = user && user.role === 'user';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'listener-message'}`;
+        messageDiv.innerHTML = `
+            <div class="message-header">
+                <strong>${user ? (user.displayName || user.username) : 'Неизвестный'}</strong>
+                <span class="message-time">${new Date(message.timestamp).toLocaleString('ru-RU')}</span>
+            </div>
+            <div class="message-text">${message.text}</div>
+        `;
+        container.appendChild(messageDiv);
+    });
+    
+    container.scrollTop = container.scrollHeight;
 }
 
-function demoteToUser(userId) {
-    if (!socket || !socket.connected) {
-        showNotification('Нет соединения', 'error');
-        return;
-    }
-
-    console.log('Понижение слушателя:', userId);
-    socket.emit('change_role', { userId, newRole: 'user' });
-    showNotification('Слушатель понижен до пользователя', 'success');
-}
-
+// Модальное окно добавления персонала
 function showAddStaffModal() {
-    document.getElementById('addStaffModal').style.display = 'block';
+    document.getElementById('addStaffModal').classList.add('active');
 }
 
 function closeAddStaffModal() {
-    document.getElementById('addStaffModal').style.display = 'none';
-    // Очистить форму
+    document.getElementById('addStaffModal').classList.remove('active');
     document.getElementById('newStaffUsername').value = '';
     document.getElementById('newStaffPassword').value = '';
     document.getElementById('newStaffName').value = '';
@@ -218,34 +400,261 @@ function addNewStaff() {
     const role = document.getElementById('newStaffRole').value;
 
     if (!username || !password || !name) {
-        showNotification('Заполните обязательные поля', 'error');
+        showNotification('❌ Заполните обязательные поля!', 'error');
+        return;
+    }
+
+    if (username.length < 3) {
+        showNotification('❌ Логин должен быть не менее 3 символов!', 'error');
         return;
     }
 
     if (password.length < 6) {
-        showNotification('Пароль должен быть не менее 6 символов', 'error');
+        showNotification('❌ Пароль должен быть не менее 6 символов!', 'error');
         return;
     }
 
-    if (!socket || !socket.connected) {
-        showNotification('Нет соединения', 'error');
+    if (socket && socket.connected) {
+        console.log('➕ Добавление сотрудника:', { username, role });
+        socket.emit('register_staff', { 
+            username, 
+            password, 
+            displayName: name, 
+            email,
+            role 
+        });
+        closeAddStaffModal();
+    } else {
+        showNotification('❌ Нет соединения с сервером', 'error');
+    }
+}
+
+function promoteToListener(userId) {
+    if (socket && socket.connected) {
+        console.log('🎧 Повышение пользователя до слушателя:', userId);
+        socket.emit('change_role', { userId, newRole: 'listener' });
+    } else {
+        showNotification('❌ Нет соединения с сервером', 'error');
+    }
+}
+
+function demoteToUser(userId) {
+    if (socket && socket.connected) {
+        console.log('👤 Понижение слушателя до пользователя:', userId);
+        socket.emit('change_role', { userId, newRole: 'user' });
+    } else {
+        showNotification('❌ Нет соединения с сервером', 'error');
+    }
+}
+
+// Уведомления
+function updateSentNotifications() {
+    const container = document.getElementById('sentNotificationsList');
+    if (!container) return;
+    
+    if (notifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div>📭 Уведомления отсутствуют</div>
+                <div class="empty-state-subtitle">Вы еще не отправляли технических уведомлений</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = notifications.map(notification => `
+        <div class="notification-item">
+            <div class="notification-header">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-type ${notification.type}">${getNotificationTypeDisplay(notification.type)}</div>
+            </div>
+            <div class="notification-text">${notification.text}</div>
+            <div class="notification-footer">
+                <span class="notification-recipients">${getRecipientDisplayName(notification.recipients)}</span>
+                <span class="notification-date">${new Date(notification.timestamp).toLocaleString('ru-RU')}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function getNotificationTypeDisplay(type) {
+    const types = {
+        'info': 'ℹ️ Информация',
+        'warning': '⚠️ Предупреждение',
+        'error': '❌ Ошибка',
+        'success': '✅ Успех'
+    };
+    return types[type] || type;
+}
+
+function getRecipientDisplayName(recipients) {
+    const names = {
+        'all': '👥 Все пользователи',
+        'users': '👤 Только пользователи',
+        'listeners': '🎧 Только слушатели',
+        'admins': '👑 Только администраторы'
+    };
+    return names[recipients] || recipients;
+}
+
+function sendTechnicalNotification() {
+    const title = document.getElementById('notificationTitle').value.trim();
+    const text = document.getElementById('notificationText').value.trim();
+    const recipients = document.getElementById('notificationRecipients').value;
+    const type = document.getElementById('notificationType').value;
+
+    if (!title || !text) {
+        showNotification('❌ Заполните заголовок и текст уведомления!', 'error');
         return;
     }
 
-    console.log('Добавление персонала:', username);
-    socket.emit('register_staff', {
-        username,
-        password, 
-        displayName: name,
-        email,
-        role
+    if (socket && socket.connected) {
+        console.log('📢 Отправка технического уведомления:', { title, recipients, type });
+        socket.emit('send_technical_notification', {
+            title,
+            text,
+            type,
+            recipients
+        });
+        
+        // Очищаем форму
+        document.getElementById('notificationTitle').value = '';
+        document.getElementById('notificationText').value = '';
+        
+        showNotification('📢 Уведомление отправлено!', 'success');
+    } else {
+        showNotification('❌ Нет соединения с сервером', 'error');
+    }
+}
+
+// Системные настройки
+function loadSystemSettings() {
+    if (!systemSettings) return;
+    
+    const elements = [
+        { id: 'systemTitleInput', value: systemSettings.siteTitle || '' },
+        { id: 'systemTheme', value: systemSettings.theme || 'light' },
+        { id: 'maxChatDuration', value: systemSettings.maxChatDuration || 60 },
+        { id: 'allowUserRegistration', checked: systemSettings.allowUserRegistration !== false }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            if (el.type === 'checkbox') {
+                el.checked = element.checked;
+            } else {
+                el.value = element.value;
+            }
+        }
     });
+}
 
-    closeAddStaffModal();
+function saveSystemSettings() {
+    const settings = {
+        siteTitle: document.getElementById('systemTitleInput').value.trim(),
+        theme: document.getElementById('systemTheme').value,
+        maxChatDuration: parseInt(document.getElementById('maxChatDuration').value) || 60,
+        allowUserRegistration: document.getElementById('allowUserRegistration').checked
+    };
+
+    if (!settings.siteTitle) {
+        showNotification('❌ Заполните название системы!', 'error');
+        return;
+    }
+
+    if (socket && socket.connected) {
+        console.log('💾 Сохранение системных настроек:', settings);
+        socket.emit('update_system_settings', settings);
+    } else {
+        showNotification('❌ Нет соединения с сервером', 'error');
+    }
+}
+
+// Настройки профиля администратора
+function showAdminSettings() {
+    showAdminSection('adminSettings');
+    loadAdminProfileSettings();
+}
+
+function loadAdminProfileSettings() {
+    if (!currentUser) return;
+    
+    document.getElementById('adminProfileName').value = currentUser.displayName || '';
+    document.getElementById('adminProfileEmail').value = currentUser.email || '';
+    document.getElementById('adminProfileAvatar').value = currentUser.avatar || '👤';
+    
+    // Загружаем настройки уведомлений
+    if (currentUser.settings) {
+        const settings = currentUser.settings;
+        document.getElementById('adminNotifications').checked = settings.notifications !== false;
+        document.getElementById('adminSound').checked = settings.sound !== false;
+        
+        const themeSelect = document.getElementById('adminTheme');
+        if (themeSelect) {
+            themeSelect.value = settings.theme || 'light';
+        }
+    }
+}
+
+function saveAdminProfile() {
+    const displayName = document.getElementById('adminProfileName').value.trim();
+    const email = document.getElementById('adminProfileEmail').value.trim();
+    const avatar = document.getElementById('adminProfileAvatar').value.trim();
+    const newPassword = document.getElementById('adminProfilePassword').value;
+    const notifications = document.getElementById('adminNotifications').checked;
+    const sound = document.getElementById('adminSound').checked;
+    const theme = document.getElementById('adminTheme').value;
+
+    const updates = {
+        displayName: displayName || currentUser.username,
+        email: email,
+        avatar: avatar,
+        settings: {
+            ...currentUser.settings,
+            notifications: notifications,
+            sound: sound,
+            theme: theme
+        }
+    };
+
+    if (newPassword) {
+        updates.password = newPassword;
+    }
+
+    if (Object.keys(updates).length === 0) {
+        showNotification('ℹ️ Нет изменений для сохранения', 'info');
+        return;
+    }
+
+    if (socket && socket.connected) {
+        socket.emit('update_profile', {
+            userId: currentUser.id,
+            ...updates
+        });
+        
+        // Очищаем поле пароля
+        document.getElementById('adminProfilePassword').value = '';
+        
+        // Сохраняем тему
+        localStorage.setItem('theme', theme);
+        document.body.setAttribute('data-theme', theme);
+    }
+}
+
+// Принудительное обновление данных
+function forceRefreshAdminData() {
+    console.log('🔄 Принудительное обновление данных админ панели');
+    if (socket && socket.connected) {
+        socket.emit('force_refresh_data');
+        showNotification('🔄 Данные обновляются...', 'info');
+    }
 }
 
 // Инициализация админки
 document.addEventListener('DOMContentLoaded', function() {
     // Показать dashboard по умолчанию
-    showAdminSection('users');
+    if (document.getElementById('adminPanel').style.display === 'block') {
+        showAdminSection('dashboard');
+    }
 });

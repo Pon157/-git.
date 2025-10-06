@@ -22,13 +22,13 @@
             <div id="loginForm">
                 <div class="form-group">
                     <label class="form-label">👤 Логин</label>
-                    <input type="text" class="form-input" id="authUsername" placeholder="Введите ваш логин">
+                    <input type="text" class="form-input" id="authUsername" placeholder="Введите ваш логин" value="user">
                 </div>
                 <div class="form-group">
                     <label class="form-label">🔑 Пароль</label>
-                    <input type="password" class="form-input" id="authPassword" placeholder="Введите ваш пароль">
+                    <input type="password" class="form-input" id="authPassword" placeholder="Введите ваш пароль" value="123456">
                 </div>
-                <button class="btn btn-primary w-full" id="loginBtn">
+                <button class="btn btn-primary w-full" id="loginBtn" onclick="login()">
                     <span>🚪 Войти</span>
                 </button>
             </div>
@@ -47,7 +47,7 @@
                     <label class="form-label">✅ Подтвердите пароль</label>
                     <input type="password" class="form-input" id="regPasswordConfirm" placeholder="Повторите пароль">
                 </div>
-                <button class="btn btn-primary w-full" id="registerBtn">
+                <button class="btn btn-primary w-full" id="registerBtn" onclick="register()">
                     <span>📝 Зарегистрироваться</span>
                 </button>
             </div>
@@ -479,7 +479,7 @@
                             <select class="form-input" id="notificationType">
                                 <option value="info">ℹ️ Информация</option>
                                 <option value="warning">⚠️ Предупреждение</option>
-                                <option value="error">🔴 Важно</option>
+                                <option value="error">🔴 Важное</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -558,6 +558,78 @@
     <div class="notification" id="notification"></div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- ВРЕМЕННЫЕ ФУНКЦИИ ДЛЯ ТЕСТИРОВАНИЯ -->
+    <script>
+        // Временные функции для немедленного тестирования
+        function showAuthTab(tabName) {
+            console.log('🔀 Переключение на таб:', tabName);
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('loginForm').classList.toggle('hidden', tabName !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
+        }
+
+        function login() {
+            console.log('🔄 ВЫЗВАНА ФУНКЦИЯ LOGIN');
+            const username = document.getElementById('authUsername').value;
+            const password = document.getElementById('authPassword').value;
+            console.log('📝 Данные:', { username, password });
+            
+            // Показываем что функция работает
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
+            loginBtn.disabled = true;
+            
+            setTimeout(() => {
+                loginBtn.innerHTML = '<span>🚪 Войти</span>';
+                loginBtn.disabled = false;
+                alert('✅ Функция login() работает! Данные: ' + username + ' / ' + password);
+            }, 1000);
+        }
+
+        function register() {
+            console.log('🔄 ВЫЗВАНА ФУНКЦИЯ REGISTER');
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
+            registerBtn.disabled = true;
+            
+            setTimeout(() => {
+                registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+                registerBtn.disabled = false;
+                alert('✅ Функция register() работает!');
+            }, 1000);
+        }
+
+        function logout() {
+            alert('Функция logout() работает!');
+        }
+
+        // Обработчики для табов
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM загружен');
+            
+            // Табы авторизации
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showAuthTab(tabName);
+                });
+            });
+
+            // Проверяем элементы
+            console.log('🔍 Проверка элементов:');
+            console.log('- loginBtn:', document.getElementById('loginBtn'));
+            console.log('- registerBtn:', document.getElementById('registerBtn'));
+            console.log('- authUsername:', document.getElementById('authUsername'));
+            console.log('- authPassword:', document.getElementById('authPassword'));
+            
+            console.log('✅ Все готово к работе!');
+        });
+    </script>
+
     <script src="js/utils.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/chat.js"></script>
@@ -566,15 +638,5 @@
     <script src="js/notifications.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/app.js"></script>
-
-    <script>
-        // Отладочная информация
-        console.log('🔄 Загружен index.html');
-        console.log('📋 Доступные элементы:');
-        console.log('- loginBtn:', document.getElementById('loginBtn'));
-        console.log('- registerBtn:', document.getElementById('registerBtn'));
-        console.log('- authUsername:', document.getElementById('authUsername'));
-        console.log('- authPassword:', document.getElementById('authPassword'));
-    </script>
 </body>
 </html>

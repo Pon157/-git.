@@ -1,126 +1,166 @@
 // Функции для работы со слушателями и пользователями
 function showUserTab(tabName) {
+    console.log('👤 Переключение таба пользователя:', tabName);
+    
+    // Обновляем активные табы
     document.querySelectorAll('#userInterface .tab').forEach(tab => {
         tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
     });
 
-    document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
-    document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+    // Скрываем все разделы
+    document.getElementById('listenersTab').classList.add('hidden');
+    document.getElementById('userNotificationsTab').classList.add('hidden');
     document.getElementById('userChatSection').classList.add('hidden');
     document.getElementById('userSettings').classList.add('hidden');
+
+    // Показываем выбранный раздел
+    switch(tabName) {
+        case 'listeners':
+            document.getElementById('listenersTab').classList.remove('hidden');
+            loadListenerCards();
+            break;
+        case 'notifications':
+            document.getElementById('userNotificationsTab').classList.remove('hidden');
+            updateUserNotifications();
+            break;
+        case 'settings':
+            document.getElementById('userSettings').classList.remove('hidden');
+            loadUserSettings();
+            break;
+    }
 }
 
 function showListenerTab(tabName) {
+    console.log('🎧 Переключение таба слушателя:', tabName);
+    
+    // Обновляем активные табы
     document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
         tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
     });
 
-    document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
-    document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
-    document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
-    document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+    // Скрываем все разделы
+    document.getElementById('listenerChatsTab').classList.add('hidden');
+    document.getElementById('listenerReviewsTab').classList.add('hidden');
+    document.getElementById('listenerStatsTab').classList.add('hidden');
+    document.getElementById('listenerNotificationsTab').classList.add('hidden');
     document.getElementById('listenerSettings').classList.add('hidden');
+
+    // Показываем выбранный раздел
+    switch(tabName) {
+        case 'chats':
+            document.getElementById('listenerChatsTab').classList.remove('hidden');
+            updateListenerChatsList();
+            break;
+        case 'reviews':
+            document.getElementById('listenerReviewsTab').classList.remove('hidden');
+            updateListenerReviewsData();
+            break;
+        case 'stats':
+            document.getElementById('listenerStatsTab').classList.remove('hidden');
+            updateListenerStats();
+            break;
+        case 'notifications':
+            document.getElementById('listenerNotificationsTab').classList.remove('hidden');
+            updateListenerNotifications();
+            break;
+        case 'settings':
+            document.getElementById('listenerSettings').classList.remove('hidden');
+            loadListenerSettings();
+            break;
+    }
 }
 
 function loadListenerCards() {
     const container = document.getElementById('listenerCards');
+    if (!container) return;
     
     // Фильтруем слушателей (только онлайн и не текущий пользователь)
-    const listeners = users.filter(u => 
+    const availableListeners = users.filter(u => 
         (u.role === 'listener' || u.role === 'admin') && 
         u.id !== currentUser.id && 
         u.isOnline
     );
     
-    if (listeners.length === 0) {
+    console.log('🎧 Доступные слушатели:', availableListeners.length);
+    
+    if (availableListeners.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #7f8c8d;">
-                <div>😔 Нет доступных слушателей онлайн</div>
-                <div style="font-size: 14px; margin-top: 10px;">Попробуйте позже или выберите случайного слушателя</div>
+            <div class="empty-listeners">
+                <div class="empty-icon">😔</div>
+                <div class="empty-title">Нет доступных слушателей</div>
+                <div class="empty-subtitle">Попробуйте позже или выберите случайного слушателя</div>
+                <button class="btn btn-primary" onclick="selectRandomListener()">
+                    🎲 Выбрать случайного
+                </button>
             </div>
         `;
         return;
     }
 
-    container.innerHTML = listeners.map(listener => `
+    container.innerHTML = availableListeners.map(listener => `
         <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
-            <div class="listener-avatar">${listener.avatar || '👤'}</div>
-            <h3>${listener.displayName || listener.username}</h3>
-            <div class="listener-rating">
-                <span class="star">★</span>
-                <span>${(listener.rating || 0).toFixed(1)}</span>
-                <span>(${listener.ratingCount || 0})</span>
-            </div>
-            <div class="${listener.isOnline ? 'status-online' : 'status-offline'}" style="margin-top: 10px;">
-                ${listener.isOnline ? '● Онлайн' : '○ Офлайн'}
-            </div>
-            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                ${getRoleDisplayName(listener.role)}
-            </div>
-            ${listener.isOnline ? `
-                <div style="font-size: 12px; color: #27ae60; margin-top: 5px;">
-                    ✅ Готов помочь
+            <div class="listener-header">
+                <div class="listener-avatar">${listener.avatar || '👤'}</div>
+                <div class="listener-info">
+                    <h3 class="listener-name">${listener.displayName || listener.username}</h3>
+                    <div class="listener-rating">
+                        <span class="stars">${'★'.repeat(Math.floor(listener.rating || 0))}${'☆'.repeat(5-Math.floor(listener.rating || 0))}</span>
+                        <span class="rating-value">${(listener.rating || 0).toFixed(1)}</span>
+                        <span class="rating-count">(${listener.ratingCount || 0})</span>
+                    </div>
                 </div>
-            ` : ''}
+            </div>
+            <div class="listener-details">
+                <div class="listener-status online">
+                    <span class="status-dot"></span>
+                    ● Онлайн
+                </div>
+                <div class="listener-role">${getRoleDisplayName(listener.role)}</div>
+                ${listener.email ? `<div class="listener-email">${listener.email}</div>` : ''}
+            </div>
+            <div class="listener-actions">
+                <button class="btn btn-primary btn-full" onclick="event.stopPropagation(); startChatWithListener('${listener.id}')">
+                    💬 Начать чат
+                </button>
+            </div>
         </div>
     `).join('');
 }
 
 function selectRandomListener() {
-    const listeners = users.filter(u => 
+    const availableListeners = users.filter(u => 
         (u.role === 'listener' || u.role === 'admin') && 
         u.isOnline && 
         u.id !== currentUser.id
     );
     
-    if (listeners.length === 0) {
+    if (availableListeners.length === 0) {
         showNotification('❌ Нет доступных слушателей онлайн!', 'error');
         return;
     }
     
-    const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
+    const randomListener = availableListeners[Math.floor(Math.random() * availableListeners.length)];
+    showNotification(`🎲 Выбран слушатель: ${randomListener.displayName || randomListener.username}`, 'info');
     startChatWithListener(randomListener.id);
-}
-
-function startChatWithListener(listenerId) {
-    const listener = users.find(u => u.id === listenerId);
-    if (!listener) {
-        showNotification('❌ Слушатель не найден!', 'error');
-        return;
-    }
-
-    currentListener = listener;
-    
-    console.log('💬 Начало чата с:', listener.displayName || listener.username);
-    
-    // Показываем чат
-    document.getElementById('listenersTab').classList.add('hidden');
-    document.getElementById('userNotificationsTab').classList.add('hidden');
-    document.getElementById('userChatSection').classList.remove('hidden');
-    
-    document.getElementById('currentListenerRating').textContent = (listener.rating || 0).toFixed(1);
-    
-    // Запускаем таймер
-    chatStartTime = new Date();
-    startChatTimer();
-    
-    showNotification(`💬 Чат начат с ${listener.displayName || listener.username}`, 'success');
 }
 
 function updateListenerChatsList() {
     const container = document.getElementById('listenerChatsList');
+    if (!container) return;
     
     // Фильтруем чаты слушателя
     const listenerChats = chats.filter(chat => 
-        (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id)) && 
-        chat.isActive
+        chat.user2 === currentUser.id && chat.isActive
     );
+    
+    console.log('💬 Активные чаты слушателя:', listenerChats.length);
     
     if (listenerChats.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <div>😴 Активные чаты отсутствуют</div>
-                <div style="font-size: 14px; margin-top: 10px;">Ожидайте подключения пользователей</div>
+            <div class="empty-state">
+                <div class="empty-icon">😴</div>
+                <div class="empty-title">Активные чаты отсутствуют</div>
+                <div class="empty-subtitle">Ожидайте подключения пользователей</div>
             </div>
         `;
         return;
@@ -132,77 +172,85 @@ function updateListenerChatsList() {
             chat.messages[chat.messages.length - 1] : null;
         
         return `
-            <div class="chat-item" data-chat-id="${chat.id}" onclick="selectListenerChat('${chat.id}')">
-                <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
-                <div style="font-size: 12px; color: #7f8c8d;">
-                    ${lastMessage ? 
-                        lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 
-                        'Нет сообщений'
-                    }
+            <div class="chat-item ${activeChat && activeChat.id === chat.id ? 'active' : ''}" 
+                 onclick="selectListenerChat('${chat.id}')">
+                <div class="chat-header">
+                    <div class="chat-user">
+                        <span class="user-avatar-small">${user ? (user.avatar || '👤') : '👤'}</span>
+                        <div class="user-info">
+                            <div class="user-name">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
+                            <div class="chat-status active">● Активный</div>
+                        </div>
+                    </div>
+                    <div class="chat-meta">
+                        <span class="message-count">${chat.messages ? chat.messages.length : 0} сообщ.</span>
+                    </div>
                 </div>
-                <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
-                    ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
-                </div>
+                ${lastMessage ? `
+                    <div class="last-message">
+                        ${lastMessage.text.substring(0, 60)}${lastMessage.text.length > 60 ? '...' : ''}
+                    </div>
+                    <div class="message-time">
+                        ${new Date(lastMessage.timestamp).toLocaleTimeString('ru-RU')}
+                    </div>
+                ` : `
+                    <div class="last-message empty">Нет сообщений</div>
+                `}
             </div>
         `;
     }).join('');
 }
 
 function selectListenerChat(chatId) {
-    activeChat = chats.find(chat => chat.id === chatId);
-    if (!activeChat) return;
+    const chat = chats.find(chat => chat.id === chatId);
+    if (!chat) {
+        showNotification('❌ Чат не найден!', 'error');
+        return;
+    }
+
+    activeChat = chat;
     
+    // Обновляем выделение
     document.querySelectorAll('.chat-item').forEach(item => {
         item.classList.remove('active');
     });
     
-    const selectedItem = document.querySelector(`.chat-item[data-chat-id="${chatId}"]`);
+    const selectedItem = document.querySelector(`.chat-item[onclick="selectListenerChat('${chatId}')"]`);
     if (selectedItem) {
         selectedItem.classList.add('active');
     }
     
+    // Показываем чат
+    document.getElementById('listenerChatsTab').classList.add('hidden');
+    document.getElementById('listenerChatSection').classList.remove('hidden');
+    
+    // Загружаем сообщения
     loadListenerChatMessages();
+    
+    // Запускаем таймер если его нет
+    if (!chatStartTime) {
+        chatStartTime = new Date(chat.startTime);
+        startChatTimer();
+    }
+    
     showNotification('💬 Чат выбран', 'info');
 }
 
-// Функции настроек
-function showUserSettings() {
-    document.getElementById('listenersTab').classList.add('hidden');
-    document.getElementById('userChatSection').classList.add('hidden');
-    document.getElementById('userNotificationsTab').classList.add('hidden');
-    document.getElementById('userSettings').classList.remove('hidden');
-}
-
-function hideUserSettings() {
-    document.getElementById('userSettings').classList.add('hidden');
-    document.getElementById('listenersTab').classList.remove('hidden');
-}
-
-function showListenerSettings() {
-    document.getElementById('listenerChatsTab').classList.add('hidden');
-    document.getElementById('listenerReviewsTab').classList.add('hidden');
-    document.getElementById('listenerStatsTab').classList.add('hidden');
-    document.getElementById('listenerNotificationsTab').classList.add('hidden');
-    document.getElementById('listenerSettings').classList.remove('hidden');
-}
-
-function hideListenerSettings() {
-    document.getElementById('listenerSettings').classList.add('hidden');
-    document.getElementById('listenerChatsTab').classList.remove('hidden');
-}
-
 function updateListenerReviewsData() {
-    console.log('📝 Обновление отзывов слушателя');
     const container = document.getElementById('listenerReviewsList');
+    if (!container) return;
     
     // Фильтруем оценки для текущего слушателя
     const listenerRatings = ratings.filter(r => r.listenerId === currentUser.id);
     
+    console.log('⭐ Отзывы слушателя:', listenerRatings.length);
+    
     if (listenerRatings.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <div>⭐ Отзывы отсутствуют</div>
-                <div style="font-size: 14px; margin-top: 10px;">Ваши пользователи еще не оставили отзывов</div>
+            <div class="empty-state">
+                <div class="empty-icon">⭐</div>
+                <div class="empty-title">Отзывы отсутствуют</div>
+                <div class="empty-subtitle">Ваши пользователи еще не оставили отзывов</div>
             </div>
         `;
         return;
@@ -210,16 +258,24 @@ function updateListenerReviewsData() {
     
     container.innerHTML = listenerRatings.map(rating => {
         const user = users.find(u => u.id === rating.userId);
+        const stars = '★'.repeat(rating.rating) + '☆'.repeat(5 - rating.rating);
+        
         return `
             <div class="review-item">
-                <div style="display: flex; justify-content: between; align-items: center;">
-                    <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Аноним'}</div>
-                    <div class="rating-stars">${'★'.repeat(rating.rating)}${'☆'.repeat(5-rating.rating)}</div>
+                <div class="review-header">
+                    <div class="reviewer-info">
+                        <span class="reviewer-avatar">${user ? (user.avatar || '👤') : '👤'}</span>
+                        <div>
+                            <div class="reviewer-name">${user ? (user.displayName || user.username) : 'Аноним'}</div>
+                            <div class="review-date">${new Date(rating.timestamp).toLocaleDateString('ru-RU')}</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        <span class="stars">${stars}</span>
+                        <span class="rating-value">${rating.rating}.0</span>
+                    </div>
                 </div>
-                <div style="color: #7f8c8d; margin-top: 5px;">${rating.comment || 'Без комментария'}</div>
-                <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                    ${new Date(rating.timestamp).toLocaleDateString('ru-RU')}
-                </div>
+                <div class="review-comment">${rating.comment || 'Без комментария'}</div>
             </div>
         `;
     }).join('');
@@ -228,20 +284,36 @@ function updateListenerReviewsData() {
 function updateListenerStats() {
     console.log('📊 Обновление статистики слушателя');
     
+    if (!currentUser) return;
+    
     // Подсчитываем статистику
     const listenerChats = chats.filter(chat => chat.user2 === currentUser.id);
     const completedChats = listenerChats.filter(chat => !chat.isActive).length;
+    const activeChats = listenerChats.filter(chat => chat.isActive).length;
     const totalMessages = listenerChats.reduce((total, chat) => total + (chat.messages?.length || 0), 0);
+    const avgMessagesPerChat = completedChats > 0 ? (totalMessages / completedChats).toFixed(1) : 0;
     
-    document.getElementById('listenerTotalChats').textContent = completedChats;
-    document.getElementById('listenerAvgRating').textContent = (currentUser.rating || 0).toFixed(1);
-    document.getElementById('listenerResponseTime').textContent = '45с';
-    document.getElementById('listenerOnlineTime').textContent = '2ч';
+    // Обновляем элементы
+    const stats = [
+        { id: 'listenerTotalChats', value: completedChats },
+        { id: 'listenerActiveChats', value: activeChats },
+        { id: 'listenerAvgRating', value: (currentUser.rating || 0).toFixed(1) },
+        { id: 'listenerTotalMessages', value: totalMessages },
+        { id: 'listenerAvgMessages', value: avgMessagesPerChat },
+        { id: 'listenerResponseTime', value: '45с' }
+    ];
+    
+    stats.forEach(stat => {
+        const element = document.getElementById(stat.id);
+        if (element) {
+            element.textContent = stat.value;
+        }
+    });
 }
 
 function updateUserNotifications() {
-    console.log('📢 Обновление уведомлений пользователя');
     const container = document.getElementById('userNotificationsList');
+    if (!container) return;
     
     const userNotifications = notifications.filter(notification => 
         notification.recipients === 'all' || notification.recipients === 'users'
@@ -249,9 +321,10 @@ function updateUserNotifications() {
     
     if (userNotifications.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <div>📭 Уведомления отсутствуют</div>
-                <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления</div>
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-title">Уведомления отсутствуют</div>
+                <div class="empty-subtitle">Здесь будут появляться важные уведомления</div>
             </div>
         `;
         return;
@@ -259,18 +332,21 @@ function updateUserNotifications() {
     
     container.innerHTML = userNotifications.map(notification => `
         <div class="notification-item">
-            <div style="font-weight: 600;">${notification.title}</div>
-            <div style="font-size: 14px; color: #7f8c8d; margin-top: 5px;">${notification.text}</div>
-            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                ${new Date(notification.timestamp).toLocaleString('ru-RU')}
+            <div class="notification-header">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-type ${notification.type}"></div>
+            </div>
+            <div class="notification-text">${notification.text}</div>
+            <div class="notification-footer">
+                <span class="notification-date">${new Date(notification.timestamp).toLocaleString('ru-RU')}</span>
             </div>
         </div>
     `).join('');
 }
 
 function updateListenerNotifications() {
-    console.log('📢 Обновление уведомлений слушателя');
     const container = document.getElementById('listenerNotificationsList');
+    if (!container) return;
     
     const listenerNotifications = notifications.filter(notification => 
         notification.recipients === 'all' || notification.recipients === 'listeners'
@@ -278,9 +354,10 @@ function updateListenerNotifications() {
     
     if (listenerNotifications.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                <div>📭 Уведомления отсутствуют</div>
-                <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления</div>
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-title">Уведомления отсутствуют</div>
+                <div class="empty-subtitle">Здесь будут появляться важные уведомления</div>
             </div>
         `;
         return;
@@ -288,11 +365,174 @@ function updateListenerNotifications() {
     
     container.innerHTML = listenerNotifications.map(notification => `
         <div class="notification-item">
-            <div style="font-weight: 600;">${notification.title}</div>
-            <div style="font-size: 14px; color: #7f8c8d; margin-top: 5px;">${notification.text}</div>
-            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                ${new Date(notification.timestamp).toLocaleString('ru-RU')}
+            <div class="notification-header">
+                <div class="notification-title">${notification.title}</div>
+                <div class="notification-type ${notification.type}"></div>
+            </div>
+            <div class="notification-text">${notification.text}</div>
+            <div class="notification-footer">
+                <span class="notification-date">${new Date(notification.timestamp).toLocaleString('ru-RU')}</span>
             </div>
         </div>
     `).join('');
+}
+
+// Функции настроек
+function showUserSettings() {
+    showUserTab('settings');
+}
+
+function showListenerSettings() {
+    showListenerTab('settings');
+}
+
+function loadUserSettings() {
+    if (!currentUser) return;
+    
+    const elements = [
+        { id: 'userProfileName', value: currentUser.displayName || '' },
+        { id: 'userProfileEmail', value: currentUser.email || '' },
+        { id: 'userProfileAvatar', value: currentUser.avatar || '👤' }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.value = element.value;
+        }
+    });
+    
+    // Загружаем настройки уведомлений
+    if (currentUser.settings) {
+        const settings = currentUser.settings;
+        document.getElementById('userNotifications').checked = settings.notifications !== false;
+        document.getElementById('userSound').checked = settings.sound !== false;
+        
+        const themeSelect = document.getElementById('userTheme');
+        if (themeSelect) {
+            themeSelect.value = settings.theme || 'light';
+        }
+    }
+}
+
+function loadListenerSettings() {
+    if (!currentUser) return;
+    
+    const elements = [
+        { id: 'listenerProfileName', value: currentUser.displayName || '' },
+        { id: 'listenerProfileEmail', value: currentUser.email || '' },
+        { id: 'listenerProfileAvatar', value: currentUser.avatar || '🎧' }
+    ];
+    
+    elements.forEach(element => {
+        const el = document.getElementById(element.id);
+        if (el) {
+            el.value = element.value;
+        }
+    });
+    
+    // Загружаем настройки уведомлений
+    if (currentUser.settings) {
+        const settings = currentUser.settings;
+        document.getElementById('listenerNotifications').checked = settings.notifications !== false;
+        document.getElementById('listenerSound').checked = settings.sound !== false;
+        
+        const themeSelect = document.getElementById('listenerTheme');
+        if (themeSelect) {
+            themeSelect.value = settings.theme || 'light';
+        }
+    }
+}
+
+function saveUserProfile() {
+    const displayName = document.getElementById('userProfileName').value.trim();
+    const email = document.getElementById('userProfileEmail').value.trim();
+    const avatar = document.getElementById('userProfileAvatar').value.trim();
+    const newPassword = document.getElementById('userProfilePassword').value;
+    const notifications = document.getElementById('userNotifications').checked;
+    const sound = document.getElementById('userSound').checked;
+    const theme = document.getElementById('userTheme').value;
+
+    const updates = {
+        displayName: displayName || currentUser.username,
+        email: email,
+        avatar: avatar,
+        settings: {
+            ...currentUser.settings,
+            notifications: notifications,
+            sound: sound,
+            theme: theme
+        }
+    };
+
+    if (newPassword) {
+        updates.password = newPassword;
+    }
+
+    if (socket && socket.connected) {
+        socket.emit('update_profile', {
+            userId: currentUser.id,
+            ...updates
+        });
+        
+        // Очищаем поле пароля
+        document.getElementById('userProfilePassword').value = '';
+        
+        // Сохраняем тему
+        localStorage.setItem('theme', theme);
+        document.body.setAttribute('data-theme', theme);
+    }
+}
+
+function saveListenerProfile() {
+    const displayName = document.getElementById('listenerProfileName').value.trim();
+    const email = document.getElementById('listenerProfileEmail').value.trim();
+    const avatar = document.getElementById('listenerProfileAvatar').value.trim();
+    const newPassword = document.getElementById('listenerProfilePassword').value;
+    const notifications = document.getElementById('listenerNotifications').checked;
+    const sound = document.getElementById('listenerSound').checked;
+    const theme = document.getElementById('listenerTheme').value;
+
+    const updates = {
+        displayName: displayName || currentUser.username,
+        email: email,
+        avatar: avatar,
+        settings: {
+            ...currentUser.settings,
+            notifications: notifications,
+            sound: sound,
+            theme: theme
+        }
+    };
+
+    if (newPassword) {
+        updates.password = newPassword;
+    }
+
+    if (socket && socket.connected) {
+        socket.emit('update_profile', {
+            userId: currentUser.id,
+            ...updates
+        });
+        
+        // Очищаем поле пароля
+        document.getElementById('listenerProfilePassword').value = '';
+        
+        // Сохраняем тему
+        localStorage.setItem('theme', theme);
+        document.body.setAttribute('data-theme', theme);
+    }
+}
+
+function updateRatingsUI() {
+    // Обновляем рейтинги в карточках слушателей
+    if (currentUser && currentUser.role === 'user') {
+        loadListenerCards();
+    }
+    
+    // Обновляем отзывы слушателя
+    if (currentUser && currentUser.role === 'listener') {
+        updateListenerReviewsData();
+        updateListenerStats();
+    }
 }

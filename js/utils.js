@@ -3,6 +3,8 @@ const utils = {
     // Показать уведомление
     showNotification(message, type = 'info') {
         const notification = document.getElementById('notification');
+        if (!notification) return;
+        
         notification.textContent = message;
         notification.className = `notification ${type} show`;
         
@@ -13,10 +15,11 @@ const utils = {
 
     // Скрыть все интерфейсы
     hideAllInterfaces() {
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('userInterface').style.display = 'none';
-        document.getElementById('listenerInterface').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'none';
+        const interfaces = ['authScreen', 'userInterface', 'listenerInterface', 'adminPanel'];
+        interfaces.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.style.display = 'none';
+        });
     },
 
     // Получить отображаемое имя роли
@@ -74,5 +77,24 @@ const utils = {
     // Получить пользователя по ID
     getUserById(userId) {
         return users.find(u => u.id === userId);
+    },
+
+    // Показать элемент
+    showElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.classList.remove('hidden');
+    },
+
+    // Скрыть элемент
+    hideElement(id) {
+        const element = document.getElementById(id);
+        if (element) element.classList.add('hidden');
+    },
+
+    // Показать только определенный элемент
+    showOnly(elementId) {
+        const elementsToHide = ['listenersTab', 'userChatSection', 'userNotificationsTab', 'userSettings'];
+        elementsToHide.forEach(id => this.hideElement(id));
+        this.showElement(elementId);
     }
 };

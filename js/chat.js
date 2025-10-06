@@ -16,28 +16,42 @@ function startChatWithListener(listenerId) {
         user2: listenerId
     });
 
-    // Показываем чат
-    document.getElementById('listenersTab').classList.add('hidden');
-    document.getElementById('userNotificationsTab').classList.add('hidden');
-    document.getElementById('userChatSection').classList.remove('hidden');
+    // Показываем индикатор загрузки
+    showChatLoading(true);
+}
+
+function showChatLoading(show) {
+    const chatSection = document.getElementById('userChatSection');
+    const messagesContainer = document.getElementById('userMessagesContainer');
     
-    document.getElementById('currentListenerRating').textContent = (listener.rating || 0).toFixed(1);
-    
-    // Запускаем таймер
-    chatStartTime = new Date();
-    startChatTimer();
+    if (show) {
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div class="chat-loading">
+                    <div class="loading-spinner"></div>
+                    <div>Подключение к слушателю...</div>
+                </div>
+            `;
+        }
+    }
 }
 
 function startChatTimer() {
     clearInterval(chatTimer);
+    chatStartTime = new Date();
+    
     chatTimer = setInterval(() => {
         if (!chatStartTime) return;
         const now = new Date();
         const diff = Math.floor((now - chatStartTime) / 1000);
         const minutes = Math.floor(diff / 60);
         const seconds = diff % 60;
-        document.getElementById('chatDuration').textContent = 
-            `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        const durationElement = document.getElementById('chatDuration');
+        if (durationElement) {
+            durationElement.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
     }, 1000);
 }
 
@@ -58,10 +72,10 @@ function sendUserMessage() {
     const message = {
         text: text,
         senderId: currentUser.id,
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
     };
 
-    console.log('📤 Отправка сообщения:', message);
+    console.log('📤 Отправка сообщения пользователя:', message);
     
     // Добавляем сообщение сразу в интерфейс отправителя
     addMessageToUserChat(message);
@@ -72,6 +86,7 @@ function sendUserMessage() {
     });
 
     input.value = '';
+    input.focus();
 }
 
 function sendListenerMessage() {
@@ -91,10 +106,10 @@ function sendListenerMessage() {
     const message = {
         text: text,
         senderId: currentUser.id,
-        timestamp: new Date()
+        timestamp: new Date().toISOString()
     };
 
-    console.log('📤 Отправка сообщения от слушателя:', message);
+    console.log('📤 Отправка сообщения слушателя:', message);
     
     // Добавляем сообщение сразу в интерфейс отправителя
     addMessageToListenerChat(message);
@@ -105,6 +120,7 @@ function sendListenerMessage() {
     });
 
     input.value = '';
+    input.focus();
 }
 
 function handleNewMessage(data) {
@@ -118,12 +134,10 @@ function handleNewMessage(data) {
     
     messageIds.add(data.message.id);
     
+    // Обновляем активный чат если нужно
     if (activeChat && activeChat.id === data.chatId) {
         if (!activeChat.messages) activeChat.messages = [];
         activeChat.messages.push(data.message);
-        
-        // Обновляем счетчик сообщений
-        updateMessageCount();
         
         // Отображаем сообщение у обоих участников чата
         if (currentUser.role === 'user') {
@@ -137,46 +151,80 @@ function handleNewMessage(data) {
                 addMessageToListenerChat(data.message);
             }
         }
+        
+        // Обновляем счетчик сообщений
+        updateMessageCount();
+    }
+    
+    // Помечаем сообщения как прочитанные
+    if (currentUser && data.message.senderId !== currentUser.id) {
+        socket.emit('mark_messages_read', {
+            chatId: data.chatId,
+            userId: currentUser.id
+        });
     }
 }
 
-function addMessageToUserChat(message) {
+function addMessageToUserChat(message, scroll = true) {
     const container = document.getElementById('userMessagesContainer');
+    if (!container) return;
     
-    // Очищаем приветственное сообщение
-    if (container.children.length === 1 && container.children[0].textContent.includes('Чат начат')) {
-        container.innerHTML = '';
+    // Очищаем приветственное сообщение или индикатор загрузки
+    if (container.children.length === 1) {
+        const firstChild = container.children[0];
+        if (firstChild.className === 'chat-welcome' || firstChild.className === 'chat-loading') {
+            container.innerHTML = '';
+        }
     }
     
     const messageDiv = document.createElement('div');
     const isCurrentUser = message.senderId === currentUser.id;
-    messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
-    messageDiv.innerHTML = `
-        <div>${message.text}</div>
-        <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-    `;
-    container.appendChild(messageDiv);
-    container.scrollTop = container.scrollHeight;
+    messageDiv.className = `message ${isCurrentUser ? 'user-message' : 'listener-message'}`;
     
-    // Обновляем счетчик сообщений
-    updateMessageCount();
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <div class="message-text">${message.text}</div>
+            <div class="message-time">${new Date(message.timestamp).toLocaleTimeString('ru-RU', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            })}</div>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    
+    if (scroll) {
+        container.scrollTop = container.scrollHeight;
+    }
 }
 
 function addMessageToListenerChat(message, scroll = true) {
     const container = document.getElementById('listenerMessagesContainer');
+    if (!container) return;
     
     // Очищаем приветственное сообщение
-    if (container.children.length === 1 && container.children[0].textContent.includes('Выберите чат')) {
+    if (container.children.length === 1 && container.children[0].className === 'chat-welcome') {
         container.innerHTML = '';
     }
     
     const messageDiv = document.createElement('div');
     const isCurrentUser = message.senderId === currentUser.id;
-    messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
+    messageDiv.className = `message ${isCurrentUser ? 'listener-message' : 'user-message'}`;
+    
+    const user = users.find(u => u.id === message.senderId);
+    const userName = user ? (user.displayName || user.username) : 'Пользователь';
+    
     messageDiv.innerHTML = `
-        <div>${message.text}</div>
-        <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
+        <div class="message-content">
+            ${!isCurrentUser ? `<div class="message-sender">${userName}</div>` : ''}
+            <div class="message-text">${message.text}</div>
+            <div class="message-time">${new Date(message.timestamp).toLocaleTimeString('ru-RU', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            })}</div>
+        </div>
     `;
+    
     container.appendChild(messageDiv);
     
     if (scroll) {
@@ -186,19 +234,25 @@ function addMessageToListenerChat(message, scroll = true) {
 
 function updateMessageCount() {
     if (activeChat && activeChat.messages) {
-        document.getElementById('messageCount').textContent = activeChat.messages.length;
+        const countElement = document.getElementById('messageCount');
+        if (countElement) {
+            countElement.textContent = activeChat.messages.length;
+        }
     }
 }
 
 function loadUserChatMessages() {
     const container = document.getElementById('userMessagesContainer');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                <div>💬 Нет сообщений</div>
-                <div style="font-size: 14px; margin-top: 10px;">Начните общение с вашим слушателем</div>
+            <div class="chat-welcome">
+                <div class="welcome-icon">💬</div>
+                <div class="welcome-title">Чат начат</div>
+                <div class="welcome-subtitle">Начните общение с вашим слушателем</div>
             </div>
         `;
         return;
@@ -207,20 +261,23 @@ function loadUserChatMessages() {
     activeChat.messages.forEach(message => {
         addMessageToUserChat(message, false);
     });
-    container.scrollTop = container.scrollHeight;
     
+    container.scrollTop = container.scrollHeight;
     updateMessageCount();
 }
 
 function loadListenerChatMessages() {
     const container = document.getElementById('listenerMessagesContainer');
+    if (!container) return;
+    
     container.innerHTML = '';
     
     if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                <div>💬 Нет сообщений</div>
-                <div style="font-size: 14px; margin-top: 10px;">Начните общение с пользователем</div>
+            <div class="chat-welcome">
+                <div class="welcome-icon">💬</div>
+                <div class="welcome-title">Чат с пользователем</div>
+                <div class="welcome-subtitle">Начните общение с пользователем</div>
             </div>
         `;
         return;
@@ -229,19 +286,21 @@ function loadListenerChatMessages() {
     activeChat.messages.forEach(message => {
         addMessageToListenerChat(message, false);
     });
+    
     container.scrollTop = container.scrollHeight;
 }
 
 function loadAdminChatMessages(chat) {
     const container = document.getElementById('adminMessagesContainer');
+    if (!container) return;
     
     container.innerHTML = '';
     
     if (!chat || !chat.messages || chat.messages.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+            <div class="empty-state">
                 <div>💬 Нет сообщений</div>
-                <div style="font-size: 14px; margin-top: 10px;">В этом чате пока нет сообщений</div>
+                <div class="empty-state-subtitle">В этом чате пока нет сообщений</div>
             </div>
         `;
         return;
@@ -252,10 +311,13 @@ function loadAdminChatMessages(chat) {
         const user = users.find(u => u.id === message.senderId);
         const isUser = user && user.role === 'user';
         
-        messageDiv.className = `message ${isUser ? 'user' : 'other'}`;
+        messageDiv.className = `message ${isUser ? 'user-message' : 'listener-message'}`;
         messageDiv.innerHTML = `
-            <div><strong>${user ? (user.displayName || user.username) : 'Неизвестный'}:</strong> ${message.text}</div>
-            <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
+            <div class="message-content">
+                <div class="message-sender">${user ? (user.displayName || user.username) : 'Неизвестный'}</div>
+                <div class="message-text">${message.text}</div>
+                <div class="message-time">${new Date(message.timestamp).toLocaleString('ru-RU')}</div>
+            </div>
         `;
         container.appendChild(messageDiv);
     });
@@ -265,37 +327,104 @@ function loadAdminChatMessages(chat) {
 
 function endChat() {
     console.log('🚪 Завершение чата');
+    
     if (activeChat) {
         socket.emit('end_chat', { chatId: activeChat.id });
     }
 
-    document.getElementById('userChatSection').classList.add('hidden');
-    document.getElementById('listenersTab').classList.remove('hidden');
+    // Скрываем чат и показываем список слушателей
+    if (currentUser.role === 'user') {
+        document.getElementById('userChatSection').classList.add('hidden');
+        document.getElementById('listenersTab').classList.remove('hidden');
+    }
+    
+    // Останавливаем таймер
     clearInterval(chatTimer);
+    
+    // Сбрасываем переменные
     activeChat = null;
     currentListener = null;
     chatStartTime = null;
+    
+    showNotification('🔚 Чат завершен', 'info');
+}
+
+function submitRating() {
+    if (!activeChat || !currentListener) {
+        showNotification('❌ Нет активного чата для оценки!', 'error');
+        return;
+    }
+    
+    const rating = parseInt(document.querySelector('input[name="rating"]:checked')?.value);
+    const comment = document.getElementById('ratingComment').value.trim();
+    
+    if (!rating) {
+        showNotification('❌ Выберите оценку!', 'error');
+        return;
+    }
+
+    socket.emit('submit_rating', {
+        listenerId: currentListener.id,
+        userId: currentUser.id,
+        rating: rating,
+        comment: comment
+    });
+    
+    // Закрываем модальное окно оценки
+    closeRatingModal();
+    endChat();
+}
+
+function showRatingModal() {
+    document.getElementById('ratingModal').classList.add('active');
+}
+
+function closeRatingModal() {
+    document.getElementById('ratingModal').classList.remove('active');
+    // Сбрасываем форму
+    document.querySelector('input[name="rating"]:checked')?.checked = false;
+    document.getElementById('ratingComment').value = '';
 }
 
 function updateChatsUI() {
-    if (currentUser) {
-        if (currentUser.role === 'user' && activeChat) {
+    if (!currentUser) return;
+
+    if (currentUser.role === 'user' && activeChat) {
+        const updatedChat = chats.find(c => c.id === activeChat.id);
+        if (updatedChat) {
+            activeChat = updatedChat;
+            loadUserChatMessages();
+        }
+    } else if (currentUser.role === 'listener') {
+        updateListenerChatsList();
+        if (activeChat) {
             const updatedChat = chats.find(c => c.id === activeChat.id);
             if (updatedChat) {
                 activeChat = updatedChat;
-                loadUserChatMessages();
+                loadListenerChatMessages();
             }
-        } else if (currentUser.role === 'listener') {
-            updateListenerChatsList();
-            if (activeChat) {
-                const updatedChat = chats.find(c => c.id === activeChat.id);
-                if (updatedChat) {
-                    activeChat = updatedChat;
-                    loadListenerChatMessages();
-                }
-            }
-        } else if (currentUser.role === 'admin') {
-            updateAdminChatsList();
         }
     }
 }
+
+// Обработчики клавиш
+function initChatInputHandlers() {
+    // Enter для отправки сообщения
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const activeElement = document.activeElement;
+            if (activeElement && (activeElement.id === 'userMessageInput' || activeElement.id === 'listenerMessageInput')) {
+                if (currentUser.role === 'user') {
+                    sendUserMessage();
+                } else if (currentUser.role === 'listener') {
+                    sendListenerMessage();
+                }
+            }
+        }
+    });
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    initChatInputHandlers();
+});

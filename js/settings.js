@@ -202,6 +202,7 @@ const settings = {
             updateData.password = newPassword;
         }
 
+        console.log('💾 Обновление профиля:', updateData);
         socket.emit('update_profile', updateData);
     },
 
@@ -236,19 +237,72 @@ const settings = {
             localStorage.setItem('fontSize', size);
             this.updateActiveSettings();
         }
+    },
+
+    // Инициализация модуля
+    init() {
+        console.log('🔧 Инициализация модуля настроек...');
+        this.setupGlobalEventListeners();
+    },
+
+    // Настройка глобальных обработчиков событий
+    setupGlobalEventListeners() {
+        // Обработчики для выбора аватара
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('avatar-option')) {
+                const avatar = e.target.getAttribute('data-avatar');
+                this.selectAvatar(avatar);
+            }
+        });
+
+        // Обработчики для тем
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('theme-option')) {
+                const theme = e.target.getAttribute('data-theme');
+                this.changeTheme(theme);
+            }
+        });
+
+        // Обработчики для шрифтов
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('font-option') && e.target.hasAttribute('data-font')) {
+                const font = e.target.getAttribute('data-font');
+                this.changeFont(font);
+            }
+        });
+
+        // Обработчики для размеров шрифта
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('font-option') && e.target.hasAttribute('data-size')) {
+                const size = e.target.getAttribute('data-size');
+                this.changeFontSize(size);
+            }
+        });
+
+        // Обработчик для обновления профиля
+        document.addEventListener('click', (e) => {
+            if (e.target.closest && e.target.closest('button') && e.target.closest('button').textContent.includes('Сохранить изменения')) {
+                this.updateProfile();
+            }
+        });
     }
 };
 
 // Настройки пользователя
 const userSettings = {
     show() {
+        console.log('👤 Показ настроек пользователя');
         utils.hideElement('listenersTab');
         utils.hideElement('userChatSection');
         utils.hideElement('userNotificationsTab');
         utils.showElement('userSettings');
+        
+        // Обновляем настройки профиля
+        this.showThemeSettings();
     },
 
     hide() {
+        console.log('👤 Скрытие настроек пользователя');
         utils.hideElement('userSettings');
         utils.showElement('listenersTab');
     },
@@ -261,22 +315,34 @@ const userSettings = {
     },
 
     init() {
-        document.getElementById('userSettingsBtn')?.addEventListener('click', () => this.show());
-        document.getElementById('userBackBtn')?.addEventListener('click', () => this.hide());
+        console.log('🔧 Инициализация настроек пользователя');
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'userSettingsBtn') {
+                this.show();
+            }
+            if (e.target.id === 'userBackBtn') {
+                this.hide();
+            }
+        });
     }
 };
 
 // Настройки слушателя
 const listenerSettings = {
     show() {
+        console.log('🎧 Показ настроек слушателя');
         utils.hideElement('listenerChatsTab');
         utils.hideElement('listenerReviewsTab');
         utils.hideElement('listenerStatsTab');
         utils.hideElement('listenerNotificationsTab');
         utils.showElement('listenerSettings');
+        
+        // Обновляем настройки профиля
+        this.showThemeSettings();
     },
 
     hide() {
+        console.log('🎧 Скрытие настроек слушателя');
         utils.hideElement('listenerSettings');
         utils.showElement('listenerChatsTab');
     },
@@ -289,18 +355,30 @@ const listenerSettings = {
     },
 
     init() {
-        document.getElementById('listenerSettingsBtn')?.addEventListener('click', () => this.show());
-        document.getElementById('listenerBackBtn')?.addEventListener('click', () => this.hide());
+        console.log('🔧 Инициализация настроек слушателя');
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'listenerSettingsBtn') {
+                this.show();
+            }
+            if (e.target.id === 'listenerBackBtn') {
+                this.hide();
+            }
+        });
     }
 };
 
 // Настройки администратора
 const adminSettings = {
     show() {
+        console.log('👑 Показ настроек администратора');
         admin.showSection('adminSettings');
+        
+        // Обновляем настройки профиля
+        this.showThemeSettings();
     },
 
     hide() {
+        console.log('👑 Скрытие настроек администратора');
         admin.showSection('dashboard');
     },
 
@@ -312,7 +390,14 @@ const adminSettings = {
     },
 
     init() {
-        document.getElementById('adminSettingsBtn')?.addEventListener('click', () => this.show());
-        document.getElementById('adminBackBtn')?.addEventListener('click', () => this.hide());
+        console.log('🔧 Инициализация настроек администратора');
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'adminSettingsBtn') {
+                this.show();
+            }
+            if (e.target.id === 'adminBackBtn') {
+                this.hide();
+            }
+        });
     }
 };

@@ -583,10 +583,25 @@
             loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
             loginBtn.disabled = true;
             
+            // Имитируем успешный вход через 1 секунду
             setTimeout(() => {
                 loginBtn.innerHTML = '<span>🚪 Войти</span>';
                 loginBtn.disabled = false;
-                alert('✅ Функция login() работает! Данные: ' + username + ' / ' + password);
+                
+                // Создаем тестового пользователя
+                const testUser = {
+                    id: 'test-user',
+                    username: username,
+                    displayName: username,
+                    role: username === 'admin' ? 'admin' : username === 'listener' ? 'listener' : 'user',
+                    avatar: '👤',
+                    rating: 4.5,
+                    ratingCount: 10,
+                    isOnline: true
+                };
+                
+                handleLoginSuccess(testUser);
+                
             }, 1000);
         }
 
@@ -599,12 +614,181 @@
             setTimeout(() => {
                 registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
                 registerBtn.disabled = false;
-                alert('✅ Функция register() работает!');
+                
+                // Создаем тестового пользователя
+                const testUser = {
+                    id: 'test-new-user',
+                    username: 'newuser',
+                    displayName: 'Новый пользователь',
+                    role: 'user',
+                    avatar: '👤',
+                    rating: 0,
+                    ratingCount: 0,
+                    isOnline: true
+                };
+                
+                handleLoginSuccess(testUser);
+                
             }, 1000);
         }
 
         function logout() {
-            alert('Функция logout() работает!');
+            console.log('🚪 Выход из системы');
+            hideAllInterfaces();
+            document.getElementById('authScreen').style.display = 'flex';
+            showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
+        }
+
+        // Базовые функции для интерфейсов
+        function hideAllInterfaces() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('userInterface').style.display = 'none';
+            document.getElementById('listenerInterface').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            if (!notification) return;
+            
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        function getRoleDisplayName(role) {
+            const roles = {
+                'owner': '👑 Владелец',
+                'admin': '⚙️ Администратор',
+                'listener': '🎧 Слушатель', 
+                'user': '👤 Пользователь'
+            };
+            return roles[role] || role;
+        }
+
+        function handleLoginSuccess(user) {
+            console.log('🎉 Успешный вход, пользователь:', user);
+            
+            // Сохраняем сессию
+            localStorage.setItem('currentUserId', user.id);
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            
+            showNotification(`✅ Добро пожаловать, ${user.displayName || user.username}!`, 'success');
+            
+            // Определяем интерфейс по роли
+            if (user.role === 'user') {
+                showUserInterface(user);
+            } else if (user.role === 'listener') {
+                showListenerInterface(user);
+            } else if (user.role === 'admin' || user.role === 'owner') {
+                showAdminPanel(user);
+            }
+        }
+
+        function showUserInterface(user) {
+            console.log('👤 Показ интерфейса пользователя');
+            hideAllInterfaces();
+            document.getElementById('userInterface').style.display = 'block';
+            
+            // Обновляем информацию пользователя
+            document.getElementById('userDisplayName').textContent = user.displayName || user.username;
+            document.getElementById('userRole').textContent = getRoleDisplayName(user.role);
+            document.getElementById('userAvatar').textContent = user.avatar || '👤';
+            
+            showNotification('👤 Добро пожаловать в интерфейс пользователя!', 'success');
+        }
+
+        function showListenerInterface(user) {
+            console.log('🎧 Показ интерфейса слушателя');
+            hideAllInterfaces();
+            document.getElementById('listenerInterface').style.display = 'block';
+            
+            // Обновляем информацию слушателя
+            document.getElementById('listenerDisplayName').textContent = user.displayName || user.username;
+            document.getElementById('listenerRole').textContent = getRoleDisplayName(user.role);
+            document.getElementById('listenerAvatar').textContent = user.avatar || '🎧';
+            document.getElementById('listenerRatingValue').textContent = (user.rating || 0).toFixed(1);
+            document.getElementById('listenerRatingCount').textContent = user.ratingCount || 0;
+            
+            showNotification('🎧 Добро пожаловать в интерфейс слушателя!', 'success');
+        }
+
+        function showAdminPanel(user) {
+            console.log('👑 Показ админ панели');
+            hideAllInterfaces();
+            document.getElementById('adminPanel').style.display = 'block';
+            
+            // Обновляем информацию администратора
+            document.getElementById('adminDisplayName').textContent = user.displayName || user.username;
+            document.getElementById('adminRole').textContent = getRoleDisplayName(user.role);
+            
+            showNotification('👑 Добро пожаловать в панель администратора!', 'success');
+        }
+
+        // Заглушки для остальных функций
+        function showUserSettings() {
+            showNotification('⚙️ Открыты настройки пользователя', 'info');
+        }
+
+        function showListenerSettings() {
+            showNotification('⚙️ Открыты настройки слушателя', 'info');
+        }
+
+        function showAdminSettings() {
+            showNotification('⚙️ Открыты настройки администратора', 'info');
+        }
+
+        function selectRandomListener() {
+            showNotification('🎲 Выбран случайный слушатель', 'info');
+        }
+
+        function sendUserMessage() {
+            showNotification('📤 Сообщение отправлено', 'info');
+        }
+
+        function sendListenerMessage() {
+            showNotification('📤 Сообщение отправлено', 'info');
+        }
+
+        function submitRating() {
+            showNotification('⭐ Оценка отправлена', 'success');
+        }
+
+        function endChat() {
+            showNotification('🚪 Чат завершен', 'info');
+        }
+
+        function showAddStaffModal() {
+            document.getElementById('addStaffModal').style.display = 'flex';
+            showNotification('➕ Открыто окно добавления сотрудника', 'info');
+        }
+
+        function closeAddStaffModal() {
+            document.getElementById('addStaffModal').style.display = 'none';
+        }
+
+        function addNewStaff() {
+            showNotification('✅ Сотрудник добавлен', 'success');
+            closeAddStaffModal();
+        }
+
+        function sendTechnicalNotification() {
+            showNotification('📢 Уведомление отправлено', 'success');
+        }
+
+        function hideUserSettings() {
+            showNotification('← Возврат к основному интерфейсу', 'info');
+        }
+
+        function hideListenerSettings() {
+            showNotification('← Возврат к основному интерфейсу', 'info');
+        }
+
+        function hideAdminSettings() {
+            showNotification('← Возврат к панели управления', 'info');
         }
 
         // Обработчики для табов
@@ -619,15 +803,81 @@
                 });
             });
 
-            // Проверяем элементы
-            console.log('🔍 Проверка элементов:');
-            console.log('- loginBtn:', document.getElementById('loginBtn'));
-            console.log('- registerBtn:', document.getElementById('registerBtn'));
-            console.log('- authUsername:', document.getElementById('authUsername'));
-            console.log('- authPassword:', document.getElementById('authPassword'));
-            
+            // Табы пользователя
+            document.querySelectorAll('#userInterface .tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showUserTab(tabName);
+                });
+            });
+
+            // Табы слушателя
+            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showListenerTab(tabName);
+                });
+            });
+
+            // Навигация в админке
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+
             console.log('✅ Все готово к работе!');
         });
+
+        function showUserTab(tabName) {
+            document.querySelectorAll('#userInterface .tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
+            document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+            showNotification(`📱 Переключено на вкладку: ${tabName}`, 'info');
+        }
+
+        function showListenerTab(tabName) {
+            document.querySelectorAll('#listenerInterface .tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
+            });
+
+            document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+            document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
+            document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+            document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+            showNotification(`📱 Переключено на вкладку: ${tabName}`, 'info');
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.toggle('active', item.getAttribute('data-section') === section);
+            });
+
+            document.querySelectorAll('.content-section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            document.getElementById(section + 'Section').classList.remove('hidden');
+            
+            const titles = {
+                dashboard: '📊 Статистика системы',
+                chats: '💬 Все чаты',
+                users: '👥 Управление пользователями',
+                staff: '🎧 Управление персоналом',
+                notifications: '📢 Технические уведомления',
+                adminSettings: '⚙️ Настройки профиля'
+            };
+            
+            if (titles[section]) {
+                document.getElementById('contentTitle').textContent = titles[section];
+            }
+            
+            showNotification(`📊 Переключено на раздел: ${titles[section] || section}`, 'info');
+        }
     </script>
 
     <script src="js/utils.js"></script>

@@ -1,87 +1,78 @@
-// Глобальные переменные
-let currentUser = null;
-let socket = null;
-let users = [];
-let chats = [];
-let ratings = [];
-let notifications = [];
-let activeChat = null;
-let currentListener = null;
-let chatStartTime = null;
-let chatTimer = null;
-let selectedRating = 0;
-let currentSection = 'dashboard';
-let onlineTimeStart = null;
-let onlineTimer = null;
-let messageIds = new Set();
-let connectionRetries = 0;
-const MAX_RETRIES = 5;
+// Утилиты приложения
+const utils = {
+    // Показать уведомление
+    showNotification(message, type = 'info') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type} show`;
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 4000);
+    },
 
-// Используем тот же URL что и сервер
-const SERVER_URL = window.location.origin;
+    // Скрыть все интерфейсы
+    hideAllInterfaces() {
+        document.getElementById('authScreen').style.display = 'none';
+        document.getElementById('userInterface').style.display = 'none';
+        document.getElementById('listenerInterface').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'none';
+    },
 
-// Утилитарные функции
-function getRoleDisplayName(role) {
-    const roles = {
-        'owner': '👑 Владелец',
-        'admin': '⚙️ Администратор',
-        'listener': '🎧 Слушатель', 
-        'user': '👤 Пользователь'
-    };
-    return roles[role] || role;
-}
+    // Получить отображаемое имя роли
+    getRoleDisplayName(role) {
+        const roles = {
+            'admin': '👑 Администратор',
+            'listener': '🎧 Слушатель', 
+            'user': '👤 Пользователь'
+        };
+        return roles[role] || role;
+    },
 
-function showNotification(message, type = 'info') {
-    const notification = document.getElementById('notification');
-    if (!notification) {
-        console.error('❌ Элемент уведомления не найден!');
-        return;
+    // Обновить интерфейс пользователя
+    updateUserInterface() {
+        if (!currentUser) return;
+
+        const elements = [
+            { id: 'userDisplayName', text: currentUser.displayName || currentUser.username },
+            { id: 'listenerDisplayName', text: currentUser.displayName || currentUser.username },
+            { id: 'adminDisplayName', text: currentUser.displayName || currentUser.username },
+            { id: 'userAvatar', text: currentUser.avatar || '👤' },
+            { id: 'listenerAvatar', text: currentUser.avatar || '👤' }
+        ];
+
+        elements.forEach(element => {
+            const el = document.getElementById(element.id);
+            if (el) el.textContent = element.text;
+        });
+    },
+
+    // Форматирование времени
+    formatTime(date) {
+        return new Date(date).toLocaleTimeString('ru-RU', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+    },
+
+    // Форматирование даты
+    formatDate(date) {
+        return new Date(date).toLocaleDateString('ru-RU');
+    },
+
+    // Генерация ID
+    generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    },
+
+    // Проверка онлайн статуса
+    isUserOnline(userId) {
+        const user = users.find(u => u.id === userId);
+        return user ? user.isOnline : false;
+    },
+
+    // Получить пользователя по ID
+    getUserById(userId) {
+        return users.find(u => u.id === userId);
     }
-    
-    notification.textContent = message;
-    notification.className = `notification ${type} show`;
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 4000);
-}
-
-function hideAllInterfaces() {
-    const interfaces = [
-        'authScreen',
-        'userInterface', 
-        'listenerInterface',
-        'adminPanel'
-    ];
-    
-    interfaces.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.style.display = 'none';
-        }
-    });
-}
-
-function forceAdminForOwner() {
-    if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'admin')) {
-        console.log('🔧 Принудительный переход в админку для:', currentUser.role);
-        showAdminPanel();
-        return true;
-    }
-    return false;
-}
-
-function startOnlineTimer() {
-    onlineTimeStart = new Date();
-    clearInterval(onlineTimer);
-    onlineTimer = setInterval(() => {
-        if (onlineTimeStart) {
-            const now = new Date();
-            const diff = Math.floor((now - onlineTimeStart) / 1000 / 60 / 60);
-            const onlineTimeElement = document.getElementById('listenerOnlineTime');
-            if (onlineTimeElement) {
-                onlineTimeElement.textContent = diff + 'ч';
-            }
-        }
-    }, 60000);
-}
+};

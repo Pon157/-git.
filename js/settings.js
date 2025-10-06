@@ -166,14 +166,15 @@ const settings = {
         document.querySelectorAll('.avatar-option').forEach(option => {
             option.classList.remove('active');
         });
-        document.querySelector(`.avatar-option[data-avatar="${avatar}"]`).classList.add('active');
+        const selectedOption = document.querySelector(`.avatar-option[data-avatar="${avatar}"]`);
+        if (selectedOption) selectedOption.classList.add('active');
     },
 
     // Обновить профиль
     updateProfile() {
-        const displayName = document.getElementById('profileDisplayName').value.trim();
-        const newPassword = document.getElementById('newPassword').value.trim();
-        const confirmPassword = document.getElementById('confirmPassword').value.trim();
+        const displayName = document.getElementById('profileDisplayName')?.value.trim();
+        const newPassword = document.getElementById('newPassword')?.value.trim();
+        const confirmPassword = document.getElementById('confirmPassword')?.value.trim();
         const selectedAvatar = document.querySelector('.avatar-option.active')?.getAttribute('data-avatar') || '👤';
 
         if (!displayName) {
@@ -241,43 +242,55 @@ const settings = {
 // Настройки пользователя
 const userSettings = {
     show() {
-        document.getElementById('listenersTab').classList.add('hidden');
-        document.getElementById('userChatSection').classList.add('hidden');
-        document.getElementById('userNotificationsTab').classList.add('hidden');
-        document.getElementById('userSettings').classList.remove('hidden');
+        utils.hideElement('listenersTab');
+        utils.hideElement('userChatSection');
+        utils.hideElement('userNotificationsTab');
+        utils.showElement('userSettings');
     },
 
     hide() {
-        document.getElementById('userSettings').classList.add('hidden');
-        document.getElementById('listenersTab').classList.remove('hidden');
+        utils.hideElement('userSettings');
+        utils.showElement('listenersTab');
     },
 
     showThemeSettings() {
         const container = document.getElementById('userThemeSettings');
+        if (!container) return;
         container.innerHTML = settings.getProfileSettingsHTML() + settings.getThemeSettingsHTML();
         settings.setupThemeSettings();
+    },
+
+    init() {
+        document.getElementById('userSettingsBtn')?.addEventListener('click', () => this.show());
+        document.getElementById('userBackBtn')?.addEventListener('click', () => this.hide());
     }
 };
 
 // Настройки слушателя
 const listenerSettings = {
     show() {
-        document.getElementById('listenerChatsTab').classList.add('hidden');
-        document.getElementById('listenerReviewsTab').classList.add('hidden');
-        document.getElementById('listenerStatsTab').classList.add('hidden');
-        document.getElementById('listenerNotificationsTab').classList.add('hidden');
-        document.getElementById('listenerSettings').classList.remove('hidden');
+        utils.hideElement('listenerChatsTab');
+        utils.hideElement('listenerReviewsTab');
+        utils.hideElement('listenerStatsTab');
+        utils.hideElement('listenerNotificationsTab');
+        utils.showElement('listenerSettings');
     },
 
     hide() {
-        document.getElementById('listenerSettings').classList.add('hidden');
-        document.getElementById('listenerChatsTab').classList.remove('hidden');
+        utils.hideElement('listenerSettings');
+        utils.showElement('listenerChatsTab');
     },
 
     showThemeSettings() {
         const container = document.getElementById('listenerThemeSettings');
+        if (!container) return;
         container.innerHTML = settings.getProfileSettingsHTML() + settings.getThemeSettingsHTML();
         settings.setupThemeSettings();
+    },
+
+    init() {
+        document.getElementById('listenerSettingsBtn')?.addEventListener('click', () => this.show());
+        document.getElementById('listenerBackBtn')?.addEventListener('click', () => this.hide());
     }
 };
 
@@ -293,7 +306,13 @@ const adminSettings = {
 
     showThemeSettings() {
         const container = document.getElementById('adminThemeSettings');
+        if (!container) return;
         container.innerHTML = settings.getProfileSettingsHTML() + settings.getThemeSettingsHTML();
         settings.setupThemeSettings();
+    },
+
+    init() {
+        document.getElementById('adminSettingsBtn')?.addEventListener('click', () => this.show());
+        document.getElementById('adminBackBtn')?.addEventListener('click', () => this.hide());
     }
 };

@@ -598,5 +598,36 @@
         console.log('✅ Интерфейсы скрыты, показана только авторизация');
     });
     </script>
+<script>
+// Принудительное скрытие интерфейсов при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Принудительная инициализация интерфейсов...');
+    
+    // Скрываем все интерфейсы кроме авторизации
+    const interfaces = ['userInterface', 'listenerInterface', 'adminPanel'];
+    interfaces.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.style.display = 'none';
+            element.classList.add('hidden');
+        }
+    });
+    
+    // Показываем только авторизацию
+    const authScreen = document.getElementById('authScreen');
+    if (authScreen) {
+        authScreen.style.display = 'flex';
+        authScreen.classList.remove('hidden');
+    }
+    
+    // Скрываем модальное окно
+    const modal = document.getElementById('addStaffModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+    
+    console.log('✅ Интерфейсы инициализированы');
+});
+</script>
 </body>
 </html>

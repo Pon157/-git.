@@ -23,29 +23,26 @@ const app = {
         adminSettings.init();
 
         // Табы пользователя
-        this.delegateEvent('#userInterface .tab', 'click', (e) => {
-            const tabName = e.target.getAttribute('data-tab');
-            this.showUserTab(tabName);
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab') && e.target.closest('#userInterface')) {
+                const tabName = e.target.getAttribute('data-tab');
+                this.showUserTab(tabName);
+            }
         });
 
         // Табы слушателя
-        this.delegateEvent('#listenerInterface .tab', 'click', (e) => {
-            const tabName = e.target.getAttribute('data-tab');
-            this.showListenerTab(tabName);
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab') && e.target.closest('#listenerInterface')) {
+                const tabName = e.target.getAttribute('data-tab');
+                this.showListenerTab(tabName);
+            }
         });
 
         // Навигация админки
-        this.delegateEvent('.nav-item', 'click', (e) => {
-            const section = e.target.getAttribute('data-section');
-            admin.showSection(section);
-        });
-    },
-
-    // Делегирование событий
-    delegateEvent(selector, event, handler) {
-        document.addEventListener(event, function(e) {
-            if (e.target.matches(selector)) {
-                handler(e);
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('nav-item') && e.target.hasAttribute('data-section')) {
+                const section = e.target.getAttribute('data-section');
+                admin.showSection(section);
             }
         });
     },
@@ -81,10 +78,14 @@ const app = {
             utils.showNotification('✅ Подключено к серверу', 'success');
             
             // Запрашиваем данные после подключения
-            socket.emit('get_users');
-            socket.emit('get_chats');
-            socket.emit('get_ratings');
-            socket.emit('get_notifications');
+            setTimeout(() => {
+                if (socket.connected) {
+                    socket.emit('get_users');
+                    socket.emit('get_chats');
+                    socket.emit('get_ratings');
+                    socket.emit('get_notifications');
+                }
+            }, 1000);
             
             // Восстанавливаем сессию если есть
             const savedUserId = localStorage.getItem('currentUserId');
@@ -97,8 +98,9 @@ const app = {
         socket.on('disconnect', (reason) => {
             console.log('❌ Отключено от сервера:', reason);
             if (reason === 'io server disconnect') {
+                // Сервер принудительно отключил, пытаемся переподключиться
                 setTimeout(() => {
-                    if (socket) socket.connect();
+                    socket.connect();
                 }, 1000);
             }
         });
@@ -110,8 +112,8 @@ const app = {
             if (connectionRetries <= CONFIG.MAX_RETRIES) {
                 console.log(`🔄 Попытка переподключения ${connectionRetries}/${CONFIG.MAX_RETRIES}`);
                 setTimeout(() => {
-                    if (socket) socket.connect();
-                }, CONFIG.RECONNECTION_DELAY);
+                    socket.connect();
+                }, 2000);
             } else {
                 utils.showNotification('❌ Не удалось подключиться к серверу. Проверьте интернет-соединение.', 'error');
             }
@@ -125,6 +127,19 @@ const app = {
             if (savedUserId && currentUser) {
                 socket.emit('restore_session', { userId: savedUserId });
             }
+        });
+
+        socket.on('reconnect_attempt', (attemptNumber) => {
+            console.log('🔄 Попытка переподключения:', attemptNumber);
+        });
+
+        socket.on('reconnect_error', (error) => {
+            console.error('Ошибка переподключения:', error);
+        });
+
+        socket.on('reconnect_failed', () => {
+            console.error('❌ Не удалось переподключиться');
+            utils.showNotification('❌ Не удалось подключиться к серверу. Пожалуйста, обновите страницу.', 'error');
         });
 
         // ОСНОВНЫЕ ОБРАБОТЧИКИ СОБЫТИЙ
@@ -182,6 +197,7 @@ const app = {
         });
 
         socket.on('new_message', (data) => {
+            console.log('📨 Новое сообщение:', data);
             chat.handleNewMessage(data);
         });
 
@@ -195,6 +211,7 @@ const app = {
             this.updateChatsUI();
             utils.showNotification(`💬 Чат начат с ${data.listenerName}`, 'success');
             
+            // Фокусируемся на поле ввода сообщения
             setTimeout(() => {
                 const input = document.getElementById('userMessageInput');
                 if (input) input.focus();
@@ -265,9 +282,9 @@ const app = {
 
         socket.on('chat_ended', (data) => {
             console.log('🚪 Чат завершен:', data.chatId);
-            const chatObj = chats.find(c => c.id === data.chatId);
-            if (chatObj) {
-                chatObj.isActive = false;
+            const chat = chats.find(c => c.id === data.chatId);
+            if (chat) {
+                chat.isActive = false;
             }
             if (activeChat && activeChat.id === data.chatId) {
                 chat.end();
@@ -308,9 +325,8 @@ const app = {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        utils.hideElement('listenersTab');
-        utils.hideElement('userNotificationsTab');
-        utils.showElement(tabName === 'listeners' ? 'listenersTab' : 'userNotificationsTab');
+        document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
+        document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
     },
 
     // Показать таб слушателя
@@ -319,23 +335,10 @@ const app = {
             tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
         });
 
-        const tabs = ['listenerChatsTab', 'listenerReviewsTab', 'listenerStatsTab', 'listenerNotificationsTab'];
-        tabs.forEach(tab => utils.hideElement(tab));
-        
-        switch(tabName) {
-            case 'chats':
-                utils.showElement('listenerChatsTab');
-                break;
-            case 'reviews':
-                utils.showElement('listenerReviewsTab');
-                break;
-            case 'stats':
-                utils.showElement('listenerStatsTab');
-                break;
-            case 'notifications':
-                utils.showElement('listenerNotificationsTab');
-                break;
-        }
+        document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
+        document.getElementById('listenerReviewsTab').classList.toggle('hidden', tabName !== 'reviews');
+        document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+        document.getElementById('listenerNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
     },
 
     // Обновить UI пользователей

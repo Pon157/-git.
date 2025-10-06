@@ -3,13 +3,20 @@ const utils = {
     // Показать уведомление
     showNotification(message, type = 'info') {
         const notification = document.getElementById('notification');
-        if (!notification) return;
+        if (!notification) {
+            // Создаем уведомление если его нет
+            const notificationDiv = document.createElement('div');
+            notificationDiv.id = 'notification';
+            notificationDiv.className = 'notification';
+            document.body.appendChild(notificationDiv);
+        }
         
-        notification.textContent = message;
-        notification.className = `notification ${type} show`;
+        const notifElement = document.getElementById('notification');
+        notifElement.textContent = message;
+        notifElement.className = `notification ${type} show`;
         
         setTimeout(() => {
-            notification.classList.remove('show');
+            notifElement.classList.remove('show');
         }, 4000);
     },
 
@@ -45,9 +52,14 @@ const utils = {
         ];
 
         elements.forEach(element => {
-            const el = document.getElementById(element.id);
-            if (el) el.textContent = element.text;
+            this.updateElementText(element.id, element.text);
         });
+    },
+
+    // Обновить текст элемента
+    updateElementText(elementId, text) {
+        const element = document.getElementById(elementId);
+        if (element) element.textContent = text;
     },
 
     // Форматирование времени
@@ -96,5 +108,10 @@ const utils = {
         const elementsToHide = ['listenersTab', 'userChatSection', 'userNotificationsTab', 'userSettings'];
         elementsToHide.forEach(id => this.hideElement(id));
         this.showElement(elementId);
+    },
+
+    // Проверить существует ли элемент
+    elementExists(id) {
+        return !!document.getElementById(id);
     }
 };

@@ -77,6 +77,7 @@ function loadData(filename, defaultValue = []) {
 function saveData(filename, data) {
     try {
         fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+        console.log(`💾 Данные сохранены в ${filename}`);
         return true;
     } catch (error) {
         console.error(`❌ Ошибка сохранения ${filename}:`, error);

@@ -1416,7 +1416,13 @@
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Инициализация приложения...');
-            initializeApp();
+            
+            // Переустанавливаем обработчики после полной загрузки DOM
+            setTimeout(() => {
+                setupEventListeners();
+                loadUserPreferences();
+                connectToServer();
+            }, 100);
         });
 
         function initializeApp() {
@@ -1425,6 +1431,7 @@
             connectToServer();
         }
 
+        // УЛУЧШЕННАЯ ФУНКЦИЯ НАСТРОЙКИ ОБРАБОТЧИКОВ
         function setupEventListeners() {
             console.log('🔧 Настройка обработчиков событий...');
             
@@ -1452,11 +1459,12 @@
                 });
             });
 
-            // Кнопки авторизации
+            // Кнопки авторизации - УЛУЧШЕННАЯ ВЕРСИЯ
             const loginBtn = document.getElementById('loginBtn');
             const registerBtn = document.getElementById('registerBtn');
             
             if (loginBtn) {
+                loginBtn.onclick = null;
                 loginBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1466,6 +1474,7 @@
             }
             
             if (registerBtn) {
+                registerBtn.onclick = null;
                 registerBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -1490,13 +1499,14 @@
                 });
             });
 
-            // Обработчики Enter
+            // Обработчики Enter - УЛУЧШЕННАЯ ВЕРСИЯ
             const authPassword = document.getElementById('authPassword');
             const userMessageInput = document.getElementById('userMessageInput');
             const listenerMessageInput = document.getElementById('listenerMessageInput');
             const regPasswordConfirm = document.getElementById('regPasswordConfirm');
             
             if (authPassword) {
+                authPassword.onkeypress = null;
                 authPassword.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -1524,6 +1534,7 @@
             }
 
             if (regPasswordConfirm) {
+                regPasswordConfirm.onkeypress = null;
                 regPasswordConfirm.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -1628,6 +1639,13 @@
                 socket.on('login_error', (error) => {
                     console.error('❌ Ошибка входа:', error);
                     showNotification('❌ ' + error, 'error');
+                    
+                    // Восстанавливаем кнопку входа
+                    const loginBtn = document.getElementById('loginBtn');
+                    if (loginBtn) {
+                        loginBtn.innerHTML = '<span>🚪 Войти</span>';
+                        loginBtn.disabled = false;
+                    }
                 });
 
                 socket.on('registration_success', (data) => {
@@ -1639,6 +1657,13 @@
                 socket.on('registration_error', (error) => {
                     console.error('❌ Ошибка регистрации:', error);
                     showNotification('❌ ' + error, 'error');
+                    
+                    // Восстанавливаем кнопку регистрации
+                    const registerBtn = document.getElementById('registerBtn');
+                    if (registerBtn) {
+                        registerBtn.innerHTML = '<span>📝 Зарегистрироваться</span>';
+                        registerBtn.disabled = false;
+                    }
                 });
 
                 socket.on('session_restored', (data) => {
@@ -1807,6 +1832,7 @@
 
             } catch (error) {
                 console.error('💥 Критическая ошибка при подключении:', error);
+                showNotification('❌ Ошибка подключения к серверу', 'error');
             }
         }
 
@@ -1821,6 +1847,7 @@
             document.getElementById('registerForm').classList.toggle('hidden', tabName !== 'register');
         }
 
+        // УЛУЧШЕННАЯ ФУНКЦИЯ ВХОДА
         function login() {
             console.log('=== ВЫЗВАНА ФУНКЦИЯ LOGIN ===');
             
@@ -1845,26 +1872,28 @@
 
             // Показываем загрузку
             const loginBtn = document.getElementById('loginBtn');
-            if (loginBtn) {
-                const originalText = loginBtn.innerHTML;
-                loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
-                loginBtn.disabled = true;
-                
-                setTimeout(() => {
-                    loginBtn.innerHTML = originalText;
-                    loginBtn.disabled = false;
-                }, 3000);
-            }
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<div class="loading"></div><span>Вход...</span>';
+            loginBtn.disabled = true;
 
             if (socket && socket.connected) {
                 console.log('📤 Отправка запроса на вход...');
                 socket.emit('login', { username, password });
+                
+                // Авто-восстановление кнопки через 5 секунд
+                setTimeout(() => {
+                    loginBtn.innerHTML = originalText;
+                    loginBtn.disabled = false;
+                }, 5000);
             } else {
                 console.error('❌ Сокет не подключен!');
                 showNotification('❌ Нет соединения с сервером', 'error');
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
             }
         }
 
+        // УЛУЧШЕННАЯ ФУНКЦИЯ РЕГИСТРАЦИИ
         function register() {
             console.log('=== ВЫЗВАНА ФУНКЦИЯ REGISTER ===');
             
@@ -1901,16 +1930,9 @@
 
             // Показываем загрузку
             const registerBtn = document.getElementById('registerBtn');
-            if (registerBtn) {
-                const originalText = registerBtn.innerHTML;
-                registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
-                registerBtn.disabled = true;
-                
-                setTimeout(() => {
-                    registerBtn.innerHTML = originalText;
-                    registerBtn.disabled = false;
-                }, 3000);
-            }
+            const originalText = registerBtn.innerHTML;
+            registerBtn.innerHTML = '<div class="loading"></div><span>Регистрация...</span>';
+            registerBtn.disabled = true;
 
             if (socket && socket.connected) {
                 console.log('📤 Отправка запроса на регистрацию...');
@@ -1919,12 +1941,21 @@
                     password,
                     role: 'user'
                 });
+                
+                // Авто-восстановление кнопки через 5 секунд
+                setTimeout(() => {
+                    registerBtn.innerHTML = originalText;
+                    registerBtn.disabled = false;
+                }, 5000);
             } else {
                 console.error('❌ Сокет не подключен!');
                 showNotification('❌ Нет соединения с сервером', 'error');
+                registerBtn.innerHTML = originalText;
+                registerBtn.disabled = false;
             }
         }
 
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ УСПЕШНОГО ВХОДА
         function handleLoginSuccess(user) {
             console.log('🎉 Успешный вход, пользователь:', user);
             currentUser = user;
@@ -1938,13 +1969,13 @@
             // Запускаем отсчет времени онлайн
             startOnlineTimer();
             
-            // Определяем интерфейс по роли
-            if (user.role === 'user') {
-                showUserInterface();
+            // ОБНОВЛЕННАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ ИНТЕРФЕЙСА
+            if (user.role === 'owner' || user.role === 'admin') {
+                showAdminPanel();
             } else if (user.role === 'listener') {
                 showListenerInterface();
-            } else if (user.role === 'admin') {
-                showAdminPanel();
+            } else if (user.role === 'user') {
+                showUserInterface();
             }
         }
 
@@ -1993,7 +2024,7 @@
                 updateListenerChatsList();
                 updateListenerReviewsData();
                 updateListenerStats();
-            } else if (currentUser.role === 'admin') {
+            } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
                 updateAdminData();
             }
         }
@@ -2002,7 +2033,7 @@
             const container = document.getElementById('listenerCards');
             // ИСПРАВЛЕНИЕ: Администраторы тоже могут быть слушателями
             const listeners = users.filter(u => 
-                (u.role === 'listener' || u.role === 'admin') && 
+                (u.role === 'listener' || u.role === 'admin' || u.role === 'owner') && 
                 u.id !== currentUser.id && 
                 u.isOnline
             );
@@ -2043,7 +2074,7 @@
 
         function selectRandomListener() {
             const listeners = users.filter(u => 
-                (u.role === 'listener' || u.role === 'admin') && 
+                (u.role === 'listener' || u.role === 'admin' || u.role === 'owner') && 
                 u.isOnline && 
                 u.id !== currentUser.id
             );
@@ -2292,7 +2323,7 @@
             const container = document.getElementById('listenerChatsList');
             // ИСПРАВЛЕНИЕ: Администраторы тоже могут получать чаты
             const listenerChats = chats.filter(chat => 
-                (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id)) && 
+                (chat.user2 === currentUser.id || (currentUser.role === 'admin' && chat.user1 !== currentUser.id) || (currentUser.role === 'owner' && chat.user1 !== currentUser.id)) && 
                 chat.isActive
             );
             
@@ -2485,15 +2516,22 @@
 
         // АДМИН ПАНЕЛЬ
         function showAdminPanel() {
-            console.log('👑 Показ админ панели');
+            console.log('👑 Показ админ панели для:', currentUser.role);
             hideAllInterfaces();
             document.getElementById('adminPanel').style.display = 'block';
             
             document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
             document.getElementById('adminRole').textContent = getRoleDisplayName(currentUser.role);
             
+            // ОБНОВЛЕННАЯ ФУНКЦИЯ - ВСЕГДА ПОКАЗЫВАЕМ НАСТРОЙКИ ДЛЯ ВЛАДЕЛЬЦА И АДМИНА
             updateAdminData();
-            showAdminThemeSettings(); // ИСПРАВЛЕНИЕ: Добавляем настройки для администратора
+            showAdminThemeSettings();
+            
+            // Дополнительные привилегии для владельца
+            if (currentUser.role === 'owner') {
+                console.log('🌟 Владелец системы - расширенные права');
+                // Можно добавить дополнительные функции для владельца
+            }
         }
 
         function showSection(section) {
@@ -2630,7 +2668,7 @@
                         </span>
                     </td>
                     <td>
-                        ${staffMember.role !== 'admin' ? 
+                        ${staffMember.role !== 'admin' && staffMember.role !== 'owner' ? 
                             `<button class="btn btn-small btn-primary" onclick="demoteToUser('${staffMember.id}')">
                                 👤 Пользователь
                             </button>` : 
@@ -2853,7 +2891,7 @@
                     updateUserNotifications();
                 } else if (currentUser.role === 'listener') {
                     updateListenerNotifications();
-                } else if (currentUser.role === 'admin') {
+                } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
                     updateSentNotifications();
                 }
             }
@@ -3184,6 +3222,7 @@
         // УТИЛИТЫ
         function getRoleDisplayName(role) {
             const roles = {
+                'owner': '👑 Владелец системы',
                 'admin': '👑 Администратор',
                 'listener': '🎧 Слушатель', 
                 'user': '👤 Пользователь'
@@ -3242,7 +3281,7 @@
                             loadListenerChatMessages();
                         }
                     }
-                } else if (currentUser.role === 'admin') {
+                } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
                     updateAdminChatsList();
                 }
             }
@@ -3277,24 +3316,49 @@
         }
 
         console.log('🎉 Приложение полностью загружено и готово к работе!');
- // ВРЕМЕННЫЙ ФИКС - ДОБАВЬТЕ В КОНЕЦ ФАЙЛА
-function forceAdminForOwner() {
-    if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'admin')) {
-        console.log('🔧 Принудительный переход в админку для:', currentUser.role);
-        showAdminPanel();
-        return true;
-    }
-    return false;
-}
 
-// И обновите handleLoginSuccess - найдите ее и добавьте вызов в конец:
-function handleLoginSuccess(user) {
-    // ... существующий код ...
-    
-    // ДОБАВЬТЕ ЭТУ СТРОЧКУ В САМЫЙ КОНЕЦ ФУНКЦИИ:
-    setTimeout(forceAdminForOwner, 100);
-}
+        // АВАРИЙНЫЙ ФИКС ДЛЯ КНОПОК
+        function emergencyFix() {
+            console.log('🚨 Применение аварийного фикса для кнопок...');
+            
+            // Принудительная переустановка обработчиков
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            
+            if (loginBtn) {
+                loginBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('🆘 Аварийный обработчик входа');
+                    login();
+                };
+            }
+            
+            if (registerBtn) {
+                registerBtn.onclick = function(e) {
+                    e.preventDefault();
+                    console.log('🆘 Аварийный обработчик регистрации');
+                    register();
+                };
+            }
+            
+            // Добавляем обработчики Enter
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (input.id === 'authPassword' || input.id === 'authUsername') {
+                            login();
+                        } else if (input.id === 'regPasswordConfirm' || input.id === 'regPassword') {
+                            register();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Запускаем аварийный фикс
+        setTimeout(emergencyFix, 500);
     </script>
 </body>
 </html>
-

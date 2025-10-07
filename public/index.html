@@ -1573,7 +1573,7 @@
                 });
 
                 socket.on('disconnect', (reason) => {
-                    console.log('❌ Отключено от сервера:', reason);
+                    console.log('❌ Отключено от сервера!:', reason);
                     if (reason === 'io server disconnect') {
                         // Сервер принудительно отключил, пытаемся переподключиться
                         setTimeout(() => {

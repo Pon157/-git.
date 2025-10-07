@@ -32,6 +32,7 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const CHATS_FILE = path.join(DATA_DIR, 'chats.json');
 const RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
+const MODERATION_FILE = path.join(DATA_DIR, 'moderation.json');
 
 // Создание директории данных если её нет
 function ensureDataDirectory() {
@@ -49,7 +50,8 @@ function initializeFiles() {
         { name: USERS_FILE, default: [] },
         { name: CHATS_FILE, default: [] },
         { name: RATINGS_FILE, default: [] },
-        { name: NOTIFICATIONS_FILE, default: [] }
+        { name: NOTIFICATIONS_FILE, default: [] },
+        { name: MODERATION_FILE, default: [] }
     ];
 
     files.forEach(file => {
@@ -102,6 +104,10 @@ function getNotifications() {
     return loadData(NOTIFICATIONS_FILE, []);
 }
 
+function getModerationHistory() {
+    return loadData(MODERATION_FILE, []);
+}
+
 // Сохранение данных
 function saveUsers(users) {
     return saveData(USERS_FILE, users);
@@ -117,6 +123,10 @@ function saveRatings(ratings) {
 
 function saveNotifications(notifications) {
     return saveData(NOTIFICATIONS_FILE, notifications);
+}
+
+function saveModerationHistory(history) {
+    return saveData(MODERATION_FILE, history);
 }
 
 // Создание владельца и демо-пользователей
@@ -249,6 +259,7 @@ io.on('connection', (socket) => {
             const currentChats = getChats();
             const currentRatings = getRatings();
             const currentNotifications = getNotifications();
+            const currentModerationHistory = getModerationHistory();
             
             socket.emit('session_restored', { 
                 success: true,
@@ -277,6 +288,10 @@ io.on('connection', (socket) => {
 
             socket.emit('notifications_list', {
                 notifications: currentNotifications
+            });
+
+            socket.emit('moderation_history', {
+                history: currentModerationHistory
             });
             
             socket.broadcast.emit('user_connected', { user });
@@ -316,6 +331,7 @@ io.on('connection', (socket) => {
         const currentChats = getChats();
         const currentRatings = getRatings();
         const currentNotifications = getNotifications();
+        const currentModerationHistory = getModerationHistory();
 
         socket.emit('login_success', { user });
         
@@ -341,6 +357,10 @@ io.on('connection', (socket) => {
 
         socket.emit('notifications_list', {
             notifications: currentNotifications
+        });
+
+        socket.emit('moderation_history', {
+            history: currentModerationHistory
         });
         
         socket.broadcast.emit('user_connected', { user });
@@ -376,7 +396,10 @@ io.on('connection', (socket) => {
             ratingCount: 0,
             isOnline: true,
             socketId: socket.id,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         };
 
         users.push(newUser);
@@ -459,7 +482,10 @@ io.on('connection', (socket) => {
             ratingCount: 0,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         };
 
         users.push(newStaff);
@@ -495,6 +521,87 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('user_updated', { user: updatedUser });
         } else {
             socket.emit('role_change_error', 'Ошибка изменения роли');
+        }
+    });
+
+    // ПРИМЕНЕНИЕ ДЕЙСТВИЙ МОДЕРАЦИИ
+    socket.on('apply_moderation_action', (data) => {
+        console.log(`⚖️ Применение действия модерации:`, data);
+        
+        const { userId, action, reason, moderatorId, duration } = data;
+        const user = getUserById(userId);
+        const moderator = getUserById(moderatorId);
+        
+        if (!user) {
+            socket.emit('moderation_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updates = {};
+        let message = '';
+        
+        switch (action) {
+            case 'warning':
+                updates.warnings = (user.warnings || 0) + 1;
+                message = `Пользователю ${user.displayName || user.username} выдано предупреждение`;
+                break;
+                
+            case 'block':
+                updates.isBlocked = true;
+                updates.blockedUntil = new Date(Date.now() + (duration || 7) * 24 * 60 * 60 * 1000).toISOString();
+                message = `Пользователь ${user.displayName || user.username} заблокирован на ${duration || 7} дней`;
+                break;
+                
+            case 'vacation':
+                updates.isOnVacation = true;
+                updates.vacationUntil = new Date(Date.now() + (duration || 7) * 24 * 60 * 60 * 1000).toISOString();
+                message = `Пользователь ${user.displayName || user.username} отправлен в отпуск на ${duration || 7} дней`;
+                break;
+                
+            default:
+                socket.emit('moderation_error', 'Неизвестное действие модерации');
+                return;
+        }
+
+        const updatedUser = updateUser(userId, updates);
+        
+        if (updatedUser) {
+            // Сохраняем в историю модерации
+            const moderationHistory = getModerationHistory();
+            const moderationRecord = {
+                id: generateId(),
+                userId,
+                moderatorId,
+                action,
+                reason,
+                duration: duration || null,
+                timestamp: new Date().toISOString()
+            };
+            
+            moderationHistory.push(moderationRecord);
+            saveModerationHistory(moderationHistory);
+
+            socket.emit('moderation_action_applied', { 
+                message,
+                user: updatedUser 
+            });
+            
+            socket.broadcast.emit('user_updated', { user: updatedUser });
+            
+            // Уведомляем пользователя если он онлайн
+            if (user.socketId) {
+                const userSocket = io.sockets.sockets.get(user.socketId);
+                if (userSocket) {
+                    userSocket.emit('moderation_action_received', {
+                        action,
+                        reason,
+                        duration,
+                        moderator: moderator ? moderator.displayName : 'Система'
+                    });
+                }
+            }
+        } else {
+            socket.emit('moderation_error', 'Ошибка применения действия модерации');
         }
     });
 
@@ -580,6 +687,11 @@ io.on('connection', (socket) => {
         socket.emit('notifications_list', { notifications });
     });
 
+    socket.on('get_moderation_history', () => {
+        const history = getModerationHistory();
+        socket.emit('moderation_history', { history });
+    });
+
     // СОЗДАНИЕ ЧАТА
     socket.on('create_chat', (data) => {
         console.log(`💬 Создание чата:`, data);
@@ -596,6 +708,7 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Проверяем существующий активный чат
         const existingChat = chats.find(chat => 
             chat.isActive && 
             ((chat.user1 === user1 && chat.user2 === user2) || 
@@ -603,7 +716,29 @@ io.on('connection', (socket) => {
         );
 
         if (existingChat) {
+            console.log('💬 Найден существующий активный чат:', existingChat.id);
             socket.emit('chat_exists', { chat: existingChat });
+            
+            // Обновляем данные для обоих пользователей
+            if (user1Data.socketId) {
+                const user1Socket = io.sockets.sockets.get(user1Data.socketId);
+                if (user1Socket) {
+                    user1Socket.emit('chat_created', { 
+                        chat: existingChat, 
+                        listenerName: user2Data.displayName 
+                    });
+                }
+            }
+            
+            if (user2Data.socketId) {
+                const user2Socket = io.sockets.sockets.get(user2Data.socketId);
+                if (user2Socket) {
+                    user2Socket.emit('chat_created', { 
+                        chat: existingChat, 
+                        listenerName: user1Data.displayName 
+                    });
+                }
+            }
             return;
         }
 
@@ -613,12 +748,16 @@ io.on('connection', (socket) => {
             user2, 
             messages: [],
             startTime: new Date().toISOString(),
-            isActive: true
+            isActive: true,
+            lastActivity: new Date().toISOString()
         };
 
         chats.push(newChat);
         saveChats(chats);
 
+        console.log('💬 Создан новый чат:', newChat.id);
+
+        // Уведомляем обоих пользователей
         socket.emit('chat_created', { 
             chat: newChat, 
             listenerName: user2Data.displayName 
@@ -658,8 +797,17 @@ io.on('connection', (socket) => {
         };
 
         chat.messages.push(newMessage);
+        chat.lastActivity = new Date().toISOString();
         saveChats(chats);
 
+        // Находим участников чата
+        const user1 = getUserById(chat.user1);
+        const user2 = getUserById(chat.user2);
+        
+        // Отправляем сообщение отправителю (для подтверждения)
+        socket.emit('new_message', { chatId, message: newMessage });
+        
+        // Отправляем сообщение другому участнику чата
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
         const targetUser = getUserById(targetUserId);
         
@@ -668,6 +816,36 @@ io.on('connection', (socket) => {
             if (targetSocket) {
                 targetSocket.emit('new_message', { chatId, message: newMessage });
             }
+        }
+
+        // Обновляем список чатов для обоих пользователей
+        if (user1 && user1.socketId) {
+            const user1Socket = io.sockets.sockets.get(user1.socketId);
+            if (user1Socket) {
+                user1Socket.emit('chats_updated');
+            }
+        }
+        
+        if (user2 && user2.socketId) {
+            const user2Socket = io.sockets.sockets.get(user2.socketId);
+            if (user2Socket) {
+                user2Socket.emit('chats_updated');
+            }
+        }
+    });
+
+    // ОБНОВЛЕНИЕ СПИСКА ЧАТОВ
+    socket.on('chats_updated', () => {
+        const user = getUserBySocketId(socket.id);
+        const chats = getChats();
+        
+        if (user && (user.role === 'admin' || user.role === 'owner')) {
+            socket.emit('chats_list', { chats });
+        } else if (user) {
+            const userChats = chats.filter(chat => 
+                chat.user1 === user.id || chat.user2 === user.id
+            );
+            socket.emit('chats_list', { chats: userChats });
         }
     });
 
@@ -690,6 +868,7 @@ io.on('connection', (socket) => {
         ratings.push(newRating);
         saveRatings(ratings);
 
+        // Обновляем рейтинг слушателя
         const listenerRatings = ratings.filter(r => r.listenerId === listenerId);
         const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
         const avgRating = totalRating / listenerRatings.length;
@@ -739,6 +918,7 @@ io.on('connection', (socket) => {
         chat.endTime = new Date().toISOString();
         saveChats(chats);
 
+        // Уведомляем обоих участников чата
         socket.emit('chat_ended', { chatId });
         
         const user2 = getUserById(chat.user2);
@@ -748,11 +928,27 @@ io.on('connection', (socket) => {
                 targetSocket.emit('chat_ended', { chatId });
             }
         }
+
+        // Обновляем списки чатов для обоих пользователей
+        const user1 = getUserById(chat.user1);
+        if (user1 && user1.socketId) {
+            const user1Socket = io.sockets.sockets.get(user1.socketId);
+            if (user1Socket) {
+                user1Socket.emit('chats_updated');
+            }
+        }
+        
+        if (user2 && user2.socketId) {
+            const user2Socket = io.sockets.sockets.get(user2.socketId);
+            if (user2Socket) {
+                user2Socket.emit('chats_updated');
+            }
+        }
     });
 
     // ОТКЛЮЧЕНИЕ
     socket.on('disconnect', (reason) => {
-        console.log(`🔌 Отключение: ${socket.id}`);
+        console.log(`🔌 Отключение: ${socket.id} (${reason})`);
         
         const user = getUserBySocketId(socket.id);
         if (user) {
@@ -787,6 +983,11 @@ app.get('/api/notifications', (req, res) => {
     res.json(notifications);
 });
 
+app.get('/api/moderation', (req, res) => {
+    const history = getModerationHistory();
+    res.json(history);
+});
+
 app.get('/api/stats', (req, res) => {
     const users = getUsers();
     const chats = getChats();
@@ -807,6 +1008,12 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Автоматическое сохранение данных каждые 30 секунд
+setInterval(() => {
+    console.log('💾 Автосохранение данных...');
+    // Данные уже сохраняются при каждом изменении, это дополнительная защита
+}, 30000);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {

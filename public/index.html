@@ -22,27 +22,27 @@
 
         /* ТЕМЫ */
         .theme-default {
-            --bg-color: #f5f5f5;
-            --header-bg: white;
-            --text-color: #333;
-            --card-bg: white;
-            --border-color: #ddd;
-            --hover-color: #f8f9fa;
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --info-color: #17a2b8;
+            --bg-color: #f8f9fa;
+            --header-bg: #ffffff;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --hover-color: #f7fafc;
+            --primary-color: #4f46e5;
+            --secondary-color: #7c3aed;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0891b2;
         }
 
         .theme-dark {
-            --bg-color: #1a1a1a;
-            --header-bg: #2d2d2d;
-            --text-color: #ffffff;
-            --card-bg: #2d2d2d;
-            --border-color: #444;
-            --hover-color: #3d3d3d;
+            --bg-color: #0f172a;
+            --header-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --hover-color: #1e293b;
             --primary-color: #8b5cf6;
             --secondary-color: #a78bfa;
             --success-color: #10b981;
@@ -52,30 +52,30 @@
         }
 
         .theme-blue {
-            --bg-color: #f0f8ff;
-            --header-bg: #e6f3ff;
-            --text-color: #2c5282;
+            --bg-color: #f0f9ff;
+            --header-bg: #e0f2fe;
+            --text-color: #0c4a6e;
             --card-bg: #ffffff;
-            --border-color: #bee3f8;
-            --hover-color: #ebf8ff;
-            --primary-color: #3182ce;
-            --secondary-color: #63b3ed;
-            --success-color: #38a169;
-            --warning-color: #d69e2e;
-            --danger-color: #e53e3e;
-            --info-color: #4299e1;
+            --border-color: #bae6fd;
+            --hover-color: #f0f9ff;
+            --primary-color: #0369a1;
+            --secondary-color: #0ea5e9;
+            --success-color: #047857;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --info-color: #0e7490;
         }
 
         .theme-green {
-            --bg-color: #f0fff4;
-            --header-bg: #e6ffed;
-            --text-color: #22543d;
+            --bg-color: #f0fdf4;
+            --header-bg: #dcfce7;
+            --text-color: #166534;
             --card-bg: #ffffff;
-            --border-color: #c6f6d5;
-            --hover-color: #f0fff4;
-            --primary-color: #38a169;
-            --secondary-color: #68d391;
-            --success-color: #059669;
+            --border-color: #bbf7d0;
+            --hover-color: #f0fdf4;
+            --primary-color: #15803d;
+            --secondary-color: #22c55e;
+            --success-color: #15803d;
             --warning-color: #d97706;
             --danger-color: #dc2626;
             --info-color: #0d9488;
@@ -281,7 +281,7 @@
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.3s;
             border: 1px solid var(--border-color);
             min-height: 150px;
             display: flex;
@@ -896,10 +896,10 @@
                         <div class="module-description">Блокировки и предупреждения</div>
                     </div>
                     
-                    <div class="module-card" onclick="showSection('reports')">
-                        <div class="module-icon">📈</div>
-                        <div class="module-title">Отчеты</div>
-                        <div class="module-description">Аналитика и статистика системы</div>
+                    <div class="module-card" onclick="showNotificationModal()">
+                        <div class="module-icon">📢</div>
+                        <div class="module-title">Рассылки</div>
+                        <div class="module-description">Отправка технических уведомлений</div>
                     </div>
                 </div>
             </div>
@@ -924,10 +924,22 @@
                         <div class="module-description">Отправка технических уведомлений</div>
                     </div>
                     
-                    <div class="module-card" onclick="showSection('systemSettings')">
-                        <div class="module-icon">⚙️</div>
-                        <div class="module-title">Системные настройки</div>
-                        <div class="module-description">Конфигурация платформы</div>
+                    <div class="module-card" onclick="showSection('allUsers')">
+                        <div class="module-icon">👥</div>
+                        <div class="module-title">Все пользователи</div>
+                        <div class="module-description">Просмотр и управление пользователями</div>
+                    </div>
+
+                    <div class="module-card" onclick="showSection('moderation')">
+                        <div class="module-icon">🛡️</div>
+                        <div class="module-title">Модерация</div>
+                        <div class="module-description">Блокировки и управление ролями</div>
+                    </div>
+
+                    <div class="module-card" onclick="showSection('allChats')">
+                        <div class="module-icon">💬</div>
+                        <div class="module-title">Все чаты</div>
+                        <div class="module-description">Просмотр всех переписок системы</div>
                     </div>
                 </div>
             </div>
@@ -943,6 +955,12 @@
             <div id="myChatsSection" class="content-section">
                 <h2>💬 Мои чаты</h2>
                 <div id="userChatsList" class="mt-3"></div>
+            </div>
+
+            <!-- Секция чатов слушателя -->
+            <div id="listenerChatsSection" class="content-section">
+                <h2>💬 Чаты с пользователями</h2>
+                <div id="listenerChatsList" class="mt-3"></div>
             </div>
 
             <!-- Секция отзывов пользователя -->
@@ -969,6 +987,12 @@
                     <textarea id="ratingComment" rows="4" placeholder="Оставьте ваш отзыв..."></textarea>
                 </div>
                 <button class="btn-primary" onclick="submitRating()">Отправить отзыв</button>
+            </div>
+
+            <!-- Секция отзывов слушателя -->
+            <div id="listenerRatingsSection" class="content-section">
+                <h2>📊 Мои отзывы</h2>
+                <div id="listenerRatingsList" class="mt-3"></div>
             </div>
 
             <!-- Секция настроек -->
@@ -1053,13 +1077,19 @@
                 </div>
             </div>
 
-            <!-- Секция всех пользователей (админ) -->
+            <!-- Секция всех пользователей (админ/владелец) -->
             <div id="allUsersSection" class="content-section">
                 <h2>👥 Все пользователи</h2>
                 <div id="allUsersList" class="mt-3"></div>
             </div>
 
-            <!-- Секция модерации (админ) -->
+            <!-- Секция всех чатов (админ/владелец) -->
+            <div id="allChatsSection" class="content-section">
+                <h2>💬 Все чаты системы</h2>
+                <div id="allChatsList" class="mt-3"></div>
+            </div>
+
+            <!-- Секция модерации (админ/владелец) -->
             <div id="moderationSection" class="content-section">
                 <h2>🛡️ Модерация пользователей</h2>
                 <div id="moderationUsersList" class="mt-3"></div>
@@ -1223,7 +1253,6 @@
         let allChats = [];
         let allRatings = [];
         let currentChat = null;
-        let selectedListenerForRating = null;
 
         // АВТОРИЗАЦИЯ
         function switchTab(tabName) {
@@ -1354,9 +1383,13 @@
             if (currentUser.role === 'user') {
                 updateListenersList();
                 updateRateListenersSelect();
+            } else if (currentUser.role === 'listener') {
+                updateListenerChatsList();
+                updateListenerRatingsList();
             } else if (currentUser.role === 'admin' || currentUser.role === 'owner') {
                 updateAllUsersList();
                 updateModerationUsersList();
+                updateAllChatsList();
             }
             if (currentUser.role === 'owner') {
                 updateStaffList();
@@ -1368,11 +1401,16 @@
             updateStats();
             if (currentUser.role === 'user') {
                 updateUserChatsList();
+            } else if (currentUser.role === 'listener') {
+                updateListenerChatsList();
             }
         });
 
         socket.on('ratings_list', (data) => {
             allRatings = data.ratings;
+            if (currentUser.role === 'listener') {
+                updateListenerRatingsList();
+            }
         });
 
         socket.on('system_logs', (data) => {
@@ -1478,6 +1516,77 @@
             });
         }
 
+        function updateListenerChatsList() {
+            const listenerChatsList = document.getElementById('listenerChatsList');
+            listenerChatsList.innerHTML = '';
+
+            const listenerChats = allChats.filter(chat => 
+                chat.isActive && chat.user2 === currentUser.id
+            );
+            
+            if (listenerChats.length === 0) {
+                listenerChatsList.innerHTML = '<div class="text-center">У вас нет активных чатов</div>';
+                return;
+            }
+
+            listenerChats.forEach(chat => {
+                const user = allUsers.find(u => u.id === chat.user1);
+                
+                if (user) {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'list-item';
+                    chatItem.innerHTML = `
+                        <div class="flex-center">
+                            <span class="avatar">${user.avatar}</span>
+                            <div>
+                                <div><strong>${user.displayName}</strong></div>
+                                <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
+                                    Начат: ${new Date(chat.startTime).toLocaleDateString()}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-primary" onclick="openChat('${chat.id}')">
+                                Открыть чат
+                            </button>
+                        </div>
+                    `;
+                    listenerChatsList.appendChild(chatItem);
+                }
+            });
+        }
+
+        function updateListenerRatingsList() {
+            const listenerRatingsList = document.getElementById('listenerRatingsList');
+            listenerRatingsList.innerHTML = '';
+
+            const myRatings = allRatings.filter(r => r.listenerId === currentUser.id);
+            
+            if (myRatings.length === 0) {
+                listenerRatingsList.innerHTML = '<div class="text-center">У вас пока нет отзывов</div>';
+                return;
+            }
+
+            myRatings.forEach(rating => {
+                const user = allUsers.find(u => u.id === rating.userId);
+                const ratingItem = document.createElement('div');
+                ratingItem.className = 'list-item';
+                ratingItem.innerHTML = `
+                    <div>
+                        <div><strong>${user ? user.displayName : 'Неизвестный пользователь'}</strong></div>
+                        <div style="font-size: 14px; margin: 5px 0;">${rating.comment}</div>
+                        <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
+                            ${'⭐'.repeat(rating.rating)}${'☆'.repeat(5-rating.rating)} • ${new Date(rating.timestamp).toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div style="font-size: 18px; font-weight: bold;">
+                        ${rating.rating}/5
+                    </div>
+                `;
+                listenerRatingsList.appendChild(ratingItem);
+            });
+        }
+
         function updateAllUsersList() {
             const allUsersList = document.getElementById('allUsersList');
             allUsersList.innerHTML = '';
@@ -1502,12 +1611,40 @@
             });
         }
 
+        function updateAllChatsList() {
+            const allChatsList = document.getElementById('allChatsList');
+            allChatsList.innerHTML = '';
+
+            allChats.forEach(chat => {
+                const user1 = allUsers.find(u => u.id === chat.user1);
+                const user2 = allUsers.find(u => u.id === chat.user2);
+                
+                if (user1 && user2) {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'list-item';
+                    chatItem.innerHTML = `
+                        <div>
+                            <div><strong>${user1.displayName} 💬 ${user2.displayName}</strong></div>
+                            <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
+                                Начат: ${new Date(chat.startTime).toLocaleString()} • 
+                                Сообщений: ${chat.messages ? chat.messages.length : 0}
+                            </div>
+                        </div>
+                        <span class="user-role ${chat.isActive ? 'role-listener' : 'role-user'}">
+                            ${chat.isActive ? 'Активен' : 'Завершен'}
+                        </span>
+                    `;
+                    allChatsList.appendChild(chatItem);
+                }
+            });
+        }
+
         function updateModerationUsersList() {
             const moderationUsersList = document.getElementById('moderationUsersList');
             moderationUsersList.innerHTML = '';
 
             allUsers.forEach(user => {
-                if (user.role !== 'owner') { // Не показываем владельца
+                if (user.role !== 'owner') {
                     const userItem = document.createElement('div');
                     userItem.className = 'list-item';
                     userItem.innerHTML = `
@@ -1530,7 +1667,7 @@
                                     Разблокировать
                                 </button>
                             `}
-                            ${user.role !== 'admin' ? `
+                            ${user.role !== 'admin' && currentUser.role === 'owner' ? `
                                 <button class="btn-info" onclick="changeUserRole('${user.id}', 'admin')">
                                     Сделать админом
                                 </button>
@@ -1538,6 +1675,11 @@
                             ${user.role !== 'listener' ? `
                                 <button class="btn-info" onclick="changeUserRole('${user.id}', 'listener')">
                                     Сделать слушателем
+                                </button>
+                            ` : ''}
+                            ${user.role !== 'user' ? `
+                                <button class="btn-info" onclick="changeUserRole('${user.id}', 'user')">
+                                    Сделать пользователем
                                 </button>
                             ` : ''}
                         </div>
@@ -1553,6 +1695,11 @@
 
             const staff = allUsers.filter(u => u.role === 'listener' || u.role === 'admin');
             
+            if (staff.length === 0) {
+                staffList.innerHTML = '<div class="text-center">Нет сотрудников</div>';
+                return;
+            }
+
             staff.forEach(user => {
                 const userItem = document.createElement('div');
                 userItem.className = 'list-item';
@@ -1576,14 +1723,23 @@
             const logsList = document.getElementById('systemLogsList');
             logsList.innerHTML = '';
 
-            logs.reverse().forEach(log => {
+            const recentLogs = logs.slice(-50).reverse();
+            
+            if (recentLogs.length === 0) {
+                logsList.innerHTML = '<div class="text-center">Логи отсутствуют</div>';
+                return;
+            }
+
+            recentLogs.forEach(log => {
+                const user = allUsers.find(u => u.id === log.userId);
                 const logItem = document.createElement('div');
                 logItem.className = 'list-item';
                 logItem.innerHTML = `
                     <div>
                         <div><strong>${log.action}</strong></div>
+                        <div style="font-size: 14px; margin: 5px 0;">${log.details}</div>
                         <div style="font-size: 12px; color: var(--text-color); opacity: 0.7;">
-                            ${log.details} • ${new Date(log.timestamp).toLocaleString()}
+                            ${user ? user.displayName : 'Система'} • ${new Date(log.timestamp).toLocaleString()}
                         </div>
                     </div>
                 `;
@@ -1604,11 +1760,16 @@
         function startChatWithListener(listenerId) {
             const listener = allUsers.find(u => u.id === listenerId);
             if (listener) {
-                document.getElementById('initialMessage').value = '';
-                
+                // Очищаем и заполняем список слушателей в модальном окне
                 const select = document.getElementById('chatListenerSelect');
-                select.innerHTML = `<option value="${listener.id}">${listener.displayName}</option>`;
+                select.innerHTML = '';
                 
+                const option = document.createElement('option');
+                option.value = listener.id;
+                option.textContent = `${listener.displayName} (Рейтинг: ${listener.rating || '0.0'}/5)`;
+                select.appendChild(option);
+                
+                document.getElementById('initialMessage').value = '';
                 document.getElementById('createChatModal').style.display = 'block';
             }
         }
@@ -1625,7 +1786,7 @@
 
         function createChat() {
             const listenerId = document.getElementById('chatListenerSelect').value;
-            const initialMessage = document.getElementById('initialMessage').value;
+            const initialMessage = document.getElementById('initialMessage').value.trim();
             
             if (listenerId && currentUser) {
                 socket.emit('create_chat', {
@@ -1634,13 +1795,38 @@
                 });
                 
                 closeModal('createChatModal');
+                
+                if (initialMessage) {
+                    // Ждем создания чата и отправляем первое сообщение
+                    setTimeout(() => {
+                        const newChat = allChats.find(chat => 
+                            chat.isActive && 
+                            ((chat.user1 === currentUser.id && chat.user2 === listenerId))
+                        );
+                        if (newChat) {
+                            socket.emit('send_message', {
+                                chatId: newChat.id,
+                                message: {
+                                    text: initialMessage,
+                                    senderId: currentUser.id
+                                }
+                            });
+                        }
+                    }, 1000);
+                }
             }
         }
 
         socket.on('chat_created', (data) => {
-            alert(`Чат создан с ${data.listenerName}`);
+            // Обновляем список чатов
             socket.emit('get_chats');
-            showSection('myChats');
+            
+            // Если это пользователь, открываем чат
+            if (currentUser.role === 'user') {
+                openChat(data.chat.id);
+            }
+            
+            alert(`Чат создан с ${data.listenerName}`);
         });
 
         function openChat(chatId) {
@@ -1662,6 +1848,12 @@
                     }
                     
                     showSection('chat');
+                    
+                    // Прокручиваем вниз
+                    setTimeout(() => {
+                        const messagesContainer = document.getElementById('chatMessages');
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }, 100);
                 }
             }
         }
@@ -1710,11 +1902,18 @@
             if (currentChat && data.chatId === currentChat.id) {
                 addMessageToChat(data.message, data.message.senderId === currentUser.id);
             }
+            
+            // Обновляем список чатов чтобы показать последнее сообщение
+            socket.emit('get_chats');
         });
 
         function closeChat() {
             currentChat = null;
-            showSection('myChats');
+            if (currentUser.role === 'user') {
+                showSection('myChats');
+            } else if (currentUser.role === 'listener') {
+                showSection('listenerChats');
+            }
         }
 
         function endChat(chatId) {
@@ -1726,20 +1925,21 @@
         socket.on('chat_ended', (data) => {
             alert('Чат завершен');
             socket.emit('get_chats');
+            closeChat();
         });
 
         // ФУНКЦИОНАЛ ОЦЕНОК
         function submitRating() {
             const listenerId = document.getElementById('rateListenerSelect').value;
             const rating = parseInt(document.getElementById('ratingValue').value);
-            const comment = document.getElementById('ratingComment').value;
+            const comment = document.getElementById('ratingComment').value.trim();
             
             if (!listenerId) {
                 alert('Пожалуйста, выберите слушателя');
                 return;
             }
             
-            if (comment.trim().length === 0) {
+            if (!comment) {
                 alert('Пожалуйста, напишите комментарий');
                 return;
             }
@@ -1756,6 +1956,7 @@
             alert('Спасибо за ваш отзыв!');
             document.getElementById('ratingComment').value = '';
             document.getElementById('rateListenerSelect').value = '';
+            document.getElementById('ratingValue').value = '5';
         });
 
         // НАСТРОЙКИ
@@ -1837,8 +2038,8 @@
 
             socket.emit('update_profile', {
                 userId: currentUser.id,
-                displayName,
-                avatar,
+                displayName: displayName || currentUser.displayName,
+                avatar: avatar || currentUser.avatar,
                 password: password || undefined
             });
         }
@@ -1876,7 +2077,7 @@
                 socket.emit('register_staff', {
                     username,
                     password,
-                    displayName,
+                    displayName: displayName || username,
                     role
                 });
                 closeModal('addStaffModal');
@@ -2007,6 +2208,14 @@
         socket.on('user_banned', (data) => {
             socket.emit('get_users');
         });
+
+        // Автоматическое обновление данных каждые 30 секунд
+        setInterval(() => {
+            if (currentUser) {
+                socket.emit('get_users');
+                socket.emit('get_chats');
+            }
+        }, 30000);
     </script>
 </body>
 </html>

@@ -179,7 +179,7 @@ function initializeUsers() {
             username: 'listener',
             password: '123456',
             role: 'listener',
-            displayName: 'Анна Слушатель',
+            displayName: 'Анна Слушатель ',
             avatar: '🎧',
             rating: 4.8,
             ratingCount: 15,

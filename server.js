@@ -38,7 +38,7 @@ const MODERATION_FILE = path.join(DATA_DIR, 'moderation.json');
 function ensureDataDirectory() {
     if (!fs.existsSync(DATA_DIR)) {
         fs.mkdirSync(DATA_DIR, { recursive: true });
-        console.log(`✅ Создана директория данных: ${DATA_DIR}`);
+        console.log(`✅ Создана директория  данных: ${DATA_DIR}`);
     }
 }
 

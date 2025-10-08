@@ -5,12 +5,11 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const multer = require('multer');
-const sharp = require('sharp');
 
 const app = express();
 const server = http.createServer(app);
 
-// Настройки для  Render.com
+// Настройки для Render.com
 const PORT = process.env.PORT || 3000;
 
 // Улучшенные настройки CORS
@@ -327,11 +326,15 @@ function cleanupOldMedia() {
 
     files.forEach(file => {
         const filePath = path.join(uploadsDir, file);
-        const stats = fs.statSync(filePath);
-        
-        if (now - stats.mtimeMs > twelveHours) {
-            fs.unlinkSync(filePath);
-            console.log(`🗑️ Удален старый файл: ${file}`);
+        try {
+            const stats = fs.statSync(filePath);
+            
+            if (now - stats.mtimeMs > twelveHours) {
+                fs.unlinkSync(filePath);
+                console.log(`🗑️ Удален старый файл: ${file}`);
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка при удалении файла ${file}:`, error);
         }
     });
 }
@@ -347,6 +350,14 @@ cleanupOldMedia();
 // Socket.IO обработчики
 io.on('connection', (socket) => {
     console.log(`🔗 Новое подключение: ${socket.id}`);
+
+    // Отправка начальных данных
+    socket.emit('users_list', { users: getUsers().map(u => {
+        const { password, socketId, ...publicUser } = u;
+        return publicUser;
+    })});
+    socket.emit('chats_list', { chats: getChats() });
+    socket.emit('ratings_list', { ratings: getRatings() });
 
     // Восстановление сессии
     socket.on('restore_session', (data) => {
@@ -690,6 +701,106 @@ io.on('connection', (socket) => {
         })});
     });
 
+    // Отправка уведомления
+    socket.on('send_technical_notification', (data) => {
+        const notifications = getNotifications();
+        const { title, text, type, recipients } = data;
+        
+        const newNotification = {
+            id: generateId(),
+            title,
+            text,
+            type,
+            recipients,
+            timestamp: new Date().toISOString(),
+            readBy: []
+        };
+
+        notifications.push(newNotification);
+        saveNotifications(notifications);
+
+        // Отправляем уведомление целевым пользователям
+        switch (recipients) {
+            case 'all':
+                broadcastToAll('new_notification', { notification: newNotification });
+                break;
+            case 'users':
+                broadcastToRole('user', 'new_notification', { notification: newNotification });
+                break;
+            case 'listeners':
+                broadcastToRole('listener', 'new_notification', { notification: newNotification });
+                break;
+            case 'admins':
+                broadcastToAdmins('new_notification', { notification: newNotification });
+                break;
+        }
+
+        socket.emit('notification_sent', { success: true });
+        broadcastToAll('notifications_list', { notifications });
+    });
+
+    // Модерация
+    socket.on('apply_moderation', (data) => {
+        const moderationHistory = getModerationHistory();
+        const { userId, action, reason, duration, moderatorId } = data;
+        
+        const user = getUserById(userId);
+        const moderator = getUserById(moderatorId);
+        
+        if (!user || !moderator) {
+            socket.emit('moderation_error', 'Пользователь не найден');
+            return;
+        }
+
+        const moderationRecord = {
+            id: generateId(),
+            userId,
+            userName: user.displayName,
+            action,
+            reason,
+            duration,
+            moderatorId,
+            moderatorName: moderator.displayName,
+            timestamp: new Date().toISOString()
+        };
+
+        moderationHistory.push(moderationRecord);
+        saveModerationHistory(moderationHistory);
+
+        // Применяем действие
+        let userUpdates = {};
+        switch (action) {
+            case 'block':
+                userUpdates = { 
+                    isBlocked: true,
+                    blockUntil: duration ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString() : null
+                };
+                break;
+            case 'unblock':
+                userUpdates = { 
+                    isBlocked: false,
+                    blockUntil: null
+                };
+                break;
+            case 'warning':
+                userUpdates = { 
+                    warnings: (user.warnings || 0) + 1
+                };
+                break;
+        }
+
+        if (Object.keys(userUpdates).length > 0) {
+            updateUser(userId, userUpdates);
+        }
+
+        socket.emit('moderation_applied', { record: moderationRecord });
+        broadcastToAll('moderation_history', { history: moderationHistory });
+        broadcastToAll('users_list', { users: getUsers().map(u => {
+            const { password, socketId, ...publicUser } = u;
+            return publicUser;
+        })});
+    });
+
     // Отключение
     socket.on('disconnect', () => {
         const user = getUserBySocketId(socket.id);
@@ -749,6 +860,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             fileName: req.file.originalname
         });
     } catch (error) {
+        console.error('Ошибка загрузки файла:', error);
         res.status(500).json({ error: 'Ошибка загрузки файла' });
     }
 });
@@ -792,6 +904,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Обработка ошибок
+app.use((err, req, res, next) => {
+    console.error('❌ Ошибка сервера:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+});
+
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
+    console.log(`🌐 Доступен по адресу: http://localhost:${PORT}`);
+    console.log(`📊 Пользователей: ${getUsers().length}`);
+    console.log(`💬 Чатов: ${getChats().length}`);
+    console.log(`🔧 Система готова к работе!`);
 });

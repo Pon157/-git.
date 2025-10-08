@@ -8,7 +8,7 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
-// Улучшенные настройки  CORS
+// Улучшенные настройки CORS
 app.use(cors({
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],

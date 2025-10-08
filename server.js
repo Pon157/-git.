@@ -2,19 +2,16 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
-const PermanentStorage = require('./permanent_storage');
 
 const app = express();
 const server = http.createServer(app);
 
-// Инициализация постоянного хранилища
-const storage = new PermanentStorage();
-
 // Настройка CORS для Socket.IO
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        origin: ["https://your-frontend-domain.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
         methods: ["GET", "POST"],
         credentials: true
     },
@@ -24,55 +21,216 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ["https://your-frontend-domain.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
+    credentials: true
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Файлы для хранения данных
+const DATA_DIR = './data';
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const CHATS_FILE = path.join(DATA_DIR, 'chats.json');
+const RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
+const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
+
+// Создание директории данных если её нет
+function ensureDataDirectory() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`✅ Создана директория данных: ${DATA_DIR}`);
+    }
+}
+
+// Создание файлов если их нет
+function initializeFiles() {
+    ensureDataDirectory();
+    
+    const files = [
+        { name: USERS_FILE, default: [] },
+        { name: CHATS_FILE, default: [] },
+        { name: RATINGS_FILE, default: [] },
+        { name: NOTIFICATIONS_FILE, default: [] }
+    ];
+
+    files.forEach(file => {
+        if (!fs.existsSync(file.name)) {
+            fs.writeFileSync(file.name, JSON.stringify(file.default, null, 2));
+            console.log(`✅ Создан файл: ${file.name}`);
+        }
+    });
+}
+
+// Загрузка данных из файлов
+function loadData(filename, defaultValue = []) {
+    try {
+        if (fs.existsSync(filename)) {
+            const data = fs.readFileSync(filename, 'utf8');
+            return data ? JSON.parse(data) : defaultValue;
+        }
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки ${filename}:`, error);
+    }
+    return defaultValue;
+}
+
+// Сохранение данных в файлы
+function saveData(filename, data) {
+    try {
+        fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+        console.log(`💾 Данные сохранены в ${filename}`);
+        return true;
+    } catch (error) {
+        console.error(`❌ Ошибка сохранения ${filename}:`, error);
+        return false;
+    }
+}
+
+// Загрузка данных
+function getUsers() {
+    return loadData(USERS_FILE, []);
+}
+
+function getChats() {
+    return loadData(CHATS_FILE, []);
+}
+
+function getRatings() {
+    return loadData(RATINGS_FILE, []);
+}
+
+function getNotifications() {
+    return loadData(NOTIFICATIONS_FILE, []);
+}
+
+// Сохранение данных
+function saveUsers(users) {
+    return saveData(USERS_FILE, users);
+}
+
+function saveChats(chats) {
+    return saveData(CHATS_FILE, chats);
+}
+
+function saveRatings(ratings) {
+    return saveData(RATINGS_FILE, ratings);
+}
+
+function saveNotifications(notifications) {
+    return saveData(NOTIFICATIONS_FILE, notifications);
+}
+
+// Создание владельца и демо-пользователей
+function initializeUsers() {
+    let users = getUsers();
+    
+    const defaultUsers = [
+        {
+            id: 'user-1',
+            username: 'owner',
+            password: 'owner2024',
+            role: 'owner',
+            displayName: 'Владелец Системы',
+            avatar: '👑',
+            rating: 5.0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString(),
+            isSuperAdmin: true
+        },
+        {
+            id: 'user-2',
+            username: 'admin',
+            password: 'admin123',
+            role: 'admin',
+            displayName: 'Администратор',
+            avatar: '⚙️',
+            rating: 5.0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: 'user-3',
+            username: 'user',
+            password: '123456',
+            role: 'user',
+            displayName: 'Тестовый Пользователь',
+            avatar: '👤',
+            rating: 0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: 'user-4', 
+            username: 'listener',
+            password: '123456',
+            role: 'listener',
+            displayName: 'Анна Слушатель',
+            avatar: '🎧',
+            rating: 4.8,
+            ratingCount: 15,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        }
+    ];
+
+    let hasChanges = false;
+    
+    defaultUsers.forEach(defaultUser => {
+        const exists = users.find(u => u.username === defaultUser.username);
+        if (!exists) {
+            users.push(defaultUser);
+            hasChanges = true;
+            console.log(`✅ Добавлен пользователь: ${defaultUser.username} (${defaultUser.role})`);
+        }
+    });
+
+    if (hasChanges) {
+        saveUsers(users);
+    }
+}
+
+// Инициализация
+console.log('🔄 Инициализация системы...');
+initializeFiles();
+initializeUsers();
+
+// Генерация ID
+function generateId() {
+    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+}
+
 // Получение пользователя по socketId
 function getUserBySocketId(socketId) {
-    const users = storage.getUsers();
+    const users = getUsers();
     return users.find(u => u.socketId === socketId);
 }
 
 // Получение пользователя по ID
 function getUserById(userId) {
-    const users = storage.getUsers();
+    const users = getUsers();
     return users.find(u => u.id === userId);
 }
 
 // Обновление пользователя
 function updateUser(userId, updates) {
-    const users = storage.getUsers();
+    const users = getUsers();
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
         users[userIndex] = { ...users[userIndex], ...updates };
-        storage.saveUsers(users);
+        saveUsers(users);
         return users[userIndex];
     }
     return null;
-}
-
-// Функция для возобновления чата
-function resumeChat(chatId, userId) {
-    const chats = storage.getChats();
-    const chat = chats.find(c => c.id === chatId);
-    
-    if (!chat) return null;
-    
-    // Проверяем, имеет ли пользователь доступ к чату
-    if (chat.user1 !== userId && chat.user2 !== userId) {
-        return null;
-    }
-    
-    // Если чат завершен, возобновляем его
-    if (!chat.isActive) {
-        chat.isActive = true;
-        chat.lastActivity = new Date().toISOString();
-        storage.saveChats(chats);
-    }
-    
-    return chat;
 }
 
 // Socket.IO соединения
@@ -88,15 +246,13 @@ io.on('connection', (socket) => {
         if (user) {
             updateUser(user.id, {
                 isOnline: true,
-                socketId: socket.id,
-                lastSeen: new Date().toISOString()
+                socketId: socket.id
             });
             
-            const currentUsers = storage.getUsers();
-            const currentChats = storage.getChats();
-            const currentRatings = storage.getRatings();
-            const currentNotifications = storage.getNotifications();
-            const settings = storage.getSettings();
+            const currentUsers = getUsers();
+            const currentChats = getChats();
+            const currentRatings = getRatings();
+            const currentNotifications = getNotifications();
             
             socket.emit('session_restored', { 
                 success: true,
@@ -107,9 +263,17 @@ io.on('connection', (socket) => {
                 users: currentUsers.filter(u => u.id !== user.id) 
             });
             
-            socket.emit('chats_list', { 
-                chats: currentChats 
-            });
+            if (user.role === 'admin' || user.role === 'owner') {
+                socket.emit('chats_list', { 
+                    chats: currentChats 
+                });
+            } else {
+                socket.emit('chats_list', { 
+                    chats: currentChats.filter(chat => 
+                        chat.user1 === user.id || chat.user2 === user.id
+                    )
+                });
+            }
             
             socket.emit('ratings_list', { 
                 ratings: currentRatings 
@@ -117,10 +281,6 @@ io.on('connection', (socket) => {
 
             socket.emit('notifications_list', {
                 notifications: currentNotifications
-            });
-
-            socket.emit('settings_updated', {
-                settings: settings
             });
             
             socket.broadcast.emit('user_connected', { user });
@@ -137,7 +297,7 @@ io.on('connection', (socket) => {
     socket.on('login', (data) => {
         console.log(`🚪 Запрос на вход:`, data);
         
-        const users = storage.getUsers();
+        const users = getUsers();
         const { username, password } = data;
         
         if (!username || !password) {
@@ -151,23 +311,15 @@ io.on('connection', (socket) => {
             return;
         }
 
-        // Проверка блокировки
-        if (user.isBlocked && user.blockedUntil && new Date(user.blockedUntil) > new Date()) {
-            socket.emit('login_error', 'Аккаунт заблокирован до ' + new Date(user.blockedUntil).toLocaleDateString());
-            return;
-        }
-
         updateUser(user.id, {
             isOnline: true,
-            socketId: socket.id,
-            lastSeen: new Date().toISOString()
+            socketId: socket.id
         });
 
-        const currentUsers = storage.getUsers();
-        const currentChats = storage.getChats();
-        const currentRatings = storage.getRatings();
-        const currentNotifications = storage.getNotifications();
-        const settings = storage.getSettings();
+        const currentUsers = getUsers();
+        const currentChats = getChats();
+        const currentRatings = getRatings();
+        const currentNotifications = getNotifications();
 
         socket.emit('login_success', { user });
         
@@ -175,9 +327,17 @@ io.on('connection', (socket) => {
             users: currentUsers.filter(u => u.id !== user.id) 
         });
         
-        socket.emit('chats_list', { 
-            chats: currentChats 
-        });
+        if (user.role === 'admin' || user.role === 'owner') {
+            socket.emit('chats_list', { 
+                chats: currentChats 
+            });
+        } else {
+            socket.emit('chats_list', { 
+                chats: currentChats.filter(chat => 
+                    chat.user1 === user.id || chat.user2 === user.id
+                )
+            });
+        }
         
         socket.emit('ratings_list', { 
             ratings: currentRatings 
@@ -186,19 +346,8 @@ io.on('connection', (socket) => {
         socket.emit('notifications_list', {
             notifications: currentNotifications
         });
-
-        socket.emit('settings_updated', {
-            settings: settings
-        });
         
         socket.broadcast.emit('user_connected', { user });
-        
-        // Логируем вход
-        storage.addSystemLog('user_login', user.id, {
-            username: user.username,
-            role: user.role
-        });
-        
         console.log(`✅ Успешный вход: ${username} (${user.role})`);
     });
 
@@ -206,7 +355,7 @@ io.on('connection', (socket) => {
     socket.on('register', (data) => {
         console.log(`📝 Запрос на регистрацию:`, data);
         
-        const users = storage.getUsers();
+        const users = getUsers();
         const { username, password, role = 'user', displayName } = data;
         
         if (!username || !password) {
@@ -221,7 +370,7 @@ io.on('connection', (socket) => {
         }
 
         const newUser = {
-            id: storage.generateId(),
+            id: generateId(),
             username,
             password,
             role: role || 'user',
@@ -231,19 +380,18 @@ io.on('connection', (socket) => {
             ratingCount: 0,
             isOnline: true,
             socketId: socket.id,
-            createdAt: new Date().toISOString(),
-            lastSeen: new Date().toISOString()
+            createdAt: new Date().toISOString()
         };
 
         users.push(newUser);
-        const saved = storage.saveUsers(users);
+        const saved = saveUsers(users);
         
         if (saved) {
             socket.emit('registration_success', { user: newUser });
             
-            const currentUsers = storage.getUsers();
-            const currentChats = storage.getChats();
-            const currentRatings = storage.getRatings();
+            const currentUsers = getUsers();
+            const currentChats = getChats();
+            const currentRatings = getRatings();
             
             socket.emit('users_list', { 
                 users: currentUsers.filter(u => u.id !== newUser.id) 
@@ -258,64 +406,244 @@ io.on('connection', (socket) => {
             });
             
             socket.broadcast.emit('user_connected', { user: newUser });
-            
-            // Логируем регистрацию
-            storage.addSystemLog('user_registration', newUser.id, {
-                username: newUser.username,
-                role: newUser.role
-            });
-            
             console.log(`✅ Новый пользователь: ${username}`);
         } else {
             socket.emit('registration_error', 'Ошибка сохранения пользователя');
         }
     });
 
-    // ВОЗОБНОВЛЕНИЕ ЧАТА
-    socket.on('resume_chat', (data) => {
-        console.log(`🔄 Возобновление чата:`, data);
+    // ОБНОВЛЕНИЕ ПРОФИЛЯ
+    socket.on('update_profile', (data) => {
+        console.log(`📝 Обновление профиля:`, data);
         
-        const { chatId } = data;
-        const user = getUserBySocketId(socket.id);
+        const { userId, displayName, avatar, password } = data;
+        const user = getUserById(userId);
         
         if (!user) {
+            socket.emit('profile_update_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updates = {};
+        if (displayName) updates.displayName = displayName;
+        if (avatar) updates.avatar = avatar;
+        if (password) updates.password = password;
+
+        const updatedUser = updateUser(userId, updates);
+        
+        if (updatedUser) {
+            socket.emit('profile_updated', { user: updatedUser });
+            socket.broadcast.emit('user_updated', { user: updatedUser });
+        } else {
+            socket.emit('profile_update_error', 'Ошибка обновления профиля');
+        }
+    });
+
+    // ДОБАВЛЕНИЕ СОТРУДНИКА
+    socket.on('register_staff', (data) => {
+        console.log(`➕ Добавление сотрудника:`, data);
+        
+        const users = getUsers();
+        const { username, password, displayName, role } = data;
+
+        const existingUser = users.find(u => u.username === username);
+        if (existingUser) {
+            socket.emit('staff_add_error', 'Пользователь с таким логином уже существует');
+            return;
+        }
+
+        const newStaff = {
+            id: generateId(),
+            username,
+            password,
+            role: role || 'listener',
+            displayName: displayName || username,
+            avatar: role === 'admin' ? '⚙️' : '🎧',
+            rating: 0,
+            ratingCount: 0,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        };
+
+        users.push(newStaff);
+        const saved = saveUsers(users);
+        
+        if (saved) {
+            socket.emit('staff_added', { user: newStaff });
+            socket.broadcast.emit('user_connected', { user: newStaff });
+        } else {
+            socket.emit('staff_add_error', 'Ошибка сохранения сотрудника');
+        }
+    });
+
+    // ИЗМЕНЕНИЕ РОЛИ
+    socket.on('change_role', (data) => {
+        console.log(`🎭 Изменение роли:`, data);
+        
+        const { userId, newRole } = data;
+        const user = getUserById(userId);
+        
+        if (!user) {
+            socket.emit('role_change_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updatedUser = updateUser(userId, { 
+            role: newRole,
+            avatar: newRole === 'admin' ? '⚙️' : newRole === 'listener' ? '🎧' : '👤'
+        });
+        
+        if (updatedUser) {
+            socket.emit('role_changed', { userId, newRole, user: updatedUser });
+            socket.broadcast.emit('user_updated', { user: updatedUser });
+        } else {
+            socket.emit('role_change_error', 'Ошибка изменения роли');
+        }
+    });
+
+    // ОТПРАВКА УВЕДОМЛЕНИЯ
+    socket.on('send_technical_notification', (data) => {
+        console.log(`📢 Отправка уведомления:`, data);
+        
+        const notifications = getNotifications();
+        const { title, text, type, recipients } = data;
+        
+        const newNotification = {
+            id: generateId(),
+            title,
+            text,
+            type,
+            recipients,
+            timestamp: new Date().toISOString(),
+            readBy: []
+        };
+
+        notifications.push(newNotification);
+        saveNotifications(notifications);
+
+        const users = getUsers();
+        let targetUsers = [];
+
+        switch (recipients) {
+            case 'all':
+                targetUsers = users;
+                break;
+            case 'users':
+                targetUsers = users.filter(u => u.role === 'user');
+                break;
+            case 'listeners':
+                targetUsers = users.filter(u => u.role === 'listener');
+                break;
+            case 'admins':
+                targetUsers = users.filter(u => u.role === 'admin' || u.role === 'owner');
+                break;
+        }
+
+        targetUsers.forEach(user => {
+            if (user.socketId) {
+                const userSocket = io.sockets.sockets.get(user.socketId);
+                if (userSocket) {
+                    userSocket.emit('new_notification', { notification: newNotification });
+                }
+            }
+        });
+
+        socket.emit('notification_sent', { success: true });
+    });
+
+    // ПОЛУЧЕНИЕ ДАННЫХ
+    socket.on('get_users', () => {
+        const users = getUsers();
+        socket.emit('users_list', { users });
+    });
+
+    socket.on('get_chats', () => {
+        const user = getUserBySocketId(socket.id);
+        const chats = getChats();
+        
+        if (user && (user.role === 'admin' || user.role === 'owner')) {
+            socket.emit('chats_list', { chats });
+        } else if (user) {
+            const userChats = chats.filter(chat => 
+                chat.user1 === user.id || chat.user2 === user.id
+            );
+            socket.emit('chats_list', { chats: userChats });
+        } else {
+            socket.emit('chats_list', { chats: [] });
+        }
+    });
+
+    socket.on('get_ratings', () => {
+        const ratings = getRatings();
+        socket.emit('ratings_list', { ratings });
+    });
+
+    socket.on('get_notifications', () => {
+        const notifications = getNotifications();
+        socket.emit('notifications_list', { notifications });
+    });
+
+    // СОЗДАНИЕ ЧАТА
+    socket.on('create_chat', (data) => {
+        console.log(`💬 Создание чата:`, data);
+        
+        const users = getUsers();
+        const chats = getChats();
+        const { user1, user2 } = data;
+        
+        const user1Data = getUserById(user1);
+        const user2Data = getUserById(user2);
+        
+        if (!user1Data || !user2Data) {
             socket.emit('chat_error', 'Пользователь не найден');
             return;
         }
 
-        const chat = resumeChat(chatId, user.id);
+        const existingChat = chats.find(chat => 
+            chat.isActive && 
+            ((chat.user1 === user1 && chat.user2 === user2) || 
+             (chat.user1 === user2 && chat.user2 === user1))
+        );
+
+        if (existingChat) {
+            socket.emit('chat_exists', { chat: existingChat });
+            return;
+        }
+
+        const newChat = {
+            id: generateId(),
+            user1,
+            user2, 
+            messages: [],
+            startTime: new Date().toISOString(),
+            isActive: true
+        };
+
+        chats.push(newChat);
+        saveChats(chats);
+
+        socket.emit('chat_created', { 
+            chat: newChat, 
+            listenerName: user2Data.displayName 
+        });
         
-        if (chat) {
-            socket.emit('chat_resumed', { 
-                chat: chat,
-                success: true 
-            });
-            
-            // Уведомляем второго участника если он онлайн
-            const otherUserId = chat.user1 === user.id ? chat.user2 : chat.user1;
-            const otherUser = getUserById(otherUserId);
-            
-            if (otherUser && otherUser.socketId) {
-                const otherSocket = io.sockets.sockets.get(otherUser.socketId);
-                if (otherSocket) {
-                    otherSocket.emit('chat_resumed', { 
-                        chat: chat,
-                        success: true 
-                    });
-                }
+        if (user2Data.socketId) {
+            const listenerSocket = io.sockets.sockets.get(user2Data.socketId);
+            if (listenerSocket) {
+                listenerSocket.emit('chat_created', { 
+                    chat: newChat, 
+                    listenerName: user1Data.displayName 
+                });
             }
-            
-            console.log(`🔄 Чат возобновлен: ${chat.id}`);
-        } else {
-            socket.emit('chat_error', 'Чат не найден или нет доступа');
         }
     });
 
-    // ОТПРАВКА СООБЩЕНИЯ С ФАЙЛАМИ И СТИКЕРАМИ
+    // ОТПРАВКА СООБЩЕНИЯ
     socket.on('send_message', (data) => {
         console.log(`📨 Отправка сообщения:`, data);
         
-        const chats = storage.getChats();
+        const chats = getChats();
         const { chatId, message } = data;
         
         const chat = chats.find(c => c.id === chatId);
@@ -327,246 +655,114 @@ io.on('connection', (socket) => {
         if (!chat.messages) chat.messages = [];
         
         const newMessage = {
-            id: storage.generateId(),
+            id: generateId(),
             text: message.text,
             senderId: message.senderId,
-            timestamp: new Date().toISOString(),
-            type: message.type || 'text',
-            fileData: message.fileData
+            timestamp: new Date().toISOString()
         };
 
         chat.messages.push(newMessage);
-        chat.lastActivity = new Date().toISOString();
-        storage.saveChats(chats);
+        saveChats(chats);
 
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
         const targetUser = getUserById(targetUserId);
         
-        // Отправляем сообщение отправителю
-        socket.emit('new_message', { chatId, message: newMessage });
-        
-        // Отправляем сообщение получателю
         if (targetUser && targetUser.socketId) {
             const targetSocket = io.sockets.sockets.get(targetUser.socketId);
             if (targetSocket) {
                 targetSocket.emit('new_message', { chatId, message: newMessage });
             }
         }
-
-        // Обновляем список чатов для всех участников
-        io.emit('chats_list', { chats: storage.getChats() });
     });
 
-    // СНЯТИЕ БЛОКИРОВКИ/ПРЕДУПРЕЖДЕНИЯ
-    socket.on('remove_moderation', (data) => {
-        console.log(`🔓 Снятие модерации:`, data);
+    // ОЦЕНКА
+    socket.on('submit_rating', (data) => {
+        console.log(`⭐ Оценка:`, data);
         
-        const { userId, action } = data;
-        const moderator = getUserBySocketId(socket.id);
-        const user = getUserById(userId);
+        const ratings = getRatings();
+        const { listenerId, rating, comment, userId } = data;
         
-        if (!user) {
-            socket.emit('moderation_error', 'Пользователь не найден');
-            return;
-        }
-
-        if (!moderator || (moderator.role !== 'admin' && moderator.role !== 'owner')) {
-            socket.emit('moderation_error', 'Недостаточно прав');
-            return;
-        }
-
-        const updates = {};
-        const history = storage.getModerationHistory();
-        
-        const moderationRecord = {
-            id: storage.generateId(),
+        const newRating = {
+            id: generateId(),
+            listenerId,
             userId,
-            moderatorId: moderator.id,
-            action: `remove_${action}`,
-            reason: 'Снятие ограничения',
+            rating,
+            comment,
             timestamp: new Date().toISOString()
         };
 
-        switch (action) {
-            case 'block':
-                updates.isBlocked = false;
-                updates.blockedUntil = null;
-                moderationRecord.message = `Пользователь разблокирован модератором ${moderator.displayName}`;
-                break;
-                
-            case 'warning':
-                updates.warnings = 0;
-                moderationRecord.message = `Все предупреждения сняты модератором ${moderator.displayName}`;
-                break;
-                
-            case 'vacation':
-                updates.isOnVacation = false;
-                updates.vacationUntil = null;
-                moderationRecord.message = `Отпуск отменен модератором ${moderator.displayName}`;
-                break;
+        ratings.push(newRating);
+        saveRatings(ratings);
+
+        const listenerRatings = ratings.filter(r => r.listenerId === listenerId);
+        const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = totalRating / listenerRatings.length;
+
+        const listener = getUserById(listenerId);
+        if (listener) {
+            updateUser(listenerId, {
+                rating: avgRating,
+                ratingCount: listenerRatings.length
+            });
         }
 
-        updateUser(userId, updates);
-        history.push(moderationRecord);
-        storage.saveModerationHistory(history);
-
-        socket.emit('moderation_removed', {
-            success: true,
-            message: moderationRecord.message,
-            user: getUserById(userId)
+        socket.emit('rating_submitted', {
+            listenerId,
+            newRating: avgRating,
+            ratingCount: listenerRatings.length
         });
 
-        // Уведомляем пользователя если он онлайн
-        if (user.socketId) {
-            const userSocket = io.sockets.sockets.get(user.socketId);
-            if (userSocket) {
-                userSocket.emit('moderation_removed', {
-                    action: action,
-                    moderator: moderator.displayName
+        if (listener && listener.socketId) {
+            const listenerSocket = io.sockets.sockets.get(listener.socketId);
+            if (listenerSocket) {
+                listenerSocket.emit('rating_received', {
+                    listenerId,
+                    newRating: avgRating, 
+                    ratingCount: listenerRatings.length,
+                    rating,
+                    comment
                 });
             }
         }
-
-        // Обновляем списки
-        io.emit('users_list', { users: storage.getUsers() });
-        io.emit('moderation_history', { history });
-        
-        // Логируем действие
-        storage.addSystemLog('remove_moderation', moderator.id, {
-            targetUser: user.username,
-            action: action
-        });
     });
 
-    // УДАЛЕНИЕ АДМИНИСТРАТОРА (только для владельца)
-    socket.on('remove_admin', (data) => {
-        console.log(`👑 Удаление администратора:`, data);
+    // ЗАВЕРШЕНИЕ ЧАТА
+    socket.on('end_chat', (data) => {
+        console.log(`🔚 Завершение чата:`, data);
         
-        const { adminId } = data;
-        const owner = getUserBySocketId(socket.id);
-        const admin = getUserById(adminId);
+        const chats = getChats();
+        const { chatId } = data;
         
-        if (!owner || owner.role !== 'owner') {
-            socket.emit('admin_remove_error', 'Только владелец может удалять администраторов');
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) {
+            socket.emit('chat_error', 'Чат не найден');
             return;
         }
 
-        if (!admin) {
-            socket.emit('admin_remove_error', 'Администратор не найден');
-            return;
-        }
+        chat.isActive = false;
+        chat.endTime = new Date().toISOString();
+        saveChats(chats);
 
-        if (admin.isPermanent) {
-            socket.emit('admin_remove_error', 'Нельзя удалить постоянного администратора');
-            return;
-        }
-
-        // Понижаем до пользователя
-        const updatedAdmin = updateUser(adminId, { 
-            role: 'user',
-            avatar: '👤'
-        });
+        socket.emit('chat_ended', { chatId });
         
-        if (updatedAdmin) {
-            socket.emit('admin_removed', { 
-                userId: adminId,
-                user: updatedAdmin 
-            });
-            
-            // Уведомляем всех о изменении роли
-            io.emit('user_updated', { user: updatedAdmin });
-            io.emit('users_list', { users: storage.getUsers().filter(u => u.id !== owner.id) });
-            
-            // Логируем действие
-            storage.addSystemLog('remove_admin', owner.id, {
-                removedAdmin: admin.username
-            });
-            
-            console.log(`👑 Администратор понижен: ${admin.username}`);
-        } else {
-            socket.emit('admin_remove_error', 'Ошибка при удалении администратора');
+        const user2 = getUserById(chat.user2);
+        if (user2 && user2.socketId) {
+            const targetSocket = io.sockets.sockets.get(user2.socketId);
+            if (targetSocket) {
+                targetSocket.emit('chat_ended', { chatId });
+            }
         }
     });
-
-    // ОБНОВЛЕНИЕ НАСТРОЕК СИСТЕМЫ
-    socket.on('update_settings', (data) => {
-        console.log(`⚙️ Обновление настроек:`, data);
-        
-        const { settings } = data;
-        const user = getUserBySocketId(socket.id);
-        
-        if (!user || (user.role !== 'admin' && user.role !== 'owner')) {
-            socket.emit('settings_error', 'Недостаточно прав');
-            return;
-        }
-
-        const currentSettings = storage.getSettings();
-        const updatedSettings = { ...currentSettings, ...settings };
-        
-        if (storage.saveSettings(updatedSettings)) {
-            socket.emit('settings_updated', { settings: updatedSettings });
-            socket.broadcast.emit('settings_updated', { settings: updatedSettings });
-            
-            // Логируем изменение настроек
-            storage.addSystemLog('update_settings', user.id, {
-                changes: Object.keys(settings)
-            });
-            
-            console.log('✅ Настройки системы обновлены');
-        } else {
-            socket.emit('settings_error', 'Ошибка сохранения настроек');
-        }
-    });
-
-    // СОЗДАНИЕ РЕЗЕРВНОЙ КОПИИ
-    socket.on('create_backup', () => {
-        const user = getUserBySocketId(socket.id);
-        
-        if (!user || user.role !== 'owner') {
-            socket.emit('backup_error', 'Только владелец может создавать резервные копии');
-            return;
-        }
-
-        try {
-            const backupFile = storage.createBackup();
-            socket.emit('backup_created', { 
-                success: true,
-                file: backupFile,
-                timestamp: new Date().toISOString()
-            });
-            
-            console.log(`💾 Резервная копия создана: ${backupFile}`);
-        } catch (error) {
-            socket.emit('backup_error', 'Ошибка создания резервной копии');
-        }
-    });
-
-    // ПОЛУЧЕНИЕ СИСТЕМНЫХ ЛОГОВ
-    socket.on('get_system_logs', () => {
-        const user = getUserBySocketId(socket.id);
-        
-        if (!user || user.role !== 'owner') {
-            socket.emit('logs_error', 'Только владелец может просматривать логи системы');
-            return;
-        }
-
-        const logs = storage.getSystemLogs();
-        socket.emit('system_logs', { logs });
-    });
-
-    // Остальные обработчики (create_chat, end_chat, submit_rating, apply_moderation_action и т.д.)
-    // остаются аналогичными, но используют storage вместо старых функций
 
     // ОТКЛЮЧЕНИЕ
     socket.on('disconnect', (reason) => {
-        console.log(`🔌 Отключение: ${socket.id} - ${reason}`);
+        console.log(`🔌 Отключение: ${socket.id}`);
         
         const user = getUserBySocketId(socket.id);
         if (user) {
             updateUser(user.id, {
                 isOnline: false,
-                socketId: null,
-                lastSeen: new Date().toISOString()
+                socketId: null
             });
             
             socket.broadcast.emit('user_disconnected', { userId: user.id });
@@ -576,37 +772,34 @@ io.on('connection', (socket) => {
 
 // API маршруты
 app.get('/api/users', (req, res) => {
-    const users = storage.getUsers();
+    const users = getUsers();
     res.json(users);
 });
 
 app.get('/api/chats', (req, res) => {
-    const chats = storage.getChats();
+    const chats = getChats();
     res.json(chats);
 });
 
 app.get('/api/ratings', (req, res) => {
-    const ratings = storage.getRatings();
+    const ratings = getRatings();
     res.json(ratings);
 });
 
 app.get('/api/notifications', (req, res) => {
-    const notifications = storage.getNotifications();
+    const notifications = getNotifications();
     res.json(notifications);
 });
 
 app.get('/api/stats', (req, res) => {
-    const users = storage.getUsers();
-    const chats = storage.getChats();
+    const users = getUsers();
+    const chats = getChats();
     
     const stats = {
         totalUsers: users.length,
         totalListeners: users.filter(u => u.role === 'listener').length,
-        totalAdmins: users.filter(u => u.role === 'admin').length,
         activeChats: chats.filter(c => c.isActive).length,
-        onlineUsers: users.filter(u => u.isOnline).length,
-        totalMessages: chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0),
-        systemUptime: process.uptime()
+        onlineUsers: users.filter(u => u.isOnline).length
     };
     res.json(stats);
 });
@@ -616,23 +809,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        storage: 'permanent',
-        dataSize: {
-            users: storage.getUsers().length,
-            chats: storage.getChats().length,
-            ratings: storage.getRatings().length
-        }
-    });
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
-    const users = storage.getUsers();
+    const users = getUsers();
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
-    console.log(`💾 Постоянное хранилище данных активировано`);
     console.log(`📊 Пользователей: ${users.length}`);
     console.log(`🔐 Аккаунты для входа:`);
     console.log(`   👑 Владелец: owner / owner2024`);

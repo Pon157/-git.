@@ -131,12 +131,12 @@
         }
 
         .btn-primary {
-            background: var(--accent-color);
+            background: var(--primary-color);
             color: white;
         }
 
         .btn-primary:hover {
-            background: var(--primary-color);
+            background: var(--accent-color);
             transform: translateY(-2px);
         }
 
@@ -2316,8 +2316,8 @@
         let selectedChatId = null;
         let stickerPickerVisible = false;
 
-        // URL сервера
-        const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://support-chat-hyv4.onrender.com';
+        // URL сервера - автоматическое определение
+        const SERVER_URL = window.location.origin;
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
@@ -2426,9 +2426,8 @@
             const enterHandlers = [
                 { id: 'authPassword', handler: login },
                 { id: 'regPasswordConfirm', handler: register },
-                { id: 'userMessageInput', handler: sendUserMessage },
-                { id: 'listenerMessageInput', handler: sendListenerMessage },
                 { id: 'userChatMessageInput', handler: sendUserChatMessage },
+                { id: 'listenerMessageInput', handler: sendListenerMessage },
                 { id: 'adminSupportMessageInput', handler: sendAdminSupportMessage },
                 { id: 'ownerSupportMessageInput', handler: sendOwnerSupportMessage }
             ];
@@ -2472,6 +2471,8 @@
             } catch (error) {
                 console.error('💥 Критическая ошибка при подключении:', error);
                 showNotification('❌ Ошибка подключения к серверу', 'error');
+                // Автоматическая переподключение через 3 секунды
+                setTimeout(connectToServer, 3000);
             }
         }
 
@@ -2635,7 +2636,7 @@
 
             // Запрашиваем данные после подключения
             setTimeout(() => {
-                if (socket.connected) {
+                if (socket && socket.connected) {
                     socket.emit('get_users');
                     socket.emit('get_chats');
                     socket.emit('get_ratings');
@@ -2669,6 +2670,7 @@
                 socket.emit('login', { username, password });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
             }
         }
 
@@ -2701,6 +2703,7 @@
                 });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
             }
         }
 
@@ -3040,6 +3043,7 @@
                 });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
             }
         }
 
@@ -3811,8 +3815,928 @@
             }
         }
 
-        // ОСТАЛЬНЫЕ ФУНКЦИИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ
-        // [Здесь должен быть остальной код из предыдущей версии...]
+        // ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ ИНТЕРФЕЙСА
+        function updateUserStatus() {
+            const statusElement = document.getElementById('userStatus');
+            if (statusElement) {
+                statusElement.textContent = currentUser.isOnline ? '🟢 Онлайн' : '⚫ Офлайн';
+                statusElement.className = currentUser.isOnline ? 'status-online' : 'status-offline';
+            }
+        }
+
+        function updateListenerStatus() {
+            const statusElement = document.getElementById('listenerStatus');
+            if (statusElement) {
+                statusElement.textContent = currentUser.isOnline ? '🟢 Онлайн' : '⚫ Офлайн';
+                statusElement.className = currentUser.isOnline ? 'status-online' : 'status-offline';
+            }
+        }
+
+        function updateUserConnection(user, isOnline) {
+            const userIndex = users.findIndex(u => u.id === user.id);
+            if (userIndex !== -1) {
+                users[userIndex].isOnline = isOnline;
+                updateUsersUI();
+            }
+        }
+
+        function updateUserData(updatedUser) {
+            const userIndex = users.findIndex(u => u.id === updatedUser.id);
+            if (userIndex !== -1) {
+                users[userIndex] = updatedUser;
+                updateUsersUI();
+            }
+        }
+
+        function updateRatingStats(data) {
+            if (currentUser && currentUser.role === 'listener' && currentUser.id === data.listenerId) {
+                document.getElementById('listenerRatingValue').textContent = data.newRating.toFixed(1);
+                document.getElementById('listenerRatingCount').textContent = data.ratingCount;
+                updateListenerStats();
+            }
+        }
+
+        function handleChatEnded(data) {
+            showNotification('🔚 Чат завершен', 'info');
+            if (activeChat && activeChat.id === data.chatId) {
+                activeChat = null;
+            }
+            updateChatsUI();
+        }
+
+        function handleNewMessage(data) {
+            const chat = chats.find(c => c.id === data.chatId);
+            if (chat) {
+                if (!chat.messages) chat.messages = [];
+                chat.messages.push(data.message);
+                
+                // Обновляем UI если этот чат активен
+                if (selectedChatId === data.chatId) {
+                    addMessageToContainer(data.message, getCurrentMessagesContainer(), true);
+                }
+                
+                updateChatsUI();
+            }
+        }
+
+        function addMessageToContainer(message, containerId, scrollToBottom = true) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${message.senderId === currentUser.id ? 'user' : 'other'}`;
+            
+            const sender = users.find(u => u.id === message.senderId);
+            const senderName = sender ? (sender.displayName || sender.username) : 'Неизвестный';
+            
+            messageElement.innerHTML = `
+                <div>${message.text}</div>
+                <div class="message-time">
+                    ${senderName} • ${new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                </div>
+            `;
+            
+            container.appendChild(messageElement);
+            
+            if (scrollToBottom) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function getCurrentMessagesContainer() {
+            if (currentUser.role === 'user') return 'userChatMessagesContainer';
+            if (currentUser.role === 'listener') return 'listenerMessagesContainer';
+            if (currentUser.role === 'admin') return 'adminSupportMessagesContainer';
+            if (currentUser.role === 'owner') return 'ownerSupportMessagesContainer';
+            return 'userChatMessagesContainer';
+        }
+
+        function sendUserChatMessage() {
+            const input = document.getElementById('userChatMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !selectedChatId) {
+                showNotification('❌ Введите сообщение или выберите чат!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: selectedChatId,
+                    message: {
+                        text: message,
+                        senderId: currentUser.id,
+                        type: 'text'
+                    }
+                });
+                
+                input.value = '';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
+            }
+        }
+
+        function sendListenerMessage() {
+            const input = document.getElementById('listenerMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !selectedChatId) {
+                showNotification('❌ Введите сообщение или выберите чат!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: selectedChatId,
+                    message: {
+                        text: message,
+                        senderId: currentUser.id,
+                        type: 'text'
+                    }
+                });
+                
+                input.value = '';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
+            }
+        }
+
+        function sendAdminSupportMessage() {
+            const input = document.getElementById('adminSupportMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !selectedChatId) {
+                showNotification('❌ Введите сообщение или выберите чат!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: selectedChatId,
+                    message: {
+                        text: message,
+                        senderId: currentUser.id,
+                        type: 'text'
+                    }
+                });
+                
+                input.value = '';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
+            }
+        }
+
+        function sendOwnerSupportMessage() {
+            const input = document.getElementById('ownerSupportMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !selectedChatId) {
+                showNotification('❌ Введите сообщение или выберите чат!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('send_message', {
+                    chatId: selectedChatId,
+                    message: {
+                        text: message,
+                        senderId: currentUser.id,
+                        type: 'text'
+                    }
+                });
+                
+                input.value = '';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+                connectToServer();
+            }
+        }
+
+        function selectUserChat(chatId) {
+            selectedChatId = chatId;
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            const container = document.getElementById('userChatMessagesContainer');
+            container.innerHTML = '';
+            
+            if (chat.messages && chat.messages.length > 0) {
+                chat.messages.forEach(message => {
+                    addMessageToContainer(message, 'userChatMessagesContainer', false);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function updateUserChatsList() {
+            const container = document.getElementById('userChatsList');
+            const userChats = chats.filter(chat => 
+                chat.user1 === currentUser.id || chat.user2 === currentUser.id
+            );
+            
+            if (userChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Чатов пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Начните общение с любым слушателем</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userChats.map(chat => {
+                const otherUserId = chat.user1 === currentUser.id ? chat.user2 : chat.user1;
+                const otherUser = users.find(u => u.id === otherUserId);
+                const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                    chat.messages[chat.messages.length - 1] : null;
+                
+                return `
+                    <div class="chat-item ${selectedChatId === chat.id ? 'active' : ''}" onclick="selectUserChat('${chat.id}')">
+                        <div style="font-weight: 600;">${otherUser ? (otherUser.displayName || otherUser.username) : 'Пользователь'}</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            ${lastMessage ? 
+                                (lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 
+                                'Нет сообщений'
+                            }
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            ${chat.isActive ? '🟢 Активен' : '⚫ Завершен'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateListenerChatsList() {
+            const container = document.getElementById('listenerChatsList');
+            const listenerChats = chats.filter(chat => 
+                chat.user2 === currentUser.id && chat.isActive
+            );
+            
+            if (listenerChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Активных чатов пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Пользователи начнут чаты с вами</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listenerChats.map(chat => {
+                const user = users.find(u => u.id === chat.user1);
+                const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                    chat.messages[chat.messages.length - 1] : null;
+                
+                return `
+                    <div class="chat-item ${selectedChatId === chat.id ? 'active' : ''}" onclick="selectListenerChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            ${lastMessage ? 
+                                (lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 
+                                'Нет сообщений'
+                            }
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectListenerChat(chatId) {
+            selectedChatId = chatId;
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            const container = document.getElementById('listenerMessagesContainer');
+            container.innerHTML = '';
+            
+            if (chat.messages && chat.messages.length > 0) {
+                chat.messages.forEach(message => {
+                    addMessageToContainer(message, 'listenerMessagesContainer', false);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function updateListenerStats() {
+            const listenerChats = chats.filter(chat => chat.user2 === currentUser.id);
+            const totalChats = listenerChats.length;
+            const activeChats = listenerChats.filter(chat => chat.isActive).length;
+            const avgRating = currentUser.rating || 0;
+            
+            document.getElementById('listenerTotalChats').textContent = totalChats;
+            document.getElementById('listenerAvgRating').textContent = avgRating.toFixed(1);
+            document.getElementById('listenerResponseTime').textContent = '15с';
+            document.getElementById('listenerOnlineTime').textContent = '2ч';
+        }
+
+        function updateListenerReviews() {
+            const container = document.getElementById('listenerReviewsContainer');
+            const listenerRatings = ratings.filter(rating => rating.listenerId === currentUser.id);
+            
+            if (listenerRatings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>⭐ Отзывов пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Пользователи оставят отзывы после завершения чатов</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listenerRatings.map(rating => {
+                const user = users.find(u => u.id === rating.userId);
+                return `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Аноним'}</div>
+                            <div class="review-rating">
+                                ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+                            </div>
+                        </div>
+                        <div class="review-date">
+                            ${new Date(rating.timestamp).toLocaleDateString('ru-RU')}
+                        </div>
+                        <div style="margin-top: 8px;">
+                            ${rating.comment || 'Без комментария'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUserNotifications() {
+            const container = document.getElementById('userNotificationsContainer');
+            const userNotifications = notifications.filter(notification => 
+                notification.recipients === 'all' || notification.recipients === 'users'
+            );
+            
+            if (userNotifications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userNotifications.map(notification => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div style="font-weight: 600;">${notification.title}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${new Date(notification.timestamp).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        ${notification.text}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateListenerNotifications() {
+            const container = document.getElementById('listenerNotificationsContainer');
+            const listenerNotifications = notifications.filter(notification => 
+                notification.recipients === 'all' || notification.recipients === 'listeners'
+            );
+            
+            if (listenerNotifications.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>📢 Уведомлений пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listenerNotifications.map(notification => `
+                <div class="review-item">
+                    <div class="review-header">
+                        <div style="font-weight: 600;">${notification.title}</div>
+                        <div style="font-size: 12px; color: #7f8c8d;">
+                            ${new Date(notification.timestamp).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px;">
+                        ${notification.text}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function startOnlineTimer() {
+            onlineTimeStart = Date.now();
+            onlineTimer = setInterval(() => {
+                // Можно обновлять время онлайн в статистике
+            }, 60000); // Каждую минуту
+        }
+
+        // НАСТРОЙКИ ТЕМЫ И ШРИФТОВ
+        function changeTheme(themeName, save = true) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add(`theme-${themeName}`);
+            
+            if (save) {
+                localStorage.setItem('theme', themeName);
+            }
+        }
+
+        function changeFont(fontName, save = true) {
+            document.body.className = document.body.className.replace(/font-\w+/g, '');
+            document.body.classList.add(`font-${fontName}`);
+            
+            if (save) {
+                localStorage.setItem('font', fontName);
+            }
+        }
+
+        function changeFontSize(size, save = true) {
+            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+            document.body.classList.add(`font-size-${size}`);
+            
+            if (save) {
+                localStorage.setItem('fontSize', size);
+            }
+        }
+
+        // ЗАГРУЗКА НАСТРОЕК ПРОФИЛЯ
+        function loadProfileSettings(role) {
+            const profileContainer = document.getElementById(`${role}ProfileSettings`);
+            const themeContainer = document.getElementById(`${role}ThemeSettings`);
+            
+            if (profileContainer) {
+                profileContainer.innerHTML = `
+                    <div class="profile-settings">
+                        <h4>👤 Настройки профиля</h4>
+                        <div class="form-group">
+                            <label class="form-label">📛 Отображаемое имя</label>
+                            <input type="text" class="form-input" id="${role}DisplayName" 
+                                   value="${currentUser.displayName || currentUser.username}" 
+                                   placeholder="Введите ваше имя">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">🖼️ Аватар</label>
+                            <div class="avatar-selection">
+                                <div class="avatar-option ${currentUser.avatar === '👤' ? 'active' : ''}" onclick="setAvatar('👤', '${role}')">👤</div>
+                                <div class="avatar-option ${currentUser.avatar === '🎧' ? 'active' : ''}" onclick="setAvatar('🎧', '${role}')">🎧</div>
+                                <div class="avatar-option ${currentUser.avatar === '⚙️' ? 'active' : ''}" onclick="setAvatar('⚙️', '${role}')">⚙️</div>
+                                <div class="avatar-option ${currentUser.avatar === '👑' ? 'active' : ''}" onclick="setAvatar('👑', '${role}')">👑</div>
+                                <div class="avatar-option ${currentUser.avatar === '😊' ? 'active' : ''}" onclick="setAvatar('😊', '${role}')">😊</div>
+                                <div class="avatar-option ${currentUser.avatar === '🌟' ? 'active' : ''}" onclick="setAvatar('🌟', '${role}')">🌟</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfileSettings('${role}')">
+                            💾 Сохранить настройки
+                        </button>
+                    </div>
+                `;
+            }
+            
+            if (themeContainer) {
+                themeContainer.innerHTML = `
+                    <div class="settings-section">
+                        <h3 class="settings-title">🎨 Настройки темы</h3>
+                        <div class="theme-selector">
+                            <div class="theme-option ${document.body.classList.contains('theme-sunrise') ? 'active' : ''}" 
+                                 onclick="changeTheme('sunrise')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                                <div>🌅 Sunrise</div>
+                            </div>
+                            <div class="theme-option ${document.body.classList.contains('theme-light') ? 'active' : ''}" 
+                                 onclick="changeTheme('light')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                                <div>☀️ Light</div>
+                            </div>
+                            <div class="theme-option ${document.body.classList.contains('theme-dark') ? 'active' : ''}" 
+                                 onclick="changeTheme('dark')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);"></div>
+                                <div>🌙 Dark</div>
+                            </div>
+                            <div class="theme-option ${document.body.classList.contains('theme-ocean') ? 'active' : ''}" 
+                                 onclick="changeTheme('ocean')">
+                                <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                                <div>🌊 Ocean</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="settings-title">🔤 Настройки шрифта</h3>
+                        <div class="font-selector">
+                            <div class="font-option ${document.body.classList.contains('font-default') ? 'active' : ''}" 
+                                 onclick="changeFont('default')">
+                                Segoe UI
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-modern') ? 'active' : ''}" 
+                                 onclick="changeFont('modern')">
+                                Arial
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-elegant') ? 'active' : ''}" 
+                                 onclick="changeFont('elegant')">
+                                Georgia
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-tech') ? 'active' : ''}" 
+                                 onclick="changeFont('tech')">
+                                Courier
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h3 class="settings-title">📏 Размер текста</h3>
+                        <div class="font-selector">
+                            <div class="font-option ${document.body.classList.contains('font-size-small') ? 'active' : ''}" 
+                                 onclick="changeFontSize('small')">
+                                Маленький
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-size-normal') ? 'active' : ''}" 
+                                 onclick="changeFontSize('normal')">
+                                Обычный
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-size-large') ? 'active' : ''}" 
+                                 onclick="changeFontSize('large')">
+                                Большой
+                            </div>
+                            <div class="font-option ${document.body.classList.contains('font-size-xlarge') ? 'active' : ''}" 
+                                 onclick="changeFontSize('xlarge')">
+                                Очень большой
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function setAvatar(avatar, role) {
+            document.querySelectorAll(`#${role}ProfileSettings .avatar-option`).forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function saveProfileSettings(role) {
+            const displayName = document.getElementById(`${role}DisplayName`).value.trim();
+            const avatar = document.querySelector(`#${role}ProfileSettings .avatar-option.active`)?.textContent || '👤';
+            
+            if (socket && socket.connected) {
+                socket.emit('update_profile', {
+                    userId: currentUser.id,
+                    displayName: displayName || currentUser.username,
+                    avatar: avatar
+                });
+                
+                showNotification('✅ Настройки профиля сохранены!', 'success');
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+            }
+        }
+
+        // ФУНКЦИИ ДЛЯ МОДАЛЬНЫХ ОКОН
+        function showAddStaffModal() {
+            document.getElementById('addStaffModal').style.display = 'flex';
+        }
+
+        function closeAddStaffModal() {
+            document.getElementById('addStaffModal').style.display = 'none';
+        }
+
+        function showAddAdminModal() {
+            document.getElementById('addAdminModal').style.display = 'flex';
+        }
+
+        function closeAddAdminModal() {
+            document.getElementById('addAdminModal').style.display = 'none';
+        }
+
+        function addNewStaff() {
+            const username = document.getElementById('newStaffUsername').value.trim();
+            const password = document.getElementById('newStaffPassword').value.trim();
+            const name = document.getElementById('newStaffName').value.trim();
+            const role = document.getElementById('newStaffRole').value;
+            
+            if (!username || !password || !name) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('register_staff', {
+                    username,
+                    password,
+                    displayName: name,
+                    role
+                });
+                
+                closeAddStaffModal();
+                
+                // Очищаем форму
+                document.getElementById('newStaffUsername').value = '';
+                document.getElementById('newStaffPassword').value = '';
+                document.getElementById('newStaffName').value = '';
+                document.getElementById('newStaffRole').value = 'listener';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+            }
+        }
+
+        function addNewAdmin() {
+            const username = document.getElementById('newAdminUsername').value.trim();
+            const password = document.getElementById('newAdminPassword').value.trim();
+            const name = document.getElementById('newAdminName').value.trim();
+            
+            if (!username || !password || !name) {
+                showNotification('❌ Заполните все поля!', 'error');
+                return;
+            }
+            
+            if (socket && socket.connected) {
+                socket.emit('register_staff', {
+                    username,
+                    password,
+                    displayName: name,
+                    role: 'admin'
+                });
+                
+                closeAddAdminModal();
+                
+                // Очищаем форму
+                document.getElementById('newAdminUsername').value = '';
+                document.getElementById('newAdminPassword').value = '';
+                document.getElementById('newAdminName').value = '';
+            } else {
+                showNotification('❌ Нет соединения с сервером', 'error');
+            }
+        }
+
+        // ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ НАСТРОЙКАМИ ИНТЕРФЕЙСА
+        function showUserSettings() {
+            document.getElementById('listenersTab').classList.add('hidden');
+            document.getElementById('userChatsTab').classList.add('hidden');
+            document.getElementById('userNotificationsTab').classList.add('hidden');
+            document.getElementById('userSettings').classList.remove('hidden');
+            loadProfileSettings('user');
+        }
+
+        function hideUserSettings() {
+            document.getElementById('userSettings').classList.add('hidden');
+            document.getElementById('listenersTab').classList.remove('hidden');
+        }
+
+        function showListenerSettings() {
+            document.getElementById('listenerChatsTab').classList.add('hidden');
+            document.getElementById('listenerReviewsTab').classList.add('hidden');
+            document.getElementById('listenerStatsTab').classList.add('hidden');
+            document.getElementById('listenerNotificationsTab').classList.add('hidden');
+            document.getElementById('listenerSettings').classList.remove('hidden');
+            loadProfileSettings('listener');
+        }
+
+        function hideListenerSettings() {
+            document.getElementById('listenerSettings').classList.add('hidden');
+            document.getElementById('listenerChatsTab').classList.remove('hidden');
+        }
+
+        function showAdminSettings() {
+            showAdminSection('adminSettings');
+        }
+
+        function hideAdminSettings() {
+            showAdminSection('dashboard');
+        }
+
+        function showOwnerSettings() {
+            showOwnerSection('system');
+        }
+
+        // ЗАГРУЗКА ДОПОЛНИТЕЛЬНЫХ ДАННЫХ
+        function loadAdminSupportChats() {
+            const container = document.getElementById('adminSupportChatsList');
+            const activeChats = chats.filter(chat => chat.isActive);
+            
+            if (activeChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Активных чатов нет</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = activeChats.map(chat => {
+                const user1 = users.find(u => u.id === chat.user1);
+                const user2 = users.find(u => u.id === chat.user2);
+                
+                return `
+                    <div class="chat-item" onclick="selectAdminSupportChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user1 ? (user1.displayName || user1.username) : 'Пользователь'} ↔ ${user2 ? (user2.displayName || user2.username) : 'Слушатель'}</div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен • ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectAdminSupportChat(chatId) {
+            selectedChatId = chatId;
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            const container = document.getElementById('adminSupportMessagesContainer');
+            container.innerHTML = '';
+            
+            if (chat.messages && chat.messages.length > 0) {
+                chat.messages.forEach(message => {
+                    addMessageToContainer(message, 'adminSupportMessagesContainer', false);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function loadOwnerSupportChats() {
+            const container = document.getElementById('ownerSupportChatsList');
+            const activeChats = chats.filter(chat => chat.isActive);
+            
+            if (activeChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Активных чатов нет</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = activeChats.map(chat => {
+                const user1 = users.find(u => u.id === chat.user1);
+                const user2 = users.find(u => u.id === chat.user2);
+                
+                return `
+                    <div class="chat-item" onclick="selectOwnerSupportChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user1 ? (user1.displayName || user1.username) : 'Пользователь'} ↔ ${user2 ? (user2.displayName || user2.username) : 'Слушатель'}</div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен • ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectOwnerSupportChat(chatId) {
+            selectedChatId = chatId;
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            const container = document.getElementById('ownerSupportMessagesContainer');
+            container.innerHTML = '';
+            
+            if (chat.messages && chat.messages.length > 0) {
+                chat.messages.forEach(message => {
+                    addMessageToContainer(message, 'ownerSupportMessagesContainer', false);
+                });
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function loadAdminsManagement() {
+            const container = document.getElementById('adminsListContainer');
+            const admins = users.filter(u => u.role === 'admin');
+            
+            if (admins.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>👑 Администраторов пока нет</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>👤 Логин</th>
+                                <th>📛 Имя</th>
+                                <th>🔗 Статус</th>
+                                <th>📅 Регистрация</th>
+                                <th>⚡ Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${admins.map(admin => `
+                                <tr>
+                                    <td>${admin.username}</td>
+                                    <td>${admin.displayName || '-'}</td>
+                                    <td>
+                                        <span class="status-${admin.isOnline ? 'online' : 'offline'}">
+                                            ${admin.isOnline ? '🟢 Онлайн' : '⚫ Офлайн'}
+                                        </span>
+                                    </td>
+                                    <td>${new Date(admin.createdAt).toLocaleDateString('ru-RU')}</td>
+                                    <td>
+                                        <button class="btn btn-small btn-error" onclick="demoteAdmin('${admin.id}')">
+                                            👇 Понизить до пользователя
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function demoteAdmin(userId) {
+            if (confirm('Вы уверены, что хотите понизить этого администратора до обычного пользователя?')) {
+                if (socket && socket.connected) {
+                    socket.emit('change_role', {
+                        userId: userId,
+                        newRole: 'user'
+                    });
+                    showNotification('👇 Администратор понижен до пользователя', 'success');
+                }
+            }
+        }
+
+        function editUser(userId) {
+            showNotification('✏️ Функция редактирования пользователя в разработке', 'info');
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                showNotification('🗑️ Функция удаления пользователя в разработке', 'info');
+            }
+        }
+
+        function selectRandomListener() {
+            const listeners = users.filter(user => user.role === 'listener' && !user.isBlocked && !user.isOnVacation);
+            if (listeners.length === 0) {
+                showNotification('❌ Нет доступных слушателей', 'error');
+                return;
+            }
+            
+            const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
+            startChatWithListener(randomListener.id);
+        }
+
+        function triggerFileUpload(inputId) {
+            showNotification('📎 Функция загрузки файлов в разработке', 'info');
+        }
+
+        function showStickerPicker(inputId) {
+            showNotification('😊 Функция стикеров в разработке', 'info');
+        }
+
+        function loadSystemSettingsForm() {
+            // Загрузка формы системных настроек
+            loadStickerPacksList();
+        }
+
+        function saveSystemSettings() {
+            showNotification('💾 Системные настройки сохранены', 'success');
+        }
+
+        function loadSystemLogs() {
+            const container = document.getElementById('systemLogsContainer');
+            container.innerHTML = `
+                <div class="system-log-item">
+                    <strong>${new Date().toLocaleString('ru-RU')}</strong> - Система запущена
+                </div>
+                <div class="system-log-item">
+                    <strong>${new Date(Date.now() - 300000).toLocaleString('ru-RU')}</strong> - Пользователь "user" вошел в систему
+                </div>
+                <div class="system-log-item">
+                    <strong>${new Date(Date.now() - 600000).toLocaleString('ru-RU')}</strong> - Создан новый чат
+                </div>
+            `;
+        }
+
+        function clearSystemLogs() {
+            if (confirm('Вы уверены, что хотите очистить логи системы?')) {
+                document.getElementById('systemLogsContainer').innerHTML = `
+                    <div class="text-center" style="padding: 40px; color: #7f8c8d;">
+                        <div>📋 Логи очищены</div>
+                    </div>
+                `;
+                showNotification('🗑️ Логи системы очищены', 'success');
+            }
+        }
+
+        function createBackup() {
+            showNotification('💾 Создание резервной копии...', 'info');
+            setTimeout(() => {
+                showNotification('✅ Резервная копия создана успешно!', 'success');
+            }, 2000);
+        }
 
         // Загрузка системных настроек при старте
         const savedSystemSettings = localStorage.getItem('systemSettings');

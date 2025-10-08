@@ -1644,38 +1644,6 @@
                             </div>
                         </div>
                         <div id="adminThemeSettings"></div>
-                        
-                        <!-- Системные настройки для администратора -->
-                        <div class="settings-section admin-feature" style="padding: 20px; border-radius: 10px;">
-                            <h3 class="settings-title">⚙️ Системные настройки</h3>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <input type="checkbox" id="adminFileUploadsEnabled" checked> 
-                                    📎 Разрешить загрузку файлов
-                                </label>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">💾 Максимальный размер файла (MB)</label>
-                                <input type="number" class="form-input" id="adminMaxFileSize" value="10" min="1" max="50">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">🎨 Стикеры</label>
-                                <div id="adminStickersContainer" style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;">
-                                    <!-- Стикеры будут добавлены здесь -->
-                                </div>
-                                <input type="text" class="form-input" id="adminNewSticker" placeholder="Добавить новый стикер (эмодзи)" style="margin-top: 10px;">
-                                <button class="btn btn-small btn-primary" onclick="addNewAdminSticker()" style="margin-top: 5px;">
-                                    ➕ Добавить стикер
-                                </button>
-                            </div>
-                            
-                            <button class="btn btn-primary" onclick="saveAdminSystemSettings()">
-                                💾 Сохранить настройки
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1941,9 +1909,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Остальные секции (users, staff, moderation, notifications) аналогичны админским -->
-
             </div>
         </div>
     </div>
@@ -2031,13 +1996,8 @@
         let systemSettings = {};
         let activeSupportChat = null;
 
-       // Автоматическое определение URL сервера
-const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? 'https://support-chat-hyv4.onrender.com/' 
-    : window.location.origin;
-
-// Или если у вас отдельные домены для фронтенда и бэкенда:
-// const SERVER_URL = 'https://your-backend-domain.onrender.com';
+        // URL сервера
+        const SERVER_URL = 'https://support-chat-hyv4.onrender.com';
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
@@ -2148,14 +2108,6 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                 });
             });
 
-            // Модерация
-            const moderationAction = document.getElementById('moderationAction');
-            if (moderationAction) {
-                moderationAction.addEventListener('change', function() {
-                    updateModerationForm();
-                });
-            }
-
             console.log('✅ Обработчики событий настроены');
         }
 
@@ -2198,6 +2150,7 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
 
                 socket.on('disconnect', (reason) => {
                     console.log('❌ Отключено от сервера:', reason);
+                    showNotification('❌ Соединение с сервером потеряно', 'error');
                 });
 
                 socket.on('connect_error', (error) => {
@@ -2206,6 +2159,7 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                     
                     if (connectionRetries <= MAX_RETRIES) {
                         console.log(`🔄 Попытка переподключения ${connectionRetries}/${MAX_RETRIES}`);
+                        showNotification(`🔄 Переподключение... (${connectionRetries}/${MAX_RETRIES})`, 'info');
                     } else {
                         showNotification('❌ Не удалось подключиться к серверу', 'error');
                     }
@@ -2271,17 +2225,6 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                     updateModerationHistory();
                 });
 
-                socket.on('settings_updated', (data) => {
-                    console.log('⚙️ Настройки обновлены:', data.settings);
-                    systemSettings = data.settings;
-                    updateSettingsUI();
-                });
-
-                socket.on('system_logs', (data) => {
-                    console.log('📋 Получены логи системы:', data.logs?.length);
-                    updateSystemLogs(data.logs);
-                });
-
                 socket.on('new_message', (data) => {
                     console.log('📨 Новое сообщение:', data);
                     handleNewMessage(data);
@@ -2314,8 +2257,6 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                         socket.emit('get_chats');
                         socket.emit('get_ratings');
                         socket.emit('get_notifications');
-                        socket.emit('get_moderation_history');
-                        socket.emit('get_settings');
                     }
                 }, 1000);
 
@@ -2345,6 +2286,7 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
             }
 
             if (socket && socket.connected) {
+                showNotification('🔄 Вход в систему...', 'info');
                 socket.emit('login', { username, password });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
@@ -2372,6 +2314,7 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
             }
 
             if (socket && socket.connected) {
+                showNotification('🔄 Регистрация...', 'info');
                 socket.emit('register', { 
                     username, 
                     password,
@@ -2421,6 +2364,25 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
             updateUserNotifications();
         }
 
+        // ИНТЕРФЕЙС СЛУШАТЕЛЯ
+        function showListenerInterface() {
+            hideAllInterfaces();
+            document.getElementById('listenerInterface').style.display = 'block';
+            
+            document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
+            document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('listenerAvatar').textContent = currentUser.avatar || '🎧';
+            document.getElementById('listenerRatingValue').textContent = currentUser.rating || '0.0';
+            document.getElementById('listenerRatingCount').textContent = currentUser.ratingCount || '0';
+            
+            updateListenerStatus();
+            showListenerThemeSettings();
+            updateListenerChatsList();
+            updateListenerStats();
+            updateListenerReviews();
+            updateListenerNotifications();
+        }
+
         // ИНТЕРФЕЙС АДМИНИСТРАТОРА
         function showAdminPanel() {
             hideAllInterfaces();
@@ -2455,10 +2417,6 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                 adminSettings: '⚙️ Настройки'
             };
             document.getElementById('contentTitle').textContent = titles[section];
-            
-            if (section === 'adminChat') {
-                loadAdminSupportChats();
-            }
         }
 
         // ИНТЕРФЕЙС ВЛАДЕЛЬЦА
@@ -2498,505 +2456,9 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
                 backup: '💾 Резервные копии'
             };
             document.getElementById('ownerContentTitle').textContent = titles[section];
-            
-            if (section === 'ownerChat') {
-                loadOwnerSupportChats();
-            } else if (section === 'system') {
-                loadSystemSettingsForm();
-            } else if (section === 'logs') {
-                loadSystemLogs();
-            } else if (section === 'admins') {
-                loadAdminsManagement();
-            }
         }
 
-        // ФУНКЦИИ ДЛЯ ЧАТА ПОДДЕРЖКИ АДМИНА И ВЛАДЕЛЬЦА
-        function loadAdminSupportChats() {
-            const container = document.getElementById('adminSupportChatsList');
-            const userChats = chats.filter(chat => chat.isActive);
-            
-            if (userChats.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                        <div>😴 Активных чатов нет</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Ожидайте подключения пользователей</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = userChats.map(chat => {
-                const user = users.find(u => u.id === chat.user1);
-                const lastMessage = chat.messages && chat.messages.length > 0 ? 
-                    chat.messages[chat.messages.length - 1] : null;
-                
-                return `
-                    <div class="chat-item" data-chat-id="${chat.id}" onclick="selectAdminSupportChat('${chat.id}')">
-                        <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
-                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            ${lastMessage ? 
-                                lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 
-                                'Нет сообщений'
-                            }
-                        </div>
-                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
-                            ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function loadOwnerSupportChats() {
-            const container = document.getElementById('ownerSupportChatsList');
-            const userChats = chats.filter(chat => chat.isActive);
-            
-            if (userChats.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
-                        <div>😴 Активных чатов нет</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Ожидайте подключения пользователей</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = userChats.map(chat => {
-                const user = users.find(u => u.id === chat.user1);
-                const listener = users.find(u => u.id === chat.user2);
-                const lastMessage = chat.messages && chat.messages.length > 0 ? 
-                    chat.messages[chat.messages.length - 1] : null;
-                
-                return `
-                    <div class="chat-item" data-chat-id="${chat.id}" onclick="selectOwnerSupportChat('${chat.id}')">
-                        <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
-                        <div style="font-size: 12px; color: #7f8c8d;">
-                            С слушателем: ${listener ? (listener.displayName || listener.username) : 'Не назначен'}
-                        </div>
-                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            ${lastMessage ? 
-                                lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 
-                                'Нет сообщений'
-                            }
-                        </div>
-                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
-                            ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function selectAdminSupportChat(chatId) {
-            activeSupportChat = chats.find(chat => chat.id === chatId);
-            if (!activeSupportChat) return;
-            
-            document.querySelectorAll('#adminSupportChatsList .chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`#adminSupportChatsList .chat-item[data-chat-id="${chatId}"]`).classList.add('active');
-            
-            loadAdminSupportChatMessages();
-        }
-
-        function selectOwnerSupportChat(chatId) {
-            activeSupportChat = chats.find(chat => chat.id === chatId);
-            if (!activeSupportChat) return;
-            
-            document.querySelectorAll('#ownerSupportChatsList .chat-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`#ownerSupportChatsList .chat-item[data-chat-id="${chatId}"]`).classList.add('active');
-            
-            loadOwnerSupportChatMessages();
-        }
-
-        function loadAdminSupportChatMessages() {
-            const container = document.getElementById('adminSupportMessagesContainer');
-            container.innerHTML = '';
-            
-            if (!activeSupportChat || !activeSupportChat.messages || activeSupportChat.messages.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                        <div>💬 Нет сообщений</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Начните общение с пользователем</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            activeSupportChat.messages.forEach(message => {
-                addMessageToAdminSupportChat(message, false);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function loadOwnerSupportChatMessages() {
-            const container = document.getElementById('ownerSupportMessagesContainer');
-            container.innerHTML = '';
-            
-            if (!activeSupportChat || !activeSupportChat.messages || activeSupportChat.messages.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
-                        <div>💬 Нет сообщений</div>
-                        <div style="font-size: 14px; margin-top: 10px;">Начните общение с пользователем</div>
-                    </div>
-                `;
-                return;
-            }
-            
-            activeSupportChat.messages.forEach(message => {
-                addMessageToOwnerSupportChat(message, false);
-            });
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function sendAdminSupportMessage() {
-            if (!activeSupportChat) {
-                showNotification('❌ Выберите чат для общения!', 'error');
-                return;
-            }
-            
-            const input = document.getElementById('adminSupportMessageInput');
-            const text = input.value.trim();
-            
-            if (!text) {
-                showNotification('❌ Введите сообщение!', 'error');
-                return;
-            }
-
-            const message = {
-                text: text,
-                senderId: currentUser.id,
-                timestamp: new Date(),
-                type: 'admin_support'
-            };
-
-            addMessageToAdminSupportChat(message);
-            
-            socket.emit('send_message', {
-                chatId: activeSupportChat.id,
-                message: message
-            });
-
-            input.value = '';
-        }
-
-        function sendOwnerSupportMessage() {
-            if (!activeSupportChat) {
-                showNotification('❌ Выберите чат для общения!', 'error');
-                return;
-            }
-            
-            const input = document.getElementById('ownerSupportMessageInput');
-            const text = input.value.trim();
-            
-            if (!text) {
-                showNotification('❌ Введите сообщение!', 'error');
-                return;
-            }
-
-            const message = {
-                text: text,
-                senderId: currentUser.id,
-                timestamp: new Date(),
-                type: 'owner_support'
-            };
-
-            addMessageToOwnerSupportChat(message);
-            
-            socket.emit('send_message', {
-                chatId: activeSupportChat.id,
-                message: message
-            });
-
-            input.value = '';
-        }
-
-        function addMessageToAdminSupportChat(message, scroll = true) {
-            const container = document.getElementById('adminSupportMessagesContainer');
-            
-            if (container.children.length === 1 && container.children[0].textContent.includes('Выберите чат')) {
-                container.innerHTML = '';
-            }
-            
-            const messageDiv = document.createElement('div');
-            const isCurrentUser = message.senderId === currentUser.id;
-            const sender = users.find(u => u.id === message.senderId);
-            const messageClass = isCurrentUser ? 'user' : 
-                               sender?.role === 'admin' ? 'admin' : 
-                               sender?.role === 'owner' ? 'owner' : 'other';
-            
-            messageDiv.className = `message ${messageClass}`;
-            messageDiv.innerHTML = `
-                <div><strong>${sender ? (sender.displayName || sender.username) : 'Неизвестный'}:</strong> ${message.text}</div>
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-            container.appendChild(messageDiv);
-            
-            if (scroll) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        function addMessageToOwnerSupportChat(message, scroll = true) {
-            const container = document.getElementById('ownerSupportMessagesContainer');
-            
-            if (container.children.length === 1 && container.children[0].textContent.includes('Выберите чат')) {
-                container.innerHTML = '';
-            }
-            
-            const messageDiv = document.createElement('div');
-            const isCurrentUser = message.senderId === currentUser.id;
-            const sender = users.find(u => u.id === message.senderId);
-            const messageClass = isCurrentUser ? 'user' : 
-                               sender?.role === 'admin' ? 'admin' : 
-                               sender?.role === 'owner' ? 'owner' : 'other';
-            
-            messageDiv.className = `message ${messageClass}`;
-            messageDiv.innerHTML = `
-                <div><strong>${sender ? (sender.displayName || sender.username) : 'Неизвестный'}:</strong> ${message.text}</div>
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-            container.appendChild(messageDiv);
-            
-            if (scroll) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        // ФУНКЦИИ ДЛЯ ФАЙЛОВ И СТИКЕРОВ
-        function triggerFileUpload(inputId) {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*,video/*';
-            fileInput.style.display = 'none';
-            
-            fileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    handleFileUpload(file, inputId);
-                }
-            });
-            
-            document.body.appendChild(fileInput);
-            fileInput.click();
-            document.body.removeChild(fileInput);
-        }
-
-        function handleFileUpload(file, inputId) {
-            const maxSize = (systemSettings.maxFileSize || 10) * 1024 * 1024;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime', 'video/x-msvideo'];
-            
-            if (file.size > maxSize) {
-                showNotification(`❌ Файл слишком большой! Максимум ${systemSettings.maxFileSize || 10}MB`, 'error');
-                return;
-            }
-            
-            if (!allowedTypes.includes(file.type)) {
-                showNotification('❌ Неподдерживаемый тип файла!', 'error');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    data: e.target.result
-                };
-                
-                sendFileMessage(fileData, inputId);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function sendFileMessage(fileData, inputId) {
-            let activeChatToUse = activeChat;
-            if (inputId.includes('adminSupport') || inputId.includes('ownerSupport')) {
-                activeChatToUse = activeSupportChat;
-            }
-            
-            if (!activeChatToUse) {
-                showNotification('❌ Сначала выберите чат!', 'error');
-                return;
-            }
-            
-            const messageType = fileData.type.startsWith('image/') ? 'image' : 'video';
-            const messageText = messageType === 'image' ? '📷 Изображение' : '🎥 Видео';
-            
-            const message = {
-                text: messageText,
-                senderId: currentUser.id,
-                timestamp: new Date(),
-                type: messageType,
-                fileData: fileData
-            };
-            
-            // Определяем куда добавлять сообщение
-            if (inputId === 'userMessageInput') {
-                addMessageToUserChat(message);
-            } else if (inputId === 'listenerMessageInput') {
-                addMessageToListenerChat(message);
-            } else if (inputId === 'userChatMessageInput') {
-                addMessageToUserChatMessages(message);
-            } else if (inputId === 'adminSupportMessageInput') {
-                addMessageToAdminSupportChat(message);
-            } else if (inputId === 'ownerSupportMessageInput') {
-                addMessageToOwnerSupportChat(message);
-            }
-            
-            socket.emit('send_message', {
-                chatId: activeChatToUse.id,
-                message: message
-            });
-            
-            showNotification(`✅ Файл "${fileData.name}" отправлен`, 'success');
-        }
-
-        function showStickerPicker(inputId) {
-            const stickers = systemSettings.stickers || ['😊', '😂', '😍', '😎', '😢', '😡', '🤔', '🎉', '❤️', '🔥', '👍', '👎'];
-            
-            // Удаляем существующий пикер
-            const existingPicker = document.getElementById('stickerPicker');
-            if (existingPicker) {
-                existingPicker.remove();
-            }
-            
-            // Создаем новый пикер
-            const stickerPicker = document.createElement('div');
-            stickerPicker.id = 'stickerPicker';
-            stickerPicker.className = 'sticker-picker';
-            
-            stickers.forEach(sticker => {
-                const stickerElement = document.createElement('div');
-                stickerElement.className = 'sticker-item';
-                stickerElement.textContent = sticker;
-                stickerElement.addEventListener('click', () => {
-                    sendStickerMessage(sticker, inputId);
-                    stickerPicker.remove();
-                });
-                stickerPicker.appendChild(stickerElement);
-            });
-            
-            // Позиционируем пикер
-            const input = document.getElementById(inputId);
-            const rect = input.getBoundingClientRect();
-            stickerPicker.style.position = 'fixed';
-            stickerPicker.style.bottom = (window.innerHeight - rect.top + 70) + 'px';
-            stickerPicker.style.left = rect.left + 'px';
-            stickerPicker.style.zIndex = '1000';
-            
-            document.body.appendChild(stickerPicker);
-            
-            // Закрываем при клике вне пикера
-            setTimeout(() => {
-                const closePicker = (e) => {
-                    if (!stickerPicker.contains(e.target)) {
-                        stickerPicker.remove();
-                        document.removeEventListener('click', closePicker);
-                    }
-                };
-                document.addEventListener('click', closePicker);
-            }, 100);
-        }
-
-        function sendStickerMessage(sticker, inputId) {
-            let activeChatToUse = activeChat;
-            if (inputId.includes('adminSupport') || inputId.includes('ownerSupport')) {
-                activeChatToUse = activeSupportChat;
-            }
-            
-            if (!activeChatToUse) {
-                showNotification('❌ Сначала выберите чат!', 'error');
-                return;
-            }
-            
-            const message = {
-                text: sticker,
-                senderId: currentUser.id,
-                timestamp: new Date(),
-                type: 'sticker'
-            };
-            
-            // Определяем куда добавлять сообщение
-            if (inputId === 'userMessageInput') {
-                addMessageToUserChat(message);
-            } else if (inputId === 'listenerMessageInput') {
-                addMessageToListenerChat(message);
-            } else if (inputId === 'userChatMessageInput') {
-                addMessageToUserChatMessages(message);
-            } else if (inputId === 'adminSupportMessageInput') {
-                addMessageToAdminSupportChat(message);
-            } else if (inputId === 'ownerSupportMessageInput') {
-                addMessageToOwnerSupportChat(message);
-            }
-            
-            socket.emit('send_message', {
-                chatId: activeChatToUse.id,
-                message: message
-            });
-        }
-
-        // ОБНОВЛЕННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ СООБЩЕНИЙ С ПОДДЕРЖКОЙ ФАЙЛОВ И СТИКЕРОВ
-        function addMessageToUserChat(message, scroll = true) {
-            const container = document.getElementById('userMessagesContainer');
-            
-            if (container.children.length === 1 && container.children[0].textContent.includes('Чат начат')) {
-                container.innerHTML = '';
-            }
-            
-            const messageDiv = document.createElement('div');
-            const isCurrentUser = message.senderId === currentUser.id;
-            messageDiv.className = `message ${isCurrentUser ? 'user' : 'other'}`;
-            
-            let messageContent = '';
-            
-            if (message.type === 'image') {
-                messageContent = `
-                    <div style="margin-bottom: 5px;">
-                        <img src="${message.fileData.data}" 
-                             alt="${message.fileData.name}" 
-                             style="max-width: 200px; max-height: 200px; border-radius: 10px; cursor: pointer;"
-                             onclick="openFilePreview('${message.fileData.data}', 'image')">
-                    </div>
-                    <div style="font-size: 12px; opacity: 0.7;">${message.fileData.name}</div>
-                `;
-            } else if (message.type === 'video') {
-                messageContent = `
-                    <div style="margin-bottom: 5px;">
-                        <video controls style="max-width: 200px; max-height: 200px; border-radius: 10px;">
-                            <source src="${message.fileData.data}" type="${message.fileData.type}">
-                            Ваш браузер не поддерживает видео.
-                        </video>
-                    </div>
-                    <div style="font-size: 12px; opacity: 0.7;">${message.fileData.name}</div>
-                `;
-            } else if (message.type === 'sticker') {
-                messageDiv.style.background = 'none';
-                messageDiv.style.fontSize = '48px';
-                messageDiv.style.padding = '5px';
-                messageContent = `<div style="text-align: center;">${message.text}</div>`;
-            } else {
-                messageContent = `<div>${message.text}</div>`;
-            }
-            
-            messageDiv.innerHTML = `
-                ${messageContent}
-                <div class="message-time">${new Date(message.timestamp).toLocaleTimeString()}</div>
-            `;
-            
-            container.appendChild(messageDiv);
-            
-            if (scroll) {
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        // Аналогично обновите другие функции добавления сообщений...
-
-        // УТИЛИТЫ
+        // БАЗОВЫЕ ФУНКЦИИ
         function getRoleDisplayName(role) {
             const roles = {
                 'owner': '👑 Владелец системы',
@@ -3042,9 +2504,510 @@ const SERVER_URL = window.location.hostname === 'localhost' || window.location.h
             showNotification('👋 До свидания! Возвращайтесь скорее!', 'success');
         }
 
-        // Добавьте остальные функции которые были в предыдущих примерах...
+        // ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
+        function loadListenerCards() {
+            const container = document.getElementById('listenerCards');
+            const listeners = users.filter(user => user.role === 'listener');
+            
+            if (listeners.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center" style="grid-column: 1/-1;">
+                        <div>😴 Слушателей пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px; opacity: 0.7;">
+                            Администраторы добавят слушателей в ближайшее время
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listeners.map(listener => `
+                <div class="listener-card" onclick="startChatWithListener('${listener.id}')">
+                    <div class="listener-avatar">${listener.avatar || '🎧'}</div>
+                    <h3>${listener.displayName || listener.username}</h3>
+                    <div class="listener-rating">
+                        ${generateStars(listener.rating || 0)}
+                        <span>${(listener.rating || 0).toFixed(1)}</span>
+                        <span>(${listener.ratingCount || 0})</span>
+                    </div>
+                    <div class="status-${listener.isOnline ? 'online' : 'offline'}" style="margin-top: 10px;">
+                        ${listener.isOnline ? '🟢 Онлайн' : '⚫ Офлайн'}
+                    </div>
+                    <p style="margin-top: 10px; color: var(--text-color); opacity: 0.7; font-size: 14px;">
+                        Готов выслушать и поддержать
+                    </p>
+                </div>
+            `).join('');
+        }
 
-        // Инициализация при загрузке
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const halfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+            
+            return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+        }
+
+        function startChatWithListener(listenerId) {
+            const listener = users.find(u => u.id === listenerId);
+            if (!listener) {
+                showNotification('❌ Слушатель не найден', 'error');
+                return;
+            }
+
+            showNotification(`🔄 Начинаем чат с ${listener.displayName || listener.username}...`, 'info');
+            
+            if (socket && socket.connected) {
+                socket.emit('create_chat', {
+                    user1: currentUser.id,
+                    user2: listenerId
+                });
+            }
+        }
+
+        function startOnlineTimer() {
+            onlineTimeStart = new Date();
+            onlineTimer = setInterval(() => {
+                if (onlineTimeStart) {
+                    const now = new Date();
+                    const diff = now - onlineTimeStart;
+                    const hours = Math.floor(diff / 3600000);
+                    const minutes = Math.floor((diff % 3600000) / 60000);
+                    
+                    const statusElement = document.getElementById('userStatus') || 
+                                        document.getElementById('listenerStatus');
+                    if (statusElement) {
+                        statusElement.textContent = `🟢 Онлайн: ${hours}ч ${minutes}м`;
+                    }
+                }
+            }, 60000);
+        }
+
+        function updateUserStatus() {
+            const statusElement = document.getElementById('userStatus');
+            if (statusElement) {
+                statusElement.textContent = '🟢 Онлайн';
+                statusElement.className = 'status-online';
+            }
+        }
+
+        function updateListenerStatus() {
+            const statusElement = document.getElementById('listenerStatus');
+            if (statusElement) {
+                statusElement.textContent = '🟢 Онлайн';
+                statusElement.className = 'status-online';
+            }
+        }
+
+        // ЗАГЛУШКИ ДЛЯ ОСТАЛЬНЫХ ФУНКЦИЙ
+        function showUserSettings() { showNotification('⚙️ Настройки пользователя', 'info'); }
+        function hideUserSettings() { document.getElementById('userSettings').classList.add('hidden'); }
+        function showListenerSettings() { showNotification('⚙️ Настройки слушателя', 'info'); }
+        function hideListenerSettings() { document.getElementById('listenerSettings').classList.add('hidden'); }
+        function showAdminSettings() { showAdminSection('adminSettings'); }
+        function hideAdminSettings() { showAdminSection('dashboard'); }
+        function showOwnerSettings() { showOwnerSection('system'); }
+        
+        function selectRandomListener() { 
+            const listeners = users.filter(u => u.role === 'listener' && u.isOnline);
+            if (listeners.length > 0) {
+                const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
+                startChatWithListener(randomListener.id);
+            } else {
+                showNotification('❌ Нет доступных слушателей онлайн', 'error');
+            }
+        }
+
+        function updateUserChatsList() {
+            const container = document.getElementById('userChatsList');
+            const userChats = chats.filter(chat => chat.user1 === currentUser.id || chat.user2 === currentUser.id);
+            
+            if (userChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Чатов пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Начните общение с любым слушателем</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = userChats.map(chat => {
+                const otherUserId = chat.user1 === currentUser.id ? chat.user2 : chat.user1;
+                const otherUser = users.find(u => u.id === otherUserId);
+                const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                    chat.messages[chat.messages.length - 1] : null;
+                
+                return `
+                    <div class="chat-item" onclick="selectUserChat('${chat.id}')">
+                        <div style="font-weight: 600;">${otherUser ? (otherUser.displayName || otherUser.username) : 'Пользователь'}</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            ${lastMessage ? 
+                                lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 
+                                'Нет сообщений'
+                            }
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            ${chat.isActive ? '🟢 Активен' : '⚫ Завершен'} • ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateListenerChatsList() {
+            const container = document.getElementById('listenerChatsList');
+            const listenerChats = chats.filter(chat => chat.user2 === currentUser.id && chat.isActive);
+            
+            if (listenerChats.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>💬 Активных чатов нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Ожидайте подключения пользователей</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listenerChats.map(chat => {
+                const user = users.find(u => u.id === chat.user1);
+                const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                    chat.messages[chat.messages.length - 1] : null;
+                
+                return `
+                    <div class="chat-item" onclick="selectListenerChat('${chat.id}')">
+                        <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            ${lastMessage ? 
+                                lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 
+                                'Нет сообщений'
+                            }
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateListenerStats() {
+            const listenerChats = chats.filter(chat => chat.user2 === currentUser.id);
+            const totalChats = listenerChats.length;
+            const avgRating = currentUser.rating || 0;
+            
+            document.getElementById('listenerTotalChats').textContent = totalChats;
+            document.getElementById('listenerAvgRating').textContent = avgRating.toFixed(1);
+            document.getElementById('listenerResponseTime').textContent = '5с';
+            document.getElementById('listenerOnlineTime').textContent = '2ч';
+        }
+
+        function updateListenerReviews() {
+            const container = document.getElementById('listenerReviewsContainer');
+            const listenerRatings = ratings.filter(rating => rating.listenerId === currentUser.id);
+            
+            if (listenerRatings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                        <div>⭐ Отзывов пока нет</div>
+                        <div style="font-size: 14px; margin-top: 10px;">Пользователи оставят отзывы после завершения чатов</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = listenerRatings.map(rating => {
+                const user = users.find(u => u.id === rating.userId);
+                return `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Аноним'}</div>
+                            <div class="review-rating">
+                                ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px;">${rating.comment || 'Без комментария'}</div>
+                        <div class="review-date">
+                            ${new Date(rating.timestamp).toLocaleDateString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateUserNotifications() {
+            const container = document.getElementById('userNotificationsContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                    <div>📢 Уведомлений пока нет</div>
+                    <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                </div>
+            `;
+        }
+
+        function updateListenerNotifications() {
+            const container = document.getElementById('listenerNotificationsContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                    <div>📢 Уведомлений пока нет</div>
+                    <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                </div>
+            `;
+        }
+
+        function updateAdminData() {
+            const totalUsers = users.filter(u => u.role === 'user').length;
+            const totalListeners = users.filter(u => u.role === 'listener').length;
+            const activeChats = chats.filter(c => c.isActive).length;
+            const avgRating = users.filter(u => u.role === 'listener').reduce((sum, u) => sum + (u.rating || 0), 0) / totalListeners || 0;
+            
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalListeners').textContent = totalListeners;
+            document.getElementById('activeChats').textContent = activeChats;
+            document.getElementById('avgRating').textContent = avgRating.toFixed(1);
+        }
+
+        function updateOwnerData() {
+            const totalUsers = users.filter(u => u.role === 'user').length;
+            const totalListeners = users.filter(u => u.role === 'listener').length;
+            const activeChats = chats.filter(c => c.isActive).length;
+            const totalAdmins = users.filter(u => u.role === 'admin').length;
+            const avgRating = users.filter(u => u.role === 'listener').reduce((sum, u) => sum + (u.rating || 0), 0) / totalListeners || 0;
+            
+            document.getElementById('ownerTotalUsers').textContent = totalUsers;
+            document.getElementById('ownerTotalListeners').textContent = totalListeners;
+            document.getElementById('ownerActiveChats').textContent = activeChats;
+            document.getElementById('ownerAvgRating').textContent = avgRating.toFixed(1);
+            document.getElementById('ownerTotalAdmins').textContent = totalAdmins;
+            document.getElementById('ownerTotalMessages').textContent = chats.reduce((sum, chat) => sum + (chat.messages ? chat.messages.length : 0), 0);
+            document.getElementById('ownerSystemUptime').textContent = '24ч';
+        }
+
+        function updateUsersUI() {
+            loadListenerCards();
+            updateUserChatsList();
+            updateListenerChatsList();
+            updateAdminData();
+            updateOwnerData();
+        }
+
+        function updateChatsUI() {
+            updateUserChatsList();
+            updateListenerChatsList();
+            updateAdminData();
+            updateOwnerData();
+        }
+
+        function updateRatingsUI() {
+            updateListenerReviews();
+            updateAdminData();
+            updateOwnerData();
+        }
+
+        function updateNotificationsUI() {
+            updateUserNotifications();
+            updateListenerNotifications();
+        }
+
+        function updateModerationHistory() {
+            // Заглушка для истории модерации
+        }
+
+        function handleNewMessage(data) {
+            console.log('Обработка нового сообщения:', data);
+            // Здесь будет логика отображения новых сообщений
+        }
+
+        function handleChatCreated(data) {
+            console.log('Обработка созданного чата:', data);
+            showNotification(`💬 Чат с ${data.listenerName} начат!`, 'success');
+            
+            // Переключаемся на вкладку чата
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector('.tab[data-tab="chats"]').classList.add('active');
+            
+            document.getElementById('listenersTab').classList.add('hidden');
+            document.getElementById('userChatsTab').classList.remove('hidden');
+            
+            updateUserChatsList();
+        }
+
+        function updateUserConnection(user, isOnline) {
+            const userIndex = users.findIndex(u => u.id === user.id);
+            if (userIndex !== -1) {
+                users[userIndex].isOnline = isOnline;
+                updateUsersUI();
+            }
+        }
+
+        function updateUserData(user) {
+            const userIndex = users.findIndex(u => u.id === user.id);
+            if (userIndex !== -1) {
+                users[userIndex] = user;
+                updateUsersUI();
+                
+                if (currentUser && currentUser.id === user.id) {
+                    currentUser = user;
+                }
+            }
+        }
+
+        function updateRatingStars(rating) {
+            document.querySelectorAll('.rating-star').forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                star.classList.toggle('active', starRating <= rating);
+            });
+        }
+
+        // НАСТРОЙКИ ТЕМЫ
+        function showUserThemeSettings() {
+            const container = document.getElementById('userThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function showListenerThemeSettings() {
+            const container = document.getElementById('listenerThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function showAdminThemeSettings() {
+            const container = document.getElementById('adminThemeSettings');
+            container.innerHTML = getThemeSettingsHTML();
+            setupThemeSettings();
+        }
+
+        function getThemeSettingsHTML() {
+            return `
+                <div class="settings-section">
+                    <h3 class="settings-title">🎨 Тема оформления</h3>
+                    <div class="theme-selector">
+                        <div class="theme-option active" data-theme="sunrise" onclick="changeTheme('sunrise')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                            <div>Sunrise</div>
+                        </div>
+                        <div class="theme-option" data-theme="light" onclick="changeTheme('light')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                            <div>Light</div>
+                        </div>
+                        <div class="theme-option" data-theme="dark" onclick="changeTheme('dark')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
+                            <div>Dark</div>
+                        </div>
+                        <div class="theme-option" data-theme="ocean" onclick="changeTheme('ocean')">
+                            <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                            <div>Ocean</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-title">🔤 Шрифт</h3>
+                    <div class="font-selector">
+                        <div class="font-option active" data-font="default" onclick="changeFont('default')">Default</div>
+                        <div class="font-option" data-font="modern" onclick="changeFont('modern')">Modern</div>
+                        <div class="font-option" data-font="elegant" onclick="changeFont('elegant')">Elegant</div>
+                        <div class="font-option" data-font="tech" onclick="changeFont('tech')">Tech</div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3 class="settings-title">📏 Размер текста</h3>
+                    <div class="font-selector">
+                        <div class="font-option" data-size="small" onclick="changeFontSize('small')">Маленький</div>
+                        <div class="font-option active" data-size="normal" onclick="changeFontSize('normal')">Обычный</div>
+                        <div class="font-option" data-size="large" onclick="changeFontSize('large')">Большой</div>
+                        <div class="font-option" data-size="xlarge" onclick="changeFontSize('xlarge')">Очень большой</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupThemeSettings() {
+            // Устанавливаем активные темы из localStorage
+            const currentTheme = localStorage.getItem('theme') || 'sunrise';
+            const currentFont = localStorage.getItem('font') || 'default';
+            const currentFontSize = localStorage.getItem('fontSize') || 'normal';
+            
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === currentTheme);
+            });
+            
+            document.querySelectorAll('.font-option[data-font]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-font') === currentFont);
+            });
+            
+            document.querySelectorAll('.font-option[data-size]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-size') === currentFontSize);
+            });
+        }
+
+        function changeTheme(themeName, save = true) {
+            document.body.className = document.body.className.replace(/theme-\w+/g, '');
+            document.body.classList.add(`theme-${themeName}`);
+            
+            if (save) {
+                localStorage.setItem('theme', themeName);
+            }
+            
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-theme') === themeName);
+            });
+        }
+
+        function changeFont(fontName, save = true) {
+            document.body.className = document.body.className.replace(/font-\w+/g, '');
+            document.body.classList.add(`font-${fontName}`);
+            
+            if (save) {
+                localStorage.setItem('font', fontName);
+            }
+            
+            document.querySelectorAll('.font-option[data-font]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-font') === fontName);
+            });
+        }
+
+        function changeFontSize(size, save = true) {
+            document.body.className = document.body.className.replace(/font-size-\w+/g, '');
+            document.body.classList.add(`font-size-${size}`);
+            
+            if (save) {
+                localStorage.setItem('fontSize', size);
+            }
+            
+            document.querySelectorAll('.font-option[data-size]').forEach(option => {
+                option.classList.toggle('active', option.getAttribute('data-size') === size);
+            });
+        }
+
+        // ЗАГЛУШКИ ДЛЯ ОСТАЛЬНЫХ ФУНКЦИЙ
+        function selectUserChat(chatId) { showNotification(`💬 Выбран чат ${chatId}`, 'info'); }
+        function selectListenerChat(chatId) { showNotification(`💬 Выбран чат ${chatId}`, 'info'); }
+        function sendUserMessage() { showNotification('📤 Сообщение отправлено', 'success'); }
+        function sendListenerMessage() { showNotification('📤 Сообщение отправлено', 'success'); }
+        function sendUserChatMessage() { showNotification('📤 Сообщение отправлено', 'success'); }
+        function sendAdminSupportMessage() { showNotification('📤 Сообщение поддержки отправлено', 'success'); }
+        function sendOwnerSupportMessage() { showNotification('📤 Сообщение поддержки отправлено', 'success'); }
+        function submitRating() { showNotification('⭐ Оценка отправлена', 'success'); }
+        function endChat() { showNotification('🔚 Чат завершен', 'info'); }
+        function triggerFileUpload() { showNotification('📎 Функция загрузки файлов', 'info'); }
+        function showStickerPicker() { showNotification('😊 Функция стикеров', 'info'); }
+        function showAddStaffModal() { showNotification('➕ Добавление сотрудника', 'info'); }
+        function closeAddStaffModal() { showNotification('❌ Закрытие модального окна', 'info'); }
+        function addNewStaff() { showNotification('✅ Сотрудник добавлен', 'success'); }
+        function showAddAdminModal() { showNotification('👑 Добавление администратора', 'info'); }
+        function closeAddAdminModal() { showNotification('❌ Закрытие модального окна', 'info'); }
+        function addNewAdmin() { showNotification('✅ Администратор добавлен', 'success'); }
+        function applyModerationAction() { showNotification('⚖️ Действие применено', 'success'); }
+        function sendTechnicalNotification() { showNotification('📢 Уведомление отправлено', 'success'); }
+        function loadSystemLogs() { showNotification('📋 Логи загружены', 'info'); }
+        function clearSystemLogs() { showNotification('🗑️ Логи очищены', 'info'); }
+        function createBackup() { showNotification('💾 Резервная копия создана', 'success'); }
+        function saveSystemSettings() { showNotification('💾 Настройки сохранены', 'success'); }
+        function addNewSticker() { showNotification('➕ Стикер добавлен', 'success'); }
+
         console.log('🎉 Чат система загружена!');
     </script>
 </body>

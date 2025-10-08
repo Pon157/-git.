@@ -1,4 +1,4 @@
-// server.js - Полностью рабочий сервер для Render.com
+// server.js - Полнос тью рабочий сервер для Render.com
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');

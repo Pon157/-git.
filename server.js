@@ -10,7 +10,7 @@ const sharp = require('sharp');
 const app = express();
 const server = http.createServer(app);
 
-// Настройки для Render.com
+// Настройки для  Render.com
 const PORT = process.env.PORT || 3000;
 
 // Улучшенные настройки CORS

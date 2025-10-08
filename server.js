@@ -1,4 +1,4 @@
-// server.js - Полнос тью рабочий сервер для Render.com
+// server.js - Обновленная версия для Render.com
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -8,42 +8,52 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// Middleware
+// Настройки CORS для Render.com
 app.use(cors({
-    origin: ["https://support-chat-hyv4.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
-    methods: ["GET", "POST"],
+    origin: "*", // Разрешаем все домены для демонстрации
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static('public'));
 
-// Socket.IO с правильными настройками для Render.com
+// Socket.IO с настройками для production
 const io = socketIo(server, {
     cors: {
-        origin: ["https://support-chat-hyv4.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     },
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
-// Хранилище данных в памяти
+// Хранилище данных
 let users = [
     {
-        id: '1',
+        id: 'owner-1',
+        username: 'owner',
+        password: 'owner123',
+        displayName: 'Владелец Системы',
+        role: 'owner',
+        avatar: '👑',
+        isOnline: false,
+        createdAt: new Date().toISOString()
+    },
+    {
+        id: 'admin-1',
         username: 'admin',
         password: 'admin123',
         displayName: 'Главный Администратор',
         role: 'admin',
         avatar: '👑',
         isOnline: false,
-        createdAt: new Date().toISOString(),
-        rating: 0,
-        ratingCount: 0
+        createdAt: new Date().toISOString()
     },
     {
-        id: '2',
+        id: 'listener-1',
         username: 'listener1',
         password: 'listener123',
         displayName: 'Анна Слушатель',
@@ -53,10 +63,10 @@ let users = [
         createdAt: new Date().toISOString(),
         rating: 4.8,
         ratingCount: 15,
-        bio: 'Психолог с 5-летним опытом. Готова выслушать и помочь'
+        bio: 'Психолог с 5-летним опытом'
     },
     {
-        id: '3',
+        id: 'listener-2',
         username: 'listener2',
         password: 'listener123',
         displayName: 'Максим Поддержка',
@@ -66,19 +76,17 @@ let users = [
         createdAt: new Date().toISOString(),
         rating: 4.5,
         ratingCount: 8,
-        bio: 'Коуч и ментор. Помогу найти решение'
+        bio: 'Коуч и ментор'
     },
     {
-        id: '4',
+        id: 'user-1',
         username: 'user1',
         password: 'user123',
         displayName: 'Тестовый Пользователь',
         role: 'user',
         avatar: '👤',
         isOnline: false,
-        createdAt: new Date().toISOString(),
-        rating: 0,
-        ratingCount: 0
+        createdAt: new Date().toISOString()
     }
 ];
 
@@ -94,7 +102,7 @@ function generateId() {
 
 // Функция для отправки данных всем клиентам
 function broadcastData() {
-    io.emit('users_list', { users: users.filter(u => u.role !== 'owner') });
+    io.emit('users_list', { users: users.filter(u => !u.isBlocked) });
     io.emit('chats_list', { chats });
     io.emit('ratings_list', { ratings });
     io.emit('notifications_list', { notifications });
@@ -103,19 +111,11 @@ function broadcastData() {
 
 // API Routes
 app.get('/', (req, res) => {
-    res.json({ 
-        message: '🚀 Чат-сервер работает!',
-        version: '1.0.0',
-        endpoints: {
-            users: '/api/users',
-            chats: '/api/chats',
-            stats: '/api/stats'
-        }
-    });
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/api/users', (req, res) => {
-    res.json({ users: users.filter(u => u.role !== 'owner') });
+    res.json({ users: users.filter(u => !u.isBlocked) });
 });
 
 app.get('/api/chats', (req, res) => {
@@ -134,12 +134,23 @@ app.get('/api/stats', (req, res) => {
     res.json({ stats });
 });
 
+// Health check
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        users: users.length,
+        chats: chats.length,
+        connections: io.engine.clientsCount
+    });
+});
+
 // Socket.IO обработчики
 io.on('connection', (socket) => {
     console.log('✅ Новое подключение:', socket.id);
     
     // Отправляем текущие данные новому клиенту
-    socket.emit('users_list', { users: users.filter(u => u.role !== 'owner') });
+    socket.emit('users_list', { users: users.filter(u => !u.isBlocked) });
     socket.emit('chats_list', { chats });
     socket.emit('ratings_list', { ratings });
     socket.emit('notifications_list', { notifications });
@@ -220,12 +231,14 @@ io.on('connection', (socket) => {
             socket.emit('session_restored', { success: true, user });
             socket.broadcast.emit('user_connected', { user });
             broadcastData();
+        } else {
+            socket.emit('session_restored', { success: false });
         }
     });
 
     // Создание чата
     socket.on('create_chat', (data) => {
-        console.log('💬 Создание чата:', data);
+        console.log('💬 Создание чата между:', data.user1, 'и', data.user2);
         
         const existingChat = chats.find(chat => 
             (chat.user1 === data.user1 && chat.user2 === data.user2) ||
@@ -263,7 +276,7 @@ io.on('connection', (socket) => {
         if (user2?.socketId) {
             io.to(user2.socketId).emit('chat_created', { 
                 chat: newChat, 
-                listenerName: user2?.displayName || user2?.username 
+                userName: user1?.displayName || user1?.username 
             });
         }
         
@@ -388,24 +401,6 @@ io.on('connection', (socket) => {
         
         notifications.push(notification);
         
-        // Отправляем уведомление соответствующим получателям
-        let targetUsers = [];
-        if (data.recipients === 'all') {
-            targetUsers = users;
-        } else if (data.recipients === 'users') {
-            targetUsers = users.filter(u => u.role === 'user');
-        } else if (data.recipients === 'listeners') {
-            targetUsers = users.filter(u => u.role === 'listener');
-        } else if (data.recipients === 'admins') {
-            targetUsers = users.filter(u => u.role === 'admin' || u.role === 'owner');
-        }
-        
-        targetUsers.forEach(user => {
-            if (user.socketId) {
-                io.to(user.socketId).emit('notification_received', { notification });
-            }
-        });
-        
         socket.emit('notification_sent', { notification });
         broadcastData();
     });
@@ -445,26 +440,9 @@ io.on('connection', (socket) => {
             } else if (data.action === 'remove_vacation') {
                 user.isOnVacation = false;
                 user.vacationUntil = null;
-            } else if (data.action === 'remove_warning') {
-                // Логика для снятия предупреждений
             }
             
             socket.emit('moderation_applied', { record });
-            broadcastData();
-        }
-    });
-
-    // Обновление профиля
-    socket.on('update_profile', (data) => {
-        console.log('📝 Обновление профиля:', data.userId);
-        
-        const user = users.find(u => u.id === data.userId);
-        if (user) {
-            if (data.displayName) user.displayName = data.displayName;
-            if (data.avatar) user.avatar = data.avatar;
-            if (data.password) user.password = data.password;
-            
-            socket.emit('profile_updated', { user });
             broadcastData();
         }
     });
@@ -478,20 +456,9 @@ io.on('connection', (socket) => {
             user.isOnline = false;
             user.lastSeen = new Date().toISOString();
             
-            io.emit('user_disconnected', { userId: user.id });
+            socket.broadcast.emit('user_disconnected', { userId: user.id });
             broadcastData();
         }
-    });
-});
-
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        users: users.length,
-        chats: chats.length,
-        connections: io.engine.clientsCount
     });
 });
 
@@ -508,10 +475,9 @@ process.on('unhandledRejection', (reason, promise) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`
-🚀 Сервер запущен!
+🚀 Сервер запущен на Render.com!
 📍 Порт: ${PORT}
-📡 WebSocket: ws://localhost:${PORT}
-🌐 HTTP: http://localhost:${PORT}
+🌐 Домен: https://support-chat-hyv4.onrender.com
 ✅ Готов к подключениям!
     `);
     

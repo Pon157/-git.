@@ -1,7 +1,7 @@
 {
-  "name": "support-chat-server",
+  "name": "support-chat-system",
   "version": "1.0.0",
-  "description": "Server for Support Chat System.",
+  "description": "Система поддержки с чатом",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

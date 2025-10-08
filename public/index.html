@@ -2031,7 +2031,13 @@
         let systemSettings = {};
         let activeSupportChat = null;
 
-        const SERVER_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
+       // Автоматическое определение URL сервера
+const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? 'https://support-chat-hyv4.onrender.com/' 
+    : window.location.origin;
+
+// Или если у вас отдельные домены для фронтенда и бэкенда:
+// const SERVER_URL = 'https://your-backend-domain.onrender.com';
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {

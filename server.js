@@ -8,10 +8,10 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
-// Настройка CORS для Socket.IO
+// Настройка CORS для Render
 const io = socketIo(server, {
     cors: {
-        origin: ["https://your-frontend-domain.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     },
@@ -21,11 +21,7 @@ const io = socketIo(server, {
 });
 
 // Middleware
-app.use(cors({
-    origin: ["https://your-frontend-domain.onrender.com", "http://localhost:3000", "http://127.0.0.1:3000"],
-    credentials: true
-}));
-
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -809,7 +805,11 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        message: 'Server is running on Render'
+    });
 });
 
 const PORT = process.env.PORT || 3000;
@@ -822,5 +822,5 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`   ⚙️ Админ: admin / admin123`);
     console.log(`   👤 Пользователь: user / 123456`);
     console.log(`   🎧 Слушатель: listener / 123456`);
-    console.log(`🌐 URL: http://localhost:${PORT}`);
+    console.log(`🌐 Сервер готов к работе!`);
 });

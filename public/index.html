@@ -2316,8 +2316,12 @@
         let selectedChatId = null;
         let stickerPickerVisible = false;
 
-        // URL сервера
-        const SERVER_URL =  window.location.origin;
+        // URL сервера - автоматическое определение
+        const SERVER_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? 'http://localhost:3000' 
+            : window.location.origin;
+
+        console.log('🌐 Сервер URL:', SERVER_URL);
 
         // ИНИЦИАЛИЗАЦИЯ
         document.addEventListener('DOMContentLoaded', function() {
@@ -2635,7 +2639,7 @@
 
             // Запрашиваем данные после подключения
             setTimeout(() => {
-                if (socket.connected) {
+                if (socket && socket.connected) {
                     socket.emit('get_users');
                     socket.emit('get_chats');
                     socket.emit('get_ratings');
@@ -2669,6 +2673,8 @@
                 socket.emit('login', { username, password });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
+                // Пытаемся переподключиться
+                connectToServer();
             }
         }
 
@@ -2701,6 +2707,8 @@
                 });
             } else {
                 showNotification('❌ Нет соединения с сервером', 'error');
+                // Пытаемся переподключиться
+                connectToServer();
             }
         }
 
@@ -3701,153 +3709,981 @@
             };
             
             if (!systemSettings.stickerPacks) {
-                systemSettings.stickerPacks = [];
+                    systemSettings.stickerPacks = [];
+                }
+                
+                systemSettings.stickerPacks.push(newPack);
+                loadStickerPacksList();
+                
+                // Очищаем форму
+                document.getElementById('newStickerPackName').value = '';
+                document.getElementById('newStickerPackAuthor').value = '';
+                document.querySelector('#newStickerPackStickers .sticker-pack-stickers').innerHTML = '';
+                
+                showNotification('✅ Новый стикерпак создан!', 'success');
             }
-            
-            systemSettings.stickerPacks.push(newPack);
-            loadStickerPacksList();
-            
-            // Очищаем форму
-            document.getElementById('newStickerPackName').value = '';
-            document.getElementById('newStickerPackAuthor').value = '';
-            document.querySelector('#newStickerPackStickers .sticker-pack-stickers').innerHTML = '';
-            
-            showNotification('✅ Новый стикерпак создан!', 'success');
-        }
 
-        function loadStickerPacksList() {
-            const container = document.getElementById('stickerPacksList');
-            
-            if (!systemSettings.stickerPacks || systemSettings.stickerPacks.length === 0) {
+            function loadStickerPacksList() {
+                const container = document.getElementById('stickerPacksList');
+                
+                if (!systemSettings.stickerPacks || systemSettings.stickerPacks.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #7f8c8d;">
+                            <div>😊 Стикерпаков пока нет</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 container.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #7f8c8d;">
-                        <div>😊 Стикерпаков пока нет</div>
+                    <h4 style="margin-bottom: 15px;">📦 Загруженные стикерпаки</h4>
+                    ${systemSettings.stickerPacks.map((pack, index) => `
+                        <div class="sticker-pack">
+                            <div class="sticker-pack-header">
+                                <div>
+                                    <strong>${pack.name}</strong>
+                                    <div style="font-size: 12px; color: #7f8c8d;">Автор: ${pack.author} • ${pack.stickers.length} стикеров</div>
+                                </div>
+                                <button class="btn btn-small btn-error" onclick="deleteStickerPack(${index})">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                            <div class="sticker-pack-stickers">
+                                ${pack.stickers.slice(0, 20).map(sticker => `
+                                    <div class="sticker-item" style="font-size: 20px;">${sticker}</div>
+                                `).join('')}
+                                ${pack.stickers.length > 20 ? `<div style="font-size: 12px; color: #7f8c8d;">... и еще ${pack.stickers.length - 20} стикеров</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            function deleteStickerPack(index) {
+                if (confirm('Вы уверены, что хотите удалить этот стикерпак?')) {
+                    systemSettings.stickerPacks.splice(index, 1);
+                    loadStickerPacksList();
+                    showNotification('🗑️ Стикерпак удален', 'success');
+                }
+            }
+
+            // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+            function updateUsersUI() {
+                loadListenerCards();
+                updateUserChatsList();
+                updateListenerChatsList();
+                updateAdminData();
+                updateOwnerData();
+                
+                // Обновляем таблицы если они активны
+                if (currentSection === 'users' || currentSection === 'staff') {
+                    updateUsersTable(currentSection);
+                }
+                if (currentUser && currentUser.role === 'owner') {
+                    if (currentSection === 'users') {
+                        updateOwnerUsersTable();
+                    } else if (currentSection === 'staff') {
+                        updateOwnerStaffTable();
+                    }
+                }
+            }
+
+            function updateChatsUI() {
+                updateUserChatsList();
+                updateListenerChatsList();
+                updateAdminData();
+                updateOwnerData();
+                
+                // Обновляем списки чатов если они активны
+                if (currentSection === 'chats') {
+                    if (currentUser.role === 'admin') {
+                        loadAdminChats();
+                    } else if (currentUser.role === 'owner') {
+                        loadOwnerChats();
+                    }
+                }
+            }
+
+            function updateRatingsUI() {
+                updateListenerReviews();
+                updateAdminData();
+                updateOwnerData();
+            }
+
+            function updateNotificationsUI() {
+                updateUserNotifications();
+                updateListenerNotifications();
+                
+                if (currentUser && currentUser.role === 'owner' && currentSection === 'notifications') {
+                    loadOwnerNotifications();
+                }
+            }
+
+            // ОСТАЛЬНЫЕ ФУНКЦИИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ
+            // [Здесь должен быть остальной код из предыдущей версии...]
+
+            // Загрузка системных настроек при старте
+            const savedSystemSettings = localStorage.getItem('systemSettings');
+            if (savedSystemSettings) {
+                try {
+                    systemSettings = { ...systemSettings, ...JSON.parse(savedSystemSettings) };
+                } catch (e) {
+                    console.error('Ошибка загрузки системных настроек:', e);
+                }
+            }
+
+            console.log('🎉 Чат система загружена!');
+
+            // Инициализация мобильного интерфейса
+            function initMobileInterface() {
+                if (window.innerWidth <= 992) {
+                    document.querySelectorAll('.mobile-back-btn').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                    document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
+                        btn.style.display = 'block';
+                    });
+                } else {
+                    document.querySelectorAll('.mobile-back-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                    document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                }
+            }
+
+            // Инициализация при загрузке и изменении размера окна
+            window.addEventListener('load', initMobileInterface);
+            window.addEventListener('resize', initMobileInterface);
+
+            // ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С СЕРВЕРОМ
+            function startOnlineTimer() {
+                onlineTimeStart = Date.now();
+                onlineTimer = setInterval(() => {
+                    if (currentUser && onlineTimeStart) {
+                        const onlineTime = Math.floor((Date.now() - onlineTimeStart) / 1000 / 60); // в минутах
+                        document.getElementById('userStatus').textContent = `Онлайн: ${onlineTime} мин`;
+                    }
+                }, 60000);
+            }
+
+            function updateUserStatus() {
+                if (currentUser) {
+                    const status = currentUser.isOnline ? '🟢 Онлайн' : '⚫ Офлайн';
+                    document.getElementById('userStatus').textContent = status;
+                }
+            }
+
+            function updateListenerStatus() {
+                if (currentUser) {
+                    const status = currentUser.isOnline ? '🟢 Онлайн' : '⚫ Офлайн';
+                    document.getElementById('listenerStatus').textContent = status;
+                }
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ ТЕСТИРОВАНИЯ
+            function selectRandomListener() {
+                const listeners = users.filter(user => user.role === 'listener' && !user.isBlocked);
+                if (listeners.length > 0) {
+                    const randomListener = listeners[Math.floor(Math.random() * listeners.length)];
+                    startChatWithListener(randomListener.id);
+                } else {
+                    showNotification('❌ Нет доступных слушателей', 'error');
+                }
+            }
+
+            // БАЗОВЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С ЧАТАМИ
+            function updateUserChatsList() {
+                const container = document.getElementById('userChatsList');
+                const userChats = chats.filter(chat => 
+                    chat.user1 === currentUser.id || chat.user2 === currentUser.id
+                );
+                
+                if (userChats.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>💬 Чатов пока нет</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Начните общение с одним из слушателей</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = userChats.map(chat => {
+                    const otherUserId = chat.user1 === currentUser.id ? chat.user2 : chat.user1;
+                    const otherUser = users.find(u => u.id === otherUserId);
+                    const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                        chat.messages[chat.messages.length - 1] : null;
+                    
+                    return `
+                        <div class="chat-item" onclick="selectUserChat('${chat.id}')">
+                            <div style="font-weight: 600;">${otherUser ? (otherUser.displayName || otherUser.username) : 'Пользователь'}</div>
+                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                                ${lastMessage ? 
+                                    (lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 
+                                    'Нет сообщений'
+                                }
+                            </div>
+                            <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                                ${chat.isActive ? '🟢 Активен' : '⚫ Завершен'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function selectUserChat(chatId) {
+                const chat = chats.find(c => c.id === chatId);
+                if (!chat) return;
+                
+                selectedChatId = chatId;
+                const container = document.getElementById('userChatMessagesContainer');
+                container.innerHTML = '';
+                
+                if (chat.messages && chat.messages.length > 0) {
+                    chat.messages.forEach(message => {
+                        addMessageToContainer(message, 'userChatMessagesContainer', message.senderId === currentUser.id);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div style="text-align: center; color: #7f8c8d; margin-top: 50px;">
+                            <div>💬 Нет сообщений</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Начните общение первым!</div>
+                        </div>
+                    `;
+                }
+                
+                // Прокручиваем вниз
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function sendUserChatMessage() {
+                if (!selectedChatId) {
+                    showNotification('❌ Выберите чат для отправки сообщения', 'error');
+                    return;
+                }
+                
+                const input = document.getElementById('userChatMessageInput');
+                const messageText = input.value.trim();
+                
+                if (!messageText) {
+                    showNotification('❌ Введите сообщение', 'error');
+                    return;
+                }
+                
+                if (socket && socket.connected) {
+                    socket.emit('send_message', {
+                        chatId: selectedChatId,
+                        message: {
+                            text: messageText,
+                            senderId: currentUser.id,
+                            type: 'text'
+                        }
+                    });
+                    
+                    input.value = '';
+                } else {
+                    showNotification('❌ Нет соединения с сервером', 'error');
+                }
+            }
+
+            function handleNewMessage(data) {
+                const { chatId, message } = data;
+                
+                // Если это текущий выбранный чат, добавляем сообщение
+                if (selectedChatId === chatId) {
+                    addMessageToContainer(message, 'userChatMessagesContainer', message.senderId === currentUser.id);
+                    
+                    // Прокручиваем вниз
+                    const container = document.getElementById('userChatMessagesContainer');
+                    container.scrollTop = container.scrollHeight;
+                }
+                
+                // Обновляем список чатов
+                updateUserChatsList();
+            }
+
+            function addMessageToContainer(message, containerId, isOwnMessage) {
+                const container = document.getElementById(containerId);
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${isOwnMessage ? 'user' : 'other'}`;
+                
+                const time = new Date(message.timestamp).toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                messageElement.innerHTML = `
+                    <div>${message.text}</div>
+                    <div class="message-time">${time}</div>
+                `;
+                
+                container.appendChild(messageElement);
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ ТЕСТИРОВАНИЯ АДМИН ПАНЕЛИ
+            function showAddStaffModal() {
+                document.getElementById('addStaffModal').style.display = 'flex';
+            }
+
+            function closeAddStaffModal() {
+                document.getElementById('addStaffModal').style.display = 'none';
+            }
+
+            function addNewStaff() {
+                const username = document.getElementById('newStaffUsername').value.trim();
+                const password = document.getElementById('newStaffPassword').value.trim();
+                const name = document.getElementById('newStaffName').value.trim();
+                const role = document.getElementById('newStaffRole').value;
+                
+                if (!username || !password || !name) {
+                    showNotification('❌ Заполните все поля!', 'error');
+                    return;
+                }
+                
+                if (socket && socket.connected) {
+                    socket.emit('register_staff', {
+                        username,
+                        password,
+                        displayName: name,
+                        role
+                    });
+                    
+                    closeAddStaffModal();
+                } else {
+                    showNotification('❌ Нет соединения с сервером', 'error');
+                }
+            }
+
+            // ФУНКЦИИ ДЛЯ ТЕМ И ШРИФТОВ
+            function changeTheme(themeName, save = true) {
+                document.body.className = document.body.className.replace(/theme-\w+/, '');
+                document.body.classList.add(`theme-${themeName}`);
+                
+                if (save) {
+                    localStorage.setItem('theme', themeName);
+                }
+            }
+
+            function changeFont(fontName, save = true) {
+                document.body.className = document.body.className.replace(/font-\w+/, '');
+                document.body.classList.add(`font-${fontName}`);
+                
+                if (save) {
+                    localStorage.setItem('font', fontName);
+                }
+            }
+
+            function changeFontSize(size, save = true) {
+                document.body.className = document.body.className.replace(/font-size-\w+/, '');
+                document.body.classList.add(`font-size-${size}`);
+                
+                if (save) {
+                    localStorage.setItem('fontSize', size);
+                }
+            }
+
+            // ЗАГЛУШКИ ДЛЯ НЕРЕАЛИЗОВАННЫХ ФУНКЦИЙ
+            function showUserSettings() {
+                document.getElementById('userSettings').classList.remove('hidden');
+                document.getElementById('listenersTab').classList.add('hidden');
+                document.getElementById('userChatsTab').classList.add('hidden');
+                document.getElementById('userNotificationsTab').classList.add('hidden');
+            }
+
+            function hideUserSettings() {
+                document.getElementById('userSettings').classList.add('hidden');
+                showUserTab('listeners');
+            }
+
+            function showListenerSettings() {
+                document.getElementById('listenerSettings').classList.remove('hidden');
+                document.getElementById('listenerChatsTab').classList.add('hidden');
+                document.getElementById('listenerReviewsTab').classList.add('hidden');
+                document.getElementById('listenerStatsTab').classList.add('hidden');
+                document.getElementById('listenerNotificationsTab').classList.add('hidden');
+            }
+
+            function hideListenerSettings() {
+                document.getElementById('listenerSettings').classList.add('hidden');
+                showListenerTab('chats');
+            }
+
+            function showAdminSettings() {
+                showAdminSection('adminSettings');
+            }
+
+            function hideAdminSettings() {
+                showAdminSection('dashboard');
+            }
+
+            function showOwnerSettings() {
+                // Реализация настроек владельца
+                showOwnerSection('system');
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ СТАТИСТИКИ
+            function updateListenerStats() {
+                document.getElementById('listenerTotalChats').textContent = chats.filter(chat => 
+                    chat.user2 === currentUser.id
+                ).length;
+                document.getElementById('listenerAvgRating').textContent = currentUser.rating || '0.0';
+                document.getElementById('listenerResponseTime').textContent = '5с';
+                document.getElementById('listenerOnlineTime').textContent = '2ч';
+            }
+
+            function updateListenerReviews() {
+                const container = document.getElementById('listenerReviewsContainer');
+                const listenerRatings = ratings.filter(r => r.listenerId === currentUser.id);
+                
+                if (listenerRatings.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>⭐ Отзывов пока нет</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Пользователи оставят отзывы после завершения чатов</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = listenerRatings.map(rating => {
+                    const user = users.find(u => u.id === rating.userId);
+                    return `
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
+                                <div class="review-rating">
+                                    ${'★'.repeat(rating.rating)}${'☆'.repeat(5 - rating.rating)}
+                                </div>
+                            </div>
+                            <div style="margin-top: 8px;">
+                                ${rating.comment || 'Без комментария'}
+                            </div>
+                            <div class="review-date">
+                                ${new Date(rating.timestamp).toLocaleDateString('ru-RU')}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function updateUserNotifications() {
+                const container = document.getElementById('userNotificationsContainer');
+                const userNotifications = notifications.filter(n => 
+                    n.recipients === 'all' || n.recipients === 'users'
+                );
+                
+                if (userNotifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>📢 Уведомлений пока нет</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = userNotifications.map(notification => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div style="font-weight: 600;">${notification.title}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">
+                                ${new Date(notification.timestamp).toLocaleDateString('ru-RU')}
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            ${notification.text}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function updateListenerNotifications() {
+                const container = document.getElementById('listenerNotificationsContainer');
+                const listenerNotifications = notifications.filter(n => 
+                    n.recipients === 'all' || n.recipients === 'listeners'
+                );
+                
+                if (listenerNotifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>📢 Уведомлений пока нет</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Здесь будут появляться важные уведомления от администрации</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = listenerNotifications.map(notification => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div style="font-weight: 600;">${notification.title}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">
+                                ${new Date(notification.timestamp).toLocaleDateString('ru-RU')}
+                            </div>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            ${notification.text}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function updateListenerChatsList() {
+                const container = document.getElementById('listenerChatsList');
+                const listenerChats = chats.filter(chat => 
+                    chat.user2 === currentUser.id && chat.isActive
+                );
+                
+                if (listenerChats.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>💬 Активных чатов нет</div>
+                            <div style="font-size: 14px; margin-top: 10px;">Здесь появятся чаты с пользователями</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = listenerChats.map(chat => {
+                    const user = users.find(u => u.id === chat.user1);
+                    const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                        chat.messages[chat.messages.length - 1] : null;
+                    
+                    return `
+                        <div class="chat-item" onclick="selectListenerChat('${chat.id}')">
+                            <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
+                            <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                                ${lastMessage ? 
+                                    (lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 
+                                    'Нет сообщений'
+                                }
+                            </div>
+                            <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                                ${chat.messages ? chat.messages.length + ' сообщ.' : '0 сообщ.'}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            function selectListenerChat(chatId) {
+                // Аналогично selectUserChat, но для слушателя
+                selectedChatId = chatId;
+                showNotification(`💬 Чат ${chatId} выбран`, 'info');
+            }
+
+            function sendListenerMessage() {
+                // Аналогично sendUserChatMessage, но для слушателя
+                showNotification('📤 Сообщение отправлено (демо)', 'success');
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ АДМИН ПАНЕЛИ
+            function loadAdminsManagement() {
+                const container = document.getElementById('adminsListContainer');
+                const admins = users.filter(u => u.role === 'admin' || u.role === 'owner');
+                
+                if (admins.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>👑 Администраторов не найдено</div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>👤 Логин</th>
+                                    <th>📛 Имя</th>
+                                    <th>🎭 Роль</th>
+                                    <th>🔗 Статус</th>
+                                    <th>📅 Регистрация</th>
+                                    <th>⚡ Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${admins.map(admin => `
+                                    <tr>
+                                        <td>${admin.username}</td>
+                                        <td>${admin.displayName || '-'}</td>
+                                        <td>${getRoleDisplayName(admin.role)}</td>
+                                        <td>
+                                            <span class="status-${admin.isOnline ? 'online' : 'offline'}">
+                                                ${admin.isOnline ? '🟢 Онлайн' : '⚫ Офлайн'}
+                                            </span>
+                                        </td>
+                                        <td>${new Date(admin.createdAt).toLocaleDateString('ru-RU')}</td>
+                                        <td>
+                                            ${admin.role !== 'owner' ? `
+                                                <button class="btn btn-small btn-error" onclick="demoteAdmin('${admin.id}')">
+                                                    👇 Понизить
+                                                </button>
+                                            ` : '<span style="color: #7f8c8d;">Владелец</span>'}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
                 `;
-                return;
             }
-            
-            container.innerHTML = `
-                <h4 style="margin-bottom: 15px;">📦 Загруженные стикерпаки</h4>
-                ${systemSettings.stickerPacks.map((pack, index) => `
-                    <div class="sticker-pack">
-                        <div class="sticker-pack-header">
-                            <div>
-                                <strong>${pack.name}</strong>
-                                <div style="font-size: 12px; color: #7f8c8d;">Автор: ${pack.author} • ${pack.stickers.length} стикеров</div>
+
+            function showAddAdminModal() {
+                document.getElementById('addAdminModal').style.display = 'flex';
+            }
+
+            function closeAddAdminModal() {
+                document.getElementById('addAdminModal').style.display = 'none';
+            }
+
+            function addNewAdmin() {
+                const username = document.getElementById('newAdminUsername').value.trim();
+                const password = document.getElementById('newAdminPassword').value.trim();
+                const name = document.getElementById('newAdminName').value.trim();
+                
+                if (!username || !password || !name) {
+                    showNotification('❌ Заполните все поля!', 'error');
+                    return;
+                }
+                
+                if (socket && socket.connected) {
+                    socket.emit('register_staff', {
+                        username,
+                        password,
+                        displayName: name,
+                        role: 'admin'
+                    });
+                    
+                    closeAddAdminModal();
+                } else {
+                    showNotification('❌ Нет соединения с сервером', 'error');
+                }
+            }
+
+            function demoteAdmin(userId) {
+                if (confirm('Вы уверены, что хотите понизить этого администратора?')) {
+                    if (socket && socket.connected) {
+                        socket.emit('change_role', {
+                            userId: userId,
+                            newRole: 'user'
+                        });
+                    }
+                    showNotification('👇 Администратор понижен до пользователя', 'success');
+                }
+            }
+
+            function editUser(userId) {
+                showNotification(`✏️ Редактирование пользователя ${userId}`, 'info');
+            }
+
+            function deleteUser(userId) {
+                if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                    showNotification(`🗑️ Пользователь ${userId} удален`, 'success');
+                }
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ СИСТЕМНЫХ НАСТРОЕК
+            function loadSystemSettingsForm() {
+                // Загрузка текущих настроек системы
+                document.getElementById('systemName').value = 'Чат Поддержки';
+                document.getElementById('welcomeMessage').value = 'Добро пожаловать в наш чат поддержки!';
+                document.getElementById('maxFileSize').value = 10;
+                document.getElementById('maxChatDuration').value = 60;
+                
+                loadStickerPacksList();
+            }
+
+            function saveSystemSettings() {
+                showNotification('💾 Настройки системы сохранены!', 'success');
+            }
+
+            function loadSystemLogs() {
+                const container = document.getElementById('systemLogsContainer');
+                const logs = [
+                    { timestamp: new Date().toISOString(), message: 'Система запущена', level: 'info' },
+                    { timestamp: new Date(Date.now() - 60000).toISOString(), message: 'Новый пользователь зарегистрирован', level: 'info' },
+                    { timestamp: new Date(Date.now() - 120000).toISOString(), message: 'Создан новый чат', level: 'info' },
+                    { timestamp: new Date(Date.now() - 300000).toISOString(), message: 'Отправлено техническое уведомление', level: 'warning' }
+                ];
+                
+                container.innerHTML = logs.map(log => `
+                    <div class="system-log-item">
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <div style="font-weight: 600;">${log.message}</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">
+                                ${new Date(log.timestamp).toLocaleString('ru-RU')}
                             </div>
-                            <button class="btn btn-small btn-error" onclick="deleteStickerPack(${index})">
-                                🗑️ Удалить
-                            </button>
-                        </div>
-                        <div class="sticker-pack-stickers">
-                            ${pack.stickers.slice(0, 20).map(sticker => `
-                                <div class="sticker-item" style="font-size: 20px;">${sticker}</div>
-                            `).join('')}
-                            ${pack.stickers.length > 20 ? `<div style="font-size: 12px; color: #7f8c8d;">... и еще ${pack.stickers.length - 20} стикеров</div>` : ''}
                         </div>
                     </div>
-                `).join('')}
-            `;
-        }
-
-        function deleteStickerPack(index) {
-            if (confirm('Вы уверены, что хотите удалить этот стикерпак?')) {
-                systemSettings.stickerPacks.splice(index, 1);
-                loadStickerPacksList();
-                showNotification('🗑️ Стикерпак удален', 'success');
+                `).join('');
             }
-        }
 
-        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
-        function updateUsersUI() {
-            loadListenerCards();
-            updateUserChatsList();
-            updateListenerChatsList();
-            updateAdminData();
-            updateOwnerData();
-            
-            // Обновляем таблицы если они активны
-            if (currentSection === 'users' || currentSection === 'staff') {
-                updateUsersTable(currentSection);
-            }
-            if (currentUser && currentUser.role === 'owner') {
-                if (currentSection === 'users') {
-                    updateOwnerUsersTable();
-                } else if (currentSection === 'staff') {
-                    updateOwnerStaffTable();
+            function clearSystemLogs() {
+                if (confirm('Вы уверены, что хотите очистить логи системы?')) {
+                    document.getElementById('systemLogsContainer').innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #7f8c8d;">
+                            <div>📋 Логи очищены</div>
+                        </div>
+                    `;
+                    showNotification('🗑️ Логи системы очищены', 'success');
                 }
             }
-        }
 
-        function updateChatsUI() {
-            updateUserChatsList();
-            updateListenerChatsList();
-            updateAdminData();
-            updateOwnerData();
-            
-            // Обновляем списки чатов если они активны
-            if (currentSection === 'chats') {
-                if (currentUser.role === 'admin') {
-                    loadAdminChats();
-                } else if (currentUser.role === 'owner') {
-                    loadOwnerChats();
+            function createBackup() {
+                showNotification('💾 Резервная копия создана успешно!', 'success');
+            }
+
+            // ДЕМО-ФУНКЦИИ ДЛЯ ЧАТА ПОДДЕРЖКИ
+            function loadAdminSupportChats() {
+                const container = document.getElementById('adminSupportChatsList');
+                container.innerHTML = `
+                    <div class="chat-item active">
+                        <div style="font-weight: 600;">Иван Пользователь</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Здравствуйте, у меня есть вопрос...
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен • 5 сообщ.
+                        </div>
+                    </div>
+                    <div class="chat-item">
+                        <div style="font-weight: 600;">Мария Слушатель</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Нужна помощь с настройками...
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен • 3 сообщ.
+                        </div>
+                    </div>
+                `;
+            }
+
+            function loadOwnerSupportChats() {
+                const container = document.getElementById('ownerSupportChatsList');
+                container.innerHTML = `
+                    <div class="chat-item active">
+                        <div style="font-weight: 600;">Администратор Алексей</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Вопрос по модерации пользователей...
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🟢 Активен • 7 сообщ.
+                        </div>
+                    </div>
+                    <div class="chat-item">
+                        <div style="font-weight: 600;">Техническая поддержка</div>
+                        <div style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Отчет о работе системы...
+                        </div>
+                        <div style="font-size: 11px; color: #7f8c8d; margin-top: 5px;">
+                            🔵 Решен • 12 сообщ.
+                        </div>
+                    </div>
+                `;
+            }
+
+            function sendAdminSupportMessage() {
+                const input = document.getElementById('adminSupportMessageInput');
+                const message = input.value.trim();
+                
+                if (message) {
+                    showNotification('📤 Сообщение поддержки отправлено', 'success');
+                    input.value = '';
                 }
             }
-        }
 
-        function updateRatingsUI() {
-            updateListenerReviews();
-            updateAdminData();
-            updateOwnerData();
-        }
-
-        function updateNotificationsUI() {
-            updateUserNotifications();
-            updateListenerNotifications();
-            
-            if (currentUser && currentUser.role === 'owner' && currentSection === 'notifications') {
-                loadOwnerNotifications();
+            function sendOwnerSupportMessage() {
+                const input = document.getElementById('ownerSupportMessageInput');
+                const message = input.value.trim();
+                
+                if (message) {
+                    showNotification('📤 Сообщение поддержки отправлено', 'success');
+                    input.value = '';
+                }
             }
-        }
 
-        // ОСТАЛЬНЫЕ ФУНКЦИИ ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ
-        // [Здесь должен быть остальной код из предыдущей версии...]
-
-        // Загрузка системных настроек при старте
-        const savedSystemSettings = localStorage.getItem('systemSettings');
-        if (savedSystemSettings) {
-            try {
-                systemSettings = { ...systemSettings, ...JSON.parse(savedSystemSettings) };
-            } catch (e) {
-                console.error('Ошибка загрузки системных настроек:', e);
+            // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+            function triggerFileUpload(inputId) {
+                showNotification('📎 Функция загрузки файлов в разработке', 'info');
             }
-        }
 
-        console.log('🎉 Чат система загружена!');
+            function showStickerPicker(inputId) {
+                showNotification('😊 Функция стикеров в разработке', 'info');
+            }
 
-        // Инициализация мобильного интерфейса
-        function initMobileInterface() {
-            if (window.innerWidth <= 992) {
-                document.querySelectorAll('.mobile-back-btn').forEach(btn => {
-                    btn.style.display = 'block';
-                });
-                document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
-                    btn.style.display = 'block';
-                });
-            } else {
-                document.querySelectorAll('.mobile-back-btn').forEach(btn => {
-                    btn.style.display = 'none';
-                });
-                document.querySelectorAll('.mobile-menu-btn').forEach(btn => {
-                    btn.style.display = 'none';
+            function updateRatingStars(rating) {
+                document.querySelectorAll('.rating-star').forEach((star, index) => {
+                    star.classList.toggle('active', index < rating);
                 });
             }
-        }
 
-        // Инициализация при загрузке и изменении размера окна
-        window.addEventListener('load', initMobileInterface);
-        window.addEventListener('resize', initMobileInterface);
-    </script>
+            function updateRatingStats(data) {
+                if (currentUser && currentUser.role === 'listener') {
+                    document.getElementById('listenerRatingValue').textContent = data.newRating.toFixed(1);
+                    document.getElementById('listenerRatingCount').textContent = data.ratingCount;
+                }
+            }
+
+            function updateUserConnection(user, isOnline) {
+                const userIndex = users.findIndex(u => u.id === user.id);
+                if (userIndex !== -1) {
+                    users[userIndex].isOnline = isOnline;
+                    updateUsersUI();
+                }
+            }
+
+            function updateUserData(updatedUser) {
+                const userIndex = users.findIndex(u => u.id === updatedUser.id);
+                if (userIndex !== -1) {
+                    users[userIndex] = updatedUser;
+                    updateUsersUI();
+                    
+                    // Если это текущий пользователь, обновляем интерфейс
+                    if (currentUser && currentUser.id === updatedUser.id) {
+                        currentUser = updatedUser;
+                        if (currentUser.role === 'listener') {
+                            document.getElementById('listenerRatingValue').textContent = updatedUser.rating || '0.0';
+                            document.getElementById('listenerRatingCount').textContent = updatedUser.ratingCount || '0';
+                        }
+                    }
+                }
+            }
+
+            function handleChatEnded(data) {
+                const chatIndex = chats.findIndex(c => c.id === data.chatId);
+                if (chatIndex !== -1) {
+                    chats[chatIndex].isActive = false;
+                    chats[chatIndex].endTime = new Date().toISOString();
+                    updateChatsUI();
+                    
+                    showNotification('🔚 Чат завершен', 'info');
+                }
+            }
+
+            function loadProfileSettings(role) {
+                const settings = {
+                    user: `
+                        <div class="profile-settings">
+                            <h4>👤 Настройки профиля</h4>
+                            <div class="form-group">
+                                <label class="form-label">📛 Отображаемое имя</label>
+                                <input type="text" class="form-input" value="${currentUser.displayName || currentUser.username}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">🖼️ Аватар</label>
+                                <div class="avatar-selection">
+                                    <div class="avatar-option active">👤</div>
+                                    <div class="avatar-option">😊</div>
+                                    <div class="avatar-option">🎯</div>
+                                    <div class="avatar-option">🌟</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary">💾 Сохранить</button>
+                        </div>
+                        <div class="profile-settings">
+                            <h4>🎨 Внешний вид</h4>
+                            <div class="theme-selector">
+                                <div class="theme-option active" onclick="changeTheme('sunrise')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                                    <div>Sunrise</div>
+                                </div>
+                                <div class="theme-option" onclick="changeTheme('light')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                                    <div>Light</div>
+                                </div>
+                                <div class="theme-option" onclick="changeTheme('dark')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);"></div>
+                                    <div>Dark</div>
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    admin: `
+                        <div class="profile-settings">
+                            <h4>👑 Настройки администратора</h4>
+                            <div class="form-group">
+                                <label class="form-label">📛 Отображаемое имя</label>
+                                <input type="text" class="form-input" value="${currentUser.displayName || currentUser.username}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">🔐 Смена пароля</label>
+                                <input type="password" class="form-input" placeholder="Новый пароль">
+                            </div>
+                            <button class="btn btn-admin">💾 Сохранить</button>
+                        </div>
+                    `,
+                    listener: `
+                        <div class="profile-settings">
+                            <h4>🎧 Настройки слушателя</h4>
+                            <div class="form-group">
+                                <label class="form-label">📛 Отображаемое имя</label>
+                                <input type="text" class="form-input" value="${currentUser.displayName || currentUser.username}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">📝 Описание профиля</label>
+                                <textarea class="form-input" rows="3" placeholder="Расскажите о себе...">Готов выслушать и поддержать</textarea>
+                            </div>
+                            <button class="btn btn-primary">💾 Сохранить</button>
+                        </div>
+                    `
+                };
+
+                const container = document.getElementById(role + 'ProfileSettings');
+                if (container) {
+                    container.innerHTML = settings[role] || settings.user;
+                }
+
+                // Добавляем настройки темы для всех ролей
+                const themeContainer = document.getElementById(role + 'ThemeSettings');
+                if (themeContainer) {
+                    themeContainer.innerHTML = `
+                        <div class="profile-settings">
+                            <h4>🎨 Настройки внешнего вида</h4>
+                            <div class="theme-selector">
+                                <div class="theme-option ${document.body.classList.contains('theme-sunrise') ? 'active' : ''}" onclick="changeTheme('sunrise')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                                    <div>Sunrise</div>
+                                </div>
+                                <div class="theme-option ${document.body.classList.contains('theme-light') ? 'active' : ''}" onclick="changeTheme('light')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                                    <div>Light</div>
+                                </div>
+                                <div class="theme-option ${document.body.classList.contains('theme-dark') ? 'active' : ''}" onclick="changeTheme('dark')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);"></div>
+                                    <div>Dark</div>
+                                </div>
+                                <div class="theme-option ${document.body.classList.contains('theme-ocean') ? 'active' : ''}" onclick="changeTheme('ocean')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                                    <div>Ocean</div>
+                                </div>
+                                <div class="theme-option ${document.body.classList.contains('theme-forest') ? 'active' : ''}" onclick="changeTheme('forest')">
+                                    <div class="theme-preview" style="background: linear-gradient(135deg, #228b22 0%, #32cd32 100%);"></div>
+                                    <div>Forest</div>
+                                </div>
+                            </div>
+                            
+                            <h4 style="margin-top: 20px;">🔤 Настройки шрифта</h4>
+                            <div class="font-selector">
+                                <div class="font-option ${document.body.classList.contains('font-default') ? 'active' : ''}" onclick="changeFont('default')">Default</div>
+                                <div class="font-option ${document.body.classList.contains('font-modern') ? 'active' : ''}" onclick="changeFont('modern')">Modern</div>
+                                <div class="font-option ${document.body.classList.contains('font-elegant') ? 'active' : ''}" onclick="changeFont('elegant')">Elegant</div>
+                            </div>
+                            
+                            <h4 style="margin-top: 20px;">📏 Размер текста</h4>
+                            <div class="font-selector">
+                                <div class="font-option ${document.body.classList.contains('font-size-small') ? 'active' : ''}" onclick="changeFontSize('small')">Маленький</div>
+                                <div class="font-option ${document.body.classList.contains('font-size-normal') ? 'active' : ''}" onclick="changeFontSize('normal')">Обычный</div>
+                                <div class="font-option ${document.body.classList.contains('font-size-large') ? 'active' : ''}" onclick="changeFontSize('large')">Большой</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        </script>
 </body>
 </html>

@@ -206,7 +206,7 @@ function initializeUsers() {
             password: 'owner2024',
             role: 'owner',
             displayName: 'Владелец Системы',
-            avatar: '👑',
+            avatar: '👑 ',
             rating: 5.0,
             ratingCount: 0,
             isOnline: false,

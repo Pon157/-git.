@@ -14,20 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 // Улучшенные настройки CORS
 app.use(cors({
-    origin: function(origin, callback) {
-        const allowedOrigins = [
-            'https://support-chat-hyv4.onrender.com',
-            'http://localhost:3000',
-            'http://127.0.0.1:3000',
-            undefined
-        ];
-        
-        if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: "*", // Разрешаем все источники для простоты
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
@@ -72,20 +59,7 @@ const upload = multer({
 // Улучшенные настройки Socket.IO
 const io = socketIo(server, {
     cors: {
-        origin: function(origin, callback) {
-            const allowedOrigins = [
-                'https://support-chat-hyv4.onrender.com',
-                'http://localhost:3000',
-                'http://127.0.0.1:3000',
-                undefined
-            ];
-            
-            if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     },
@@ -358,6 +332,8 @@ io.on('connection', (socket) => {
     })});
     socket.emit('chats_list', { chats: getChats() });
     socket.emit('ratings_list', { ratings: getRatings() });
+    socket.emit('notifications_list', { notifications: getNotifications() });
+    socket.emit('moderation_history', { history: getModerationHistory() });
 
     // Восстановление сессии
     socket.on('restore_session', (data) => {
@@ -377,6 +353,11 @@ io.on('connection', (socket) => {
                 const { password, socketId, ...publicUser } = u;
                 return publicUser;
             })});
+        } else {
+            socket.emit('session_restored', { 
+                success: false,
+                error: 'Пользователь не найден'
+            });
         }
     });
 
@@ -396,12 +377,20 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Проверяем, не заблокирован ли пользователь
+        if (user.isBlocked) {
+            socket.emit('login_error', 'Ваш аккаунт заблокирован');
+            return;
+        }
+
         updateUser(user.id, {
             isOnline: true,
             socketId: socket.id
         });
 
-        socket.emit('login_success', { user });
+        const { password: _, socketId: __, ...userWithoutSensitive } = user;
+        socket.emit('login_success', { user: userWithoutSensitive });
+        
         broadcastToAll('users_list', { users: getUsers().map(u => {
             const { password, socketId, ...publicUser } = u;
             return publicUser;
@@ -415,6 +404,11 @@ io.on('connection', (socket) => {
         
         if (!username || !password) {
             socket.emit('registration_error', 'Логин и пароль обязательны');
+            return;
+        }
+
+        if (password.length < 6) {
+            socket.emit('registration_error', 'Пароль должен быть не менее 6 символов');
             return;
         }
 
@@ -435,13 +429,18 @@ io.on('connection', (socket) => {
             ratingCount: 0,
             isOnline: true,
             socketId: socket.id,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         };
 
         users.push(newUser);
         saveUsers(users);
         
-        socket.emit('registration_success', { user: newUser });
+        const { password: _, socketId: __, ...userWithoutSensitive } = newUser;
+        socket.emit('registration_success', { user: userWithoutSensitive });
+        
         broadcastToAll('users_list', { users: users.map(u => {
             const { password, socketId, ...publicUser } = u;
             return publicUser;
@@ -461,12 +460,19 @@ io.on('connection', (socket) => {
         const updates = {};
         if (displayName) updates.displayName = displayName;
         if (avatar) updates.avatar = avatar;
-        if (password) updates.password = password;
+        if (password) {
+            if (password.length < 6) {
+                socket.emit('profile_update_error', 'Пароль должен быть не менее 6 символов');
+                return;
+            }
+            updates.password = password;
+        }
 
         const updatedUser = updateUser(userId, updates);
         
         if (updatedUser) {
-            socket.emit('profile_updated', { user: updatedUser });
+            const { password: _, socketId: __, ...userWithoutSensitive } = updatedUser;
+            socket.emit('profile_updated', { user: userWithoutSensitive });
             broadcastToAll('users_list', { users: getUsers().map(u => {
                 const { password, socketId, ...publicUser } = u;
                 return publicUser;
@@ -478,6 +484,16 @@ io.on('connection', (socket) => {
     socket.on('register_staff', (data) => {
         const users = getUsers();
         const { username, password, displayName, role } = data;
+
+        if (!username || !password) {
+            socket.emit('staff_register_error', 'Логин и пароль обязательны');
+            return;
+        }
+
+        if (password.length < 6) {
+            socket.emit('staff_register_error', 'Пароль должен быть не менее 6 символов');
+            return;
+        }
 
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
@@ -496,13 +512,18 @@ io.on('connection', (socket) => {
             ratingCount: 0,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         };
 
         users.push(newStaff);
         saveUsers(users);
         
-        socket.emit('staff_registered', { user: newStaff });
+        const { password: _, socketId: __, ...staffWithoutSensitive } = newStaff;
+        socket.emit('staff_registered', { user: staffWithoutSensitive });
+        
         broadcastToAll('users_list', { users: users.map(u => {
             const { password, socketId, ...publicUser } = u;
             return publicUser;
@@ -525,7 +546,8 @@ io.on('connection', (socket) => {
         });
         
         if (updatedUser) {
-            socket.emit('role_changed', { userId, newRole, user: updatedUser });
+            const { password: _, socketId: __, ...userWithoutSensitive } = updatedUser;
+            socket.emit('role_changed', { userId, newRole, user: userWithoutSensitive });
             broadcastToAll('users_list', { users: getUsers().map(u => {
                 const { password, socketId, ...publicUser } = u;
                 return publicUser;
@@ -547,6 +569,18 @@ io.on('connection', (socket) => {
             return;
         }
 
+        // Проверяем, не заблокирован ли пользователь
+        if (user1Data.isBlocked || user2Data.isBlocked) {
+            socket.emit('chat_create_error', 'Нельзя создать чат с заблокированным пользователем');
+            return;
+        }
+
+        // Проверяем, не в отпуске ли слушатель
+        if (user2Data.role === 'listener' && user2Data.isOnVacation) {
+            socket.emit('chat_create_error', 'Слушатель в отпуске');
+            return;
+        }
+
         const existingChat = chats.find(chat => 
             chat.isActive && 
             ((chat.user1 === user1 && chat.user2 === user2) || 
@@ -565,24 +599,28 @@ io.on('connection', (socket) => {
             messages: [],
             startTime: new Date().toISOString(),
             isActive: true,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            lastActivity: new Date().toISOString()
         };
 
         chats.push(newChat);
         saveChats(chats);
 
+        const { password: _, socketId: __, ...user2WithoutSensitive } = user2Data;
+        
         socket.emit('chat_created', { 
             chat: newChat, 
-            listenerName: user2Data.displayName 
+            listenerName: user2Data.displayName || user2Data.username
         });
         
         // Уведомляем слушателя
         if (user2Data.socketId) {
             const listenerSocket = io.sockets.sockets.get(user2Data.socketId);
             if (listenerSocket) {
+                const { password: _, socketId: __, ...user1WithoutSensitive } = user1Data;
                 listenerSocket.emit('chat_created', { 
                     chat: newChat, 
-                    userName: user1Data.displayName 
+                    userName: user1Data.displayName || user1Data.username 
                 });
             }
         }
@@ -598,6 +636,11 @@ io.on('connection', (socket) => {
         const chat = chats.find(c => c.id === chatId);
         if (!chat) {
             socket.emit('message_error', 'Чат не найден');
+            return;
+        }
+
+        if (!chat.isActive) {
+            socket.emit('message_error', 'Чат завершен');
             return;
         }
 
@@ -626,6 +669,9 @@ io.on('connection', (socket) => {
                 targetSocket.emit('new_message', { chatId, message: newMessage });
             }
         }
+        
+        // Отправляем обновление всем администраторам
+        broadcastToAdmins('new_message', { chatId, message: newMessage });
         
         broadcastToAll('chats_list', { chats });
     });
@@ -664,12 +710,18 @@ io.on('connection', (socket) => {
         const ratings = getRatings();
         const { listenerId, rating, comment, userId } = data;
         
+        const listener = getUserById(listenerId);
+        if (!listener) {
+            socket.emit('rating_error', 'Слушатель не найден');
+            return;
+        }
+
         const newRating = {
             id: generateId(),
             listenerId,
             userId,
             rating,
-            comment,
+            comment: comment || '',
             timestamp: new Date().toISOString()
         };
 
@@ -680,19 +732,28 @@ io.on('connection', (socket) => {
         const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
         const avgRating = totalRating / listenerRatings.length;
 
-        const listener = getUserById(listenerId);
-        if (listener) {
-            updateUser(listenerId, {
-                rating: avgRating,
-                ratingCount: listenerRatings.length
-            });
-        }
+        updateUser(listenerId, {
+            rating: avgRating,
+            ratingCount: listenerRatings.length
+        });
 
         socket.emit('rating_submitted', {
             listenerId,
             newRating: avgRating,
             ratingCount: listenerRatings.length
         });
+
+        // Уведомляем слушателя об новой оценке
+        if (listener.socketId) {
+            const listenerSocket = io.sockets.sockets.get(listener.socketId);
+            if (listenerSocket) {
+                listenerSocket.emit('rating_submitted', {
+                    listenerId,
+                    newRating: avgRating,
+                    ratingCount: listenerRatings.length
+                });
+            }
+        }
 
         broadcastToAll('ratings_list', { ratings });
         broadcastToAll('users_list', { users: getUsers().map(u => {
@@ -706,6 +767,11 @@ io.on('connection', (socket) => {
         const notifications = getNotifications();
         const { title, text, type, recipients } = data;
         
+        if (!title || !text) {
+            socket.emit('notification_error', 'Заголовок и текст уведомления обязательны');
+            return;
+        }
+
         const newNotification = {
             id: generateId(),
             title,
@@ -735,7 +801,11 @@ io.on('connection', (socket) => {
                 break;
         }
 
-        socket.emit('notification_sent', { success: true });
+        socket.emit('notification_sent', { 
+            success: true,
+            notification: newNotification 
+        });
+        
         broadcastToAll('notifications_list', { notifications });
     });
 
@@ -755,12 +825,12 @@ io.on('connection', (socket) => {
         const moderationRecord = {
             id: generateId(),
             userId,
-            userName: user.displayName,
+            userName: user.displayName || user.username,
             action,
             reason,
             duration,
             moderatorId,
-            moderatorName: moderator.displayName,
+            moderatorName: moderator.displayName || moderator.username,
             timestamp: new Date().toISOString()
         };
 
@@ -776,7 +846,7 @@ io.on('connection', (socket) => {
                     blockUntil: duration ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString() : null
                 };
                 break;
-            case 'unblock':
+            case 'remove_block':
                 userUpdates = { 
                     isBlocked: false,
                     blockUntil: null
@@ -787,6 +857,23 @@ io.on('connection', (socket) => {
                     warnings: (user.warnings || 0) + 1
                 };
                 break;
+            case 'remove_warning':
+                userUpdates = { 
+                    warnings: Math.max(0, (user.warnings || 0) - 1)
+                };
+                break;
+            case 'vacation':
+                userUpdates = { 
+                    isOnVacation: true,
+                    vacationUntil: duration ? new Date(Date.now() + duration * 24 * 60 * 60 * 1000).toISOString() : null
+                };
+                break;
+            case 'remove_vacation':
+                userUpdates = { 
+                    isOnVacation: false,
+                    vacationUntil: null
+                };
+                break;
         }
 
         if (Object.keys(userUpdates).length > 0) {
@@ -794,6 +881,19 @@ io.on('connection', (socket) => {
         }
 
         socket.emit('moderation_applied', { record: moderationRecord });
+        
+        // Уведомляем пользователя о действии модерации
+        if (user.socketId) {
+            const userSocket = io.sockets.sockets.get(user.socketId);
+            if (userSocket) {
+                userSocket.emit('moderation_applied', { 
+                    action,
+                    reason,
+                    duration 
+                });
+            }
+        }
+
         broadcastToAll('moderation_history', { history: moderationHistory });
         broadcastToAll('users_list', { users: getUsers().map(u => {
             const { password, socketId, ...publicUser } = u;
@@ -867,7 +967,11 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
 // API маршруты
 app.get('/api/users', (req, res) => {
-    res.json(getUsers());
+    const users = getUsers().map(u => {
+        const { password, socketId, ...publicUser } = u;
+        return publicUser;
+    });
+    res.json(users);
 });
 
 app.get('/api/chats', (req, res) => {
@@ -895,7 +999,8 @@ app.get('/api/stats', (req, res) => {
         totalListeners: users.filter(u => u.role === 'listener').length,
         activeChats: chats.filter(c => c.isActive).length,
         onlineUsers: users.filter(u => u.isOnline).length,
-        totalMessages: chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0)
+        totalMessages: chats.reduce((sum, chat) => sum + (chat.messages?.length || 0), 0),
+        avgRating: users.filter(u => u.role === 'listener').reduce((sum, u) => sum + (u.rating || 0), 0) / users.filter(u => u.role === 'listener').length || 0
     };
     res.json(stats);
 });
@@ -910,10 +1015,16 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
+// Обработка несуществующих маршрутов
+app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Маршрут не найден' });
+});
+
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`🌐 Доступен по адресу: http://localhost:${PORT}`);
     console.log(`📊 Пользователей: ${getUsers().length}`);
     console.log(`💬 Чатов: ${getChats().length}`);
+    console.log(`⭐ Рейтингов: ${getRatings().length}`);
     console.log(`🔧 Система готова к работе!`);
 });

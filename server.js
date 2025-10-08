@@ -8,9 +8,27 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
-// Улучшенные настройки CORS
+// Настройки для Render.com
+const PORT = process.env.PORT || 3000;
+
+// Улучшенные настройки CORS для Render.com
 app.use(cors({
-    origin: "*",
+    origin: function(origin, callback) {
+        // Разрешаем все origins в development и для Render.com
+        const allowedOrigins = [
+            'https://support-chat-hyv4.onrender.com',
+            'http://localhost:3000',
+            'http://127.0.0.1:3000',
+            undefined // для запросов без origin (например, из Postman)
+        ];
+        
+        if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            console.log('Blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
@@ -21,10 +39,23 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Статические файлы
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Улучшенные настройки Socket.IO
+// Улучшенные настройки Socket.IO для Render.com
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        origin: function(origin, callback) {
+            const allowedOrigins = [
+                'https://support-chat-hyv4.onrender.com',
+                'http://localhost:3000',
+                'http://127.0.0.1:3000',
+                undefined
+            ];
+            
+            if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ["GET", "POST"],
         credentials: true
     },
@@ -231,7 +262,7 @@ function initializeUsers() {
     
     const defaultUsers = [
         {
-            id: 'user-1',
+            id: 'owner-1',
             username: 'owner',
             password: 'owner2024',
             role: 'owner',
@@ -245,7 +276,7 @@ function initializeUsers() {
             isSuperAdmin: true
         },
         {
-            id: 'user-2',
+            id: 'admin-1',
             username: 'admin',
             password: 'admin123',
             role: 'admin',
@@ -258,7 +289,7 @@ function initializeUsers() {
             createdAt: new Date().toISOString()
         },
         {
-            id: 'user-3',
+            id: 'user-1',
             username: 'user',
             password: '123456',
             role: 'user',
@@ -271,7 +302,7 @@ function initializeUsers() {
             createdAt: new Date().toISOString()
         },
         {
-            id: 'user-4', 
+            id: 'listener-1', 
             username: 'listener',
             password: '123456',
             role: 'listener',
@@ -284,7 +315,7 @@ function initializeUsers() {
             createdAt: new Date().toISOString()
         },
         {
-            id: 'user-5', 
+            id: 'listener-2', 
             username: 'listener2',
             password: '123456',
             role: 'listener',
@@ -350,7 +381,7 @@ function updateUser(userId, updates) {
 
 // 🔄 ОСНОВНЫЕ ОБРАБОТЧИКИ SOCKET.IO
 io.on('connection', (socket) => {
-    console.log(`🔗 Новое подключение: ${socket.id}`);
+    console.log(`🔗 Новое подключение: ${socket.id} from ${socket.handshake.headers.origin}`);
 
     // Отправка начальных данных новому клиенту
     const initialUsers = getUsers();
@@ -530,7 +561,7 @@ io.on('connection', (socket) => {
 
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
-            socket.emit('staff_add_error', 'Пользователь с таким логином уже существует');
+            socket.emit('staff_register_error', 'Пользователь с таким логином уже существует');
             return;
         }
 
@@ -552,7 +583,7 @@ io.on('connection', (socket) => {
         const saved = saveUsers(users);
         
         if (saved) {
-            socket.emit('staff_added', { user: newStaff });
+            socket.emit('staff_registered', { user: newStaff });
             
             // 🔄 УВЕДОМЛЯЕМ ВСЕХ О НОВОМ СОТРУДНИКЕ
             socket.broadcast.emit('user_connected', { user: newStaff });
@@ -560,7 +591,7 @@ io.on('connection', (socket) => {
             // 🔄 СИНХРОНИЗИРУЕМ ДАННЫЕ
             syncUsers();
         } else {
-            socket.emit('staff_add_error', 'Ошибка сохранения сотрудника');
+            socket.emit('staff_register_error', 'Ошибка сохранения сотрудника');
         }
     });
 
@@ -735,7 +766,7 @@ io.on('connection', (socket) => {
         const user2Data = getUserById(user2);
         
         if (!user1Data || !user2Data) {
-            socket.emit('chat_error', 'Пользователь не найден');
+            socket.emit('chat_create_error', 'Пользователь не найден');
             return;
         }
 
@@ -1061,10 +1092,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3000;
+// Обработка 404
+app.use((req, res) => {
+    res.status(404).json({ error: 'Маршрут не найден' });
+});
+
+// Обработка ошибок
+app.use((err, req, res, next) => {
+    console.error('❌ Ошибка сервера:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+});
+
 server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
+    console.log(`🌐 Доступен по адресу: https://support-chat-hyv4.onrender.com`);
     console.log(`📊 Пользователей: ${users.length}`);
     console.log(`🔐 Аккаунты для входа:`);
     console.log(`   👑 Владелец: owner / owner2024`);

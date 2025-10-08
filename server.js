@@ -4,6 +4,8 @@ const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
@@ -23,8 +25,42 @@ const io = socketIo(server, {
 // Middleware
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Настройка multer для загрузки файлов
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, 'uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueName = uuidv4() + path.extname(file.originalname);
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit
+    },
+    fileFilter: function (req, file, cb) {
+        // Разрешаем изображения, GIF, и другие медиа файлы
+        if (file.mimetype.startsWith('image/') || 
+            file.mimetype.startsWith('video/') ||
+            file.mimetype === 'application/json' || // для стикеров
+            file.mimetype.startsWith('audio/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Неподдерживаемый тип файла!'), false);
+        }
+    }
+});
 
 // Файлы для хранения данных
 const DATA_DIR = './data';
@@ -34,17 +70,21 @@ const RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
 const MODERATION_FILE = path.join(DATA_DIR, 'moderation.json');
 
-// Создание директории данных если её нет
-function ensureDataDirectory() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-        console.log(`✅ Создана директория  данных: ${DATA_DIR}`);
-    }
+// Создание директорий если их нет
+function ensureDirectories() {
+    const directories = [DATA_DIR, './uploads'];
+    
+    directories.forEach(dir => {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+            console.log(`✅ Создана директория: ${dir}`);
+        }
+    });
 }
 
 // Создание файлов если их нет
 function initializeFiles() {
-    ensureDataDirectory();
+    ensureDirectories();
     
     const files = [
         { name: USERS_FILE, default: [] },
@@ -62,29 +102,55 @@ function initializeFiles() {
     });
 }
 
-// Загрузка данных из файлов
+// Улучшенная загрузка данных с обработкой ошибок
 function loadData(filename, defaultValue = []) {
     try {
         if (fs.existsSync(filename)) {
             const data = fs.readFileSync(filename, 'utf8');
-            return data ? JSON.parse(data) : defaultValue;
+            if (data.trim() === '') {
+                console.log(`⚠️ Файл ${filename} пуст, возвращаем значение по умолчанию`);
+                return defaultValue;
+            }
+            const parsed = JSON.parse(data);
+            console.log(`📁 Загружено ${parsed.length} записей из ${filename}`);
+            return parsed;
         }
     } catch (error) {
         console.error(`❌ Ошибка загрузки ${filename}:`, error);
+        // Создаем резервную копию поврежденного файла
+        if (fs.existsSync(filename)) {
+            const backupName = filename + '.backup-' + Date.now();
+            fs.copyFileSync(filename, backupName);
+            console.log(`💾 Создана резервная копия: ${backupName}`);
+        }
     }
     return defaultValue;
 }
 
-// Сохранение данных в файлы
+// Улучшенное сохранение данных
 function saveData(filename, data) {
     try {
-        fs.writeFileSync(filename, JSON.stringify(data, null, 2));
-        console.log(`💾 Данные сохранены в ${filename}`);
+        // Создаем временный файл для атомарной записи
+        const tempFile = filename + '.tmp';
+        fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
+        
+        // Заменяем оригинальный файл
+        fs.renameSync(tempFile, filename);
+        
+        console.log(`💾 Данные сохранены в ${filename} (${data.length} записей)`);
         return true;
     } catch (error) {
         console.error(`❌ Ошибка сохранения ${filename}:`, error);
         return false;
     }
+}
+
+// Автоматическое сохранение каждые 30 секунд
+function startAutoSave() {
+    setInterval(() => {
+        console.log('🔄 Автосохранение данных...');
+        // Данные сохраняются при каждом изменении, это дополнительная защита
+    }, 30000);
 }
 
 // Загрузка данных
@@ -146,7 +212,10 @@ function initializeUsers() {
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isSuperAdmin: true
+            isSuperAdmin: true,
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         },
         {
             id: 'user-2',
@@ -159,7 +228,10 @@ function initializeUsers() {
             ratingCount: 0,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         },
         {
             id: 'user-3',
@@ -172,20 +244,26 @@ function initializeUsers() {
             ratingCount: 0,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         },
         {
             id: 'user-4', 
             username: 'listener',
             password: '123456',
             role: 'listener',
-            displayName: 'Анна Слушатель ',
+            displayName: 'Анна Слушатель',
             avatar: '🎧',
             rating: 4.8,
             ratingCount: 15,
             isOnline: false,
             socketId: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isBlocked: false,
+            isOnVacation: false,
+            warnings: 0
         }
     ];
 
@@ -209,6 +287,7 @@ function initializeUsers() {
 console.log('🔄 Инициализация системы...');
 initializeFiles();
 initializeUsers();
+startAutoSave();
 
 // Генерация ID
 function generateId() {
@@ -233,11 +312,51 @@ function updateUser(userId, updates) {
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
         users[userIndex] = { ...users[userIndex], ...updates };
-        saveUsers(users);
-        return users[userIndex];
+        const saved = saveUsers(users);
+        if (saved) {
+            return users[userIndex];
+        }
     }
     return null;
 }
+
+// API для загрузки файлов
+app.post('/api/upload', upload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Файл не загружен' });
+        }
+
+        const fileInfo = {
+            id: generateId(),
+            originalName: req.file.originalname,
+            filename: req.file.filename,
+            path: `/uploads/${req.file.filename}`,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+            uploadedAt: new Date().toISOString(),
+            uploadedBy: req.body.userId || 'unknown'
+        };
+
+        console.log('📁 Файл загружен:', fileInfo);
+        res.json({ success: true, file: fileInfo });
+    } catch (error) {
+        console.error('❌ Ошибка загрузки файла:', error);
+        res.status(500).json({ error: 'Ошибка загрузки файла' });
+    }
+});
+
+// API для получения файлов
+app.get('/api/files/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path.join(__dirname, 'uploads', filename);
+    
+    if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).json({ error: 'Файл не найден' });
+    }
+});
 
 // Socket.IO соединения
 io.on('connection', (socket) => {
@@ -322,6 +441,11 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (user.isBlocked) {
+            socket.emit('login_error', 'Аккаунт заблокирован');
+            return;
+        }
+
         updateUser(user.id, {
             isOnline: true,
             socketId: socket.id
@@ -376,6 +500,16 @@ io.on('connection', (socket) => {
         
         if (!username || !password) {
             socket.emit('registration_error', 'Логин и пароль обязательны');
+            return;
+        }
+
+        if (username.length < 3) {
+            socket.emit('registration_error', 'Логин должен быть не менее 3 символов');
+            return;
+        }
+
+        if (password.length < 6) {
+            socket.emit('registration_error', 'Пароль должен быть не менее 6 символов');
             return;
         }
 
@@ -446,7 +580,13 @@ io.on('connection', (socket) => {
         const updates = {};
         if (displayName) updates.displayName = displayName;
         if (avatar) updates.avatar = avatar;
-        if (password) updates.password = password;
+        if (password) {
+            if (password.length < 6) {
+                socket.emit('profile_update_error', 'Пароль должен быть не менее 6 символов');
+                return;
+            }
+            updates.password = password;
+        }
 
         const updatedUser = updateUser(userId, updates);
         
@@ -464,6 +604,16 @@ io.on('connection', (socket) => {
         
         const users = getUsers();
         const { username, password, displayName, role } = data;
+
+        if (username.length < 3) {
+            socket.emit('staff_add_error', 'Логин должен быть не менее 3 символов');
+            return;
+        }
+
+        if (password.length < 6) {
+            socket.emit('staff_add_error', 'Пароль должен быть не менее 6 символов');
+            return;
+        }
 
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
@@ -708,6 +858,11 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (user1Data.isBlocked || user2Data.isBlocked) {
+            socket.emit('chat_error', 'Нельзя создать чат с заблокированным пользователем');
+            return;
+        }
+
         // Проверяем существующий активный чат
         const existingChat = chats.find(chat => 
             chat.isActive && 
@@ -787,13 +942,21 @@ io.on('connection', (socket) => {
             return;
         }
 
+        if (!chat.isActive) {
+            socket.emit('message_error', 'Чат завершен');
+            return;
+        }
+
         if (!chat.messages) chat.messages = [];
         
         const newMessage = {
             id: generateId(),
             text: message.text,
             senderId: message.senderId,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            type: message.type || 'text',
+            file: message.file || null,
+            sticker: message.sticker || null
         };
 
         chat.messages.push(newMessage);
@@ -871,7 +1034,7 @@ io.on('connection', (socket) => {
         // Обновляем рейтинг слушателя
         const listenerRatings = ratings.filter(r => r.listenerId === listenerId);
         const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
-        const avgRating = totalRating / listenerRatings.length;
+        const avgRating = listenerRatings.length > 0 ? totalRating / listenerRatings.length : 0;
 
         const listener = getUserById(listenerId);
         if (listener) {
@@ -1006,20 +1169,24 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        data: {
+            users: getUsers().length,
+            chats: getChats().length,
+            ratings: getRatings().length
+        }
+    });
 });
-
-// Автоматическое сохранение данных каждые 30 секунд
-setInterval(() => {
-    console.log('💾 Автосохранение данных...');
-    // Данные уже сохраняются при каждом изменении, это дополнительная защита
-}, 30000);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📊 Пользователей: ${users.length}`);
+    console.log(`💬 Чатов: ${getChats().length}`);
+    console.log(`⭐ Рейтингов: ${getRatings().length}`);
     console.log(`🔐 Аккаунты для входа:`);
     console.log(`   👑 Владелец: owner / owner2024`);
     console.log(`   ⚙️ Админ: admin / admin123`);

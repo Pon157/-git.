@@ -4,8 +4,6 @@ const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
-const multer = require('multer');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,42 +23,8 @@ const io = socketIo(server, {
 // Middleware
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Настройка multer для загрузки файлов
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, 'uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueName = uuidv4() + path.extname(file.originalname);
-        cb(null, uniqueName);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB limit
-    },
-    fileFilter: function (req, file, cb) {
-        // Разрешаем изображения, GIF, и другие медиа файлы
-        if (file.mimetype.startsWith('image/') || 
-            file.mimetype.startsWith('video/') ||
-            file.mimetype === 'application/json' || // для стикеров
-            file.mimetype.startsWith('audio/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Неподдерживаемый тип файла!'), false);
-        }
-    }
-});
+app.use(express.json({ limit: '50mb' })); // Увеличиваем лимит для файлов
+app.use(express.urlencoded({ extended: true }));
 
 // Файлы для хранения данных
 const DATA_DIR = './data';
@@ -69,29 +33,32 @@ const CHATS_FILE = path.join(DATA_DIR, 'chats.json');
 const RATINGS_FILE = path.join(DATA_DIR, 'ratings.json');
 const NOTIFICATIONS_FILE = path.join(DATA_DIR, 'notifications.json');
 const MODERATION_FILE = path.join(DATA_DIR, 'moderation.json');
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
-// Создание директорий если их нет
-function ensureDirectories() {
-    const directories = [DATA_DIR, './uploads'];
-    
-    directories.forEach(dir => {
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-            console.log(`✅ Создана директория: ${dir}`);
-        }
-    });
+// Создание директории данных если её нет
+function ensureDataDirectory() {
+    if (!fs.existsSync(DATA_DIR)) {
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        console.log(`✅ Создана директория данных: ${DATA_DIR}`);
+    }
 }
 
 // Создание файлов если их нет
 function initializeFiles() {
-    ensureDirectories();
+    ensureDataDirectory();
     
     const files = [
         { name: USERS_FILE, default: [] },
         { name: CHATS_FILE, default: [] },
         { name: RATINGS_FILE, default: [] },
         { name: NOTIFICATIONS_FILE, default: [] },
-        { name: MODERATION_FILE, default: [] }
+        { name: MODERATION_FILE, default: [] },
+        { name: SETTINGS_FILE, default: {
+            fileUploads: true,
+            maxFileSize: 10, // MB
+            allowedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov', 'avi'],
+            stickers: ['😊', '😂', '😍', '😎', '😢', '😡', '🤔', '🎉', '❤️', '🔥', '👍', '👎']
+        }}
     ];
 
     files.forEach(file => {
@@ -102,55 +69,29 @@ function initializeFiles() {
     });
 }
 
-// Улучшенная загрузка данных с обработкой ошибок
+// Загрузка данных из файлов
 function loadData(filename, defaultValue = []) {
     try {
         if (fs.existsSync(filename)) {
             const data = fs.readFileSync(filename, 'utf8');
-            if (data.trim() === '') {
-                console.log(`⚠️ Файл ${filename} пуст, возвращаем значение по умолчанию`);
-                return defaultValue;
-            }
-            const parsed = JSON.parse(data);
-            console.log(`📁 Загружено ${parsed.length} записей из ${filename}`);
-            return parsed;
+            return data ? JSON.parse(data) : defaultValue;
         }
     } catch (error) {
         console.error(`❌ Ошибка загрузки ${filename}:`, error);
-        // Создаем резервную копию поврежденного файла
-        if (fs.existsSync(filename)) {
-            const backupName = filename + '.backup-' + Date.now();
-            fs.copyFileSync(filename, backupName);
-            console.log(`💾 Создана резервная копия: ${backupName}`);
-        }
     }
     return defaultValue;
 }
 
-// Улучшенное сохранение данных
+// Сохранение данных в файлы
 function saveData(filename, data) {
     try {
-        // Создаем временный файл для атомарной записи
-        const tempFile = filename + '.tmp';
-        fs.writeFileSync(tempFile, JSON.stringify(data, null, 2));
-        
-        // Заменяем оригинальный файл
-        fs.renameSync(tempFile, filename);
-        
-        console.log(`💾 Данные сохранены в ${filename} (${data.length} записей)`);
+        fs.writeFileSync(filename, JSON.stringify(data, null, 2));
+        console.log(`💾 Данные сохранены в ${filename}`);
         return true;
     } catch (error) {
         console.error(`❌ Ошибка сохранения ${filename}:`, error);
         return false;
     }
-}
-
-// Автоматическое сохранение каждые 30 секунд
-function startAutoSave() {
-    setInterval(() => {
-        console.log('🔄 Автосохранение данных...');
-        // Данные сохраняются при каждом изменении, это дополнительная защита
-    }, 30000);
 }
 
 // Загрузка данных
@@ -174,6 +115,10 @@ function getModerationHistory() {
     return loadData(MODERATION_FILE, []);
 }
 
+function getSettings() {
+    return loadData(SETTINGS_FILE, {});
+}
+
 // Сохранение данных
 function saveUsers(users) {
     return saveData(USERS_FILE, users);
@@ -195,6 +140,10 @@ function saveModerationHistory(history) {
     return saveData(MODERATION_FILE, history);
 }
 
+function saveSettings(settings) {
+    return saveData(SETTINGS_FILE, settings);
+}
+
 // Создание владельца и демо-пользователей
 function initializeUsers() {
     let users = getUsers();
@@ -206,16 +155,14 @@ function initializeUsers() {
             password: 'owner2024',
             role: 'owner',
             displayName: 'Владелец Системы',
-            avatar: '👑 ',
+            avatar: '👑',
             rating: 5.0,
             ratingCount: 0,
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
             isSuperAdmin: true,
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         },
         {
             id: 'user-2',
@@ -229,9 +176,7 @@ function initializeUsers() {
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         },
         {
             id: 'user-3',
@@ -245,9 +190,7 @@ function initializeUsers() {
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         },
         {
             id: 'user-4', 
@@ -261,9 +204,7 @@ function initializeUsers() {
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         }
     ];
 
@@ -287,7 +228,6 @@ function initializeUsers() {
 console.log('🔄 Инициализация системы...');
 initializeFiles();
 initializeUsers();
-startAutoSave();
 
 // Генерация ID
 function generateId() {
@@ -312,51 +252,28 @@ function updateUser(userId, updates) {
     const userIndex = users.findIndex(u => u.id === userId);
     if (userIndex !== -1) {
         users[userIndex] = { ...users[userIndex], ...updates };
-        const saved = saveUsers(users);
-        if (saved) {
-            return users[userIndex];
-        }
+        saveUsers(users);
+        return users[userIndex];
     }
     return null;
 }
 
-// API для загрузки файлов
-app.post('/api/upload', upload.single('file'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'Файл не загружен' });
-        }
-
-        const fileInfo = {
-            id: generateId(),
-            originalName: req.file.originalname,
-            filename: req.file.filename,
-            path: `/uploads/${req.file.filename}`,
-            mimetype: req.file.mimetype,
-            size: req.file.size,
-            uploadedAt: new Date().toISOString(),
-            uploadedBy: req.body.userId || 'unknown'
-        };
-
-        console.log('📁 Файл загружен:', fileInfo);
-        res.json({ success: true, file: fileInfo });
-    } catch (error) {
-        console.error('❌ Ошибка загрузки файла:', error);
-        res.status(500).json({ error: 'Ошибка загрузки файла' });
-    }
-});
-
-// API для получения файлов
-app.get('/api/files/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, 'uploads', filename);
-    
-    if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
-    } else {
-        res.status(404).json({ error: 'Файл не найден' });
-    }
-});
+// Функция для периодического сохранения данных
+function startAutoSave() {
+    setInterval(() => {
+        console.log('💾 Автосохранение данных...');
+        // Просто загружаем и сохраняем данные для поддержания актуальности
+        const users = getUsers();
+        const chats = getChats();
+        const ratings = getRatings();
+        const notifications = getNotifications();
+        
+        saveUsers(users);
+        saveChats(chats);
+        saveRatings(ratings);
+        saveNotifications(notifications);
+    }, 30000); // Сохраняем каждые 30 секунд
+}
 
 // Socket.IO соединения
 io.on('connection', (socket) => {
@@ -371,14 +288,15 @@ io.on('connection', (socket) => {
         if (user) {
             updateUser(user.id, {
                 isOnline: true,
-                socketId: socket.id
+                socketId: socket.id,
+                lastSeen: new Date().toISOString()
             });
             
             const currentUsers = getUsers();
             const currentChats = getChats();
             const currentRatings = getRatings();
             const currentNotifications = getNotifications();
-            const currentModerationHistory = getModerationHistory();
+            const settings = getSettings();
             
             socket.emit('session_restored', { 
                 success: true,
@@ -409,8 +327,8 @@ io.on('connection', (socket) => {
                 notifications: currentNotifications
             });
 
-            socket.emit('moderation_history', {
-                history: currentModerationHistory
+            socket.emit('settings_updated', {
+                settings: settings
             });
             
             socket.broadcast.emit('user_connected', { user });
@@ -441,21 +359,23 @@ io.on('connection', (socket) => {
             return;
         }
 
-        if (user.isBlocked) {
-            socket.emit('login_error', 'Аккаунт заблокирован');
+        // Проверка блокировки
+        if (user.isBlocked && user.blockedUntil && new Date(user.blockedUntil) > new Date()) {
+            socket.emit('login_error', 'Аккаунт заблокирован до ' + new Date(user.blockedUntil).toLocaleDateString());
             return;
         }
 
         updateUser(user.id, {
             isOnline: true,
-            socketId: socket.id
+            socketId: socket.id,
+            lastSeen: new Date().toISOString()
         });
 
         const currentUsers = getUsers();
         const currentChats = getChats();
         const currentRatings = getRatings();
         const currentNotifications = getNotifications();
-        const currentModerationHistory = getModerationHistory();
+        const settings = getSettings();
 
         socket.emit('login_success', { user });
         
@@ -483,8 +403,8 @@ io.on('connection', (socket) => {
             notifications: currentNotifications
         });
 
-        socket.emit('moderation_history', {
-            history: currentModerationHistory
+        socket.emit('settings_updated', {
+            settings: settings
         });
         
         socket.broadcast.emit('user_connected', { user });
@@ -500,16 +420,6 @@ io.on('connection', (socket) => {
         
         if (!username || !password) {
             socket.emit('registration_error', 'Логин и пароль обязательны');
-            return;
-        }
-
-        if (username.length < 3) {
-            socket.emit('registration_error', 'Логин должен быть не менее 3 символов');
-            return;
-        }
-
-        if (password.length < 6) {
-            socket.emit('registration_error', 'Пароль должен быть не менее 6 символов');
             return;
         }
 
@@ -531,9 +441,7 @@ io.on('connection', (socket) => {
             isOnline: true,
             socketId: socket.id,
             createdAt: new Date().toISOString(),
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         };
 
         users.push(newUser);
@@ -580,13 +488,7 @@ io.on('connection', (socket) => {
         const updates = {};
         if (displayName) updates.displayName = displayName;
         if (avatar) updates.avatar = avatar;
-        if (password) {
-            if (password.length < 6) {
-                socket.emit('profile_update_error', 'Пароль должен быть не менее 6 символов');
-                return;
-            }
-            updates.password = password;
-        }
+        if (password) updates.password = password;
 
         const updatedUser = updateUser(userId, updates);
         
@@ -604,16 +506,6 @@ io.on('connection', (socket) => {
         
         const users = getUsers();
         const { username, password, displayName, role } = data;
-
-        if (username.length < 3) {
-            socket.emit('staff_add_error', 'Логин должен быть не менее 3 символов');
-            return;
-        }
-
-        if (password.length < 6) {
-            socket.emit('staff_add_error', 'Пароль должен быть не менее 6 символов');
-            return;
-        }
 
         const existingUser = users.find(u => u.username === username);
         if (existingUser) {
@@ -633,9 +525,7 @@ io.on('connection', (socket) => {
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString(),
-            isBlocked: false,
-            isOnVacation: false,
-            warnings: 0
+            lastSeen: new Date().toISOString()
         };
 
         users.push(newStaff);
@@ -671,87 +561,6 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('user_updated', { user: updatedUser });
         } else {
             socket.emit('role_change_error', 'Ошибка изменения роли');
-        }
-    });
-
-    // ПРИМЕНЕНИЕ ДЕЙСТВИЙ МОДЕРАЦИИ
-    socket.on('apply_moderation_action', (data) => {
-        console.log(`⚖️ Применение действия модерации:`, data);
-        
-        const { userId, action, reason, moderatorId, duration } = data;
-        const user = getUserById(userId);
-        const moderator = getUserById(moderatorId);
-        
-        if (!user) {
-            socket.emit('moderation_error', 'Пользователь не найден');
-            return;
-        }
-
-        const updates = {};
-        let message = '';
-        
-        switch (action) {
-            case 'warning':
-                updates.warnings = (user.warnings || 0) + 1;
-                message = `Пользователю ${user.displayName || user.username} выдано предупреждение`;
-                break;
-                
-            case 'block':
-                updates.isBlocked = true;
-                updates.blockedUntil = new Date(Date.now() + (duration || 7) * 24 * 60 * 60 * 1000).toISOString();
-                message = `Пользователь ${user.displayName || user.username} заблокирован на ${duration || 7} дней`;
-                break;
-                
-            case 'vacation':
-                updates.isOnVacation = true;
-                updates.vacationUntil = new Date(Date.now() + (duration || 7) * 24 * 60 * 60 * 1000).toISOString();
-                message = `Пользователь ${user.displayName || user.username} отправлен в отпуск на ${duration || 7} дней`;
-                break;
-                
-            default:
-                socket.emit('moderation_error', 'Неизвестное действие модерации');
-                return;
-        }
-
-        const updatedUser = updateUser(userId, updates);
-        
-        if (updatedUser) {
-            // Сохраняем в историю модерации
-            const moderationHistory = getModerationHistory();
-            const moderationRecord = {
-                id: generateId(),
-                userId,
-                moderatorId,
-                action,
-                reason,
-                duration: duration || null,
-                timestamp: new Date().toISOString()
-            };
-            
-            moderationHistory.push(moderationRecord);
-            saveModerationHistory(moderationHistory);
-
-            socket.emit('moderation_action_applied', { 
-                message,
-                user: updatedUser 
-            });
-            
-            socket.broadcast.emit('user_updated', { user: updatedUser });
-            
-            // Уведомляем пользователя если он онлайн
-            if (user.socketId) {
-                const userSocket = io.sockets.sockets.get(user.socketId);
-                if (userSocket) {
-                    userSocket.emit('moderation_action_received', {
-                        action,
-                        reason,
-                        duration,
-                        moderator: moderator ? moderator.displayName : 'Система'
-                    });
-                }
-            }
-        } else {
-            socket.emit('moderation_error', 'Ошибка применения действия модерации');
         }
     });
 
@@ -805,6 +614,22 @@ io.on('connection', (socket) => {
         socket.emit('notification_sent', { success: true });
     });
 
+    // ОБНОВЛЕНИЕ НАСТРОЕК
+    socket.on('update_settings', (data) => {
+        console.log(`⚙️ Обновление настроек:`, data);
+        
+        const { settings } = data;
+        const currentSettings = getSettings();
+        
+        const updatedSettings = { ...currentSettings, ...settings };
+        saveSettings(updatedSettings);
+        
+        socket.emit('settings_updated', { settings: updatedSettings });
+        socket.broadcast.emit('settings_updated', { settings: updatedSettings });
+        
+        console.log('✅ Настройки системы обновлены');
+    });
+
     // ПОЛУЧЕНИЕ ДАННЫХ
     socket.on('get_users', () => {
         const users = getUsers();
@@ -842,6 +667,11 @@ io.on('connection', (socket) => {
         socket.emit('moderation_history', { history });
     });
 
+    socket.on('get_settings', () => {
+        const settings = getSettings();
+        socket.emit('settings_updated', { settings });
+    });
+
     // СОЗДАНИЕ ЧАТА
     socket.on('create_chat', (data) => {
         console.log(`💬 Создание чата:`, data);
@@ -858,12 +688,6 @@ io.on('connection', (socket) => {
             return;
         }
 
-        if (user1Data.isBlocked || user2Data.isBlocked) {
-            socket.emit('chat_error', 'Нельзя создать чат с заблокированным пользователем');
-            return;
-        }
-
-        // Проверяем существующий активный чат
         const existingChat = chats.find(chat => 
             chat.isActive && 
             ((chat.user1 === user1 && chat.user2 === user2) || 
@@ -871,29 +695,7 @@ io.on('connection', (socket) => {
         );
 
         if (existingChat) {
-            console.log('💬 Найден существующий активный чат:', existingChat.id);
             socket.emit('chat_exists', { chat: existingChat });
-            
-            // Обновляем данные для обоих пользователей
-            if (user1Data.socketId) {
-                const user1Socket = io.sockets.sockets.get(user1Data.socketId);
-                if (user1Socket) {
-                    user1Socket.emit('chat_created', { 
-                        chat: existingChat, 
-                        listenerName: user2Data.displayName 
-                    });
-                }
-            }
-            
-            if (user2Data.socketId) {
-                const user2Socket = io.sockets.sockets.get(user2Data.socketId);
-                if (user2Socket) {
-                    user2Socket.emit('chat_created', { 
-                        chat: existingChat, 
-                        listenerName: user1Data.displayName 
-                    });
-                }
-            }
             return;
         }
 
@@ -910,9 +712,7 @@ io.on('connection', (socket) => {
         chats.push(newChat);
         saveChats(chats);
 
-        console.log('💬 Создан новый чат:', newChat.id);
-
-        // Уведомляем обоих пользователей
+        // Отправляем обаим пользователям
         socket.emit('chat_created', { 
             chat: newChat, 
             listenerName: user2Data.displayName 
@@ -923,10 +723,13 @@ io.on('connection', (socket) => {
             if (listenerSocket) {
                 listenerSocket.emit('chat_created', { 
                     chat: newChat, 
-                    listenerName: user1Data.displayName 
+                    userName: user1Data.displayName 
                 });
             }
         }
+
+        // Обновляем список чатов для всех
+        io.emit('chats_list', { chats: getChats() });
     });
 
     // ОТПРАВКА СООБЩЕНИЯ
@@ -942,11 +745,6 @@ io.on('connection', (socket) => {
             return;
         }
 
-        if (!chat.isActive) {
-            socket.emit('message_error', 'Чат завершен');
-            return;
-        }
-
         if (!chat.messages) chat.messages = [];
         
         const newMessage = {
@@ -955,25 +753,20 @@ io.on('connection', (socket) => {
             senderId: message.senderId,
             timestamp: new Date().toISOString(),
             type: message.type || 'text',
-            file: message.file || null,
-            sticker: message.sticker || null
+            fileData: message.fileData
         };
 
         chat.messages.push(newMessage);
         chat.lastActivity = new Date().toISOString();
         saveChats(chats);
 
-        // Находим участников чата
-        const user1 = getUserById(chat.user1);
-        const user2 = getUserById(chat.user2);
-        
-        // Отправляем сообщение отправителю (для подтверждения)
-        socket.emit('new_message', { chatId, message: newMessage });
-        
-        // Отправляем сообщение другому участнику чата
         const targetUserId = message.senderId === chat.user1 ? chat.user2 : chat.user1;
         const targetUser = getUserById(targetUserId);
         
+        // Отправляем сообщение отправителю
+        socket.emit('new_message', { chatId, message: newMessage });
+        
+        // Отправляем сообщение получателю
         if (targetUser && targetUser.socketId) {
             const targetSocket = io.sockets.sockets.get(targetUser.socketId);
             if (targetSocket) {
@@ -981,35 +774,8 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Обновляем список чатов для обоих пользователей
-        if (user1 && user1.socketId) {
-            const user1Socket = io.sockets.sockets.get(user1.socketId);
-            if (user1Socket) {
-                user1Socket.emit('chats_updated');
-            }
-        }
-        
-        if (user2 && user2.socketId) {
-            const user2Socket = io.sockets.sockets.get(user2.socketId);
-            if (user2Socket) {
-                user2Socket.emit('chats_updated');
-            }
-        }
-    });
-
-    // ОБНОВЛЕНИЕ СПИСКА ЧАТОВ
-    socket.on('chats_updated', () => {
-        const user = getUserBySocketId(socket.id);
-        const chats = getChats();
-        
-        if (user && (user.role === 'admin' || user.role === 'owner')) {
-            socket.emit('chats_list', { chats });
-        } else if (user) {
-            const userChats = chats.filter(chat => 
-                chat.user1 === user.id || chat.user2 === user.id
-            );
-            socket.emit('chats_list', { chats: userChats });
-        }
+        // Обновляем список чатов для всех участников
+        io.emit('chats_list', { chats: getChats() });
     });
 
     // ОЦЕНКА
@@ -1031,10 +797,9 @@ io.on('connection', (socket) => {
         ratings.push(newRating);
         saveRatings(ratings);
 
-        // Обновляем рейтинг слушателя
         const listenerRatings = ratings.filter(r => r.listenerId === listenerId);
         const totalRating = listenerRatings.reduce((sum, r) => sum + r.rating, 0);
-        const avgRating = listenerRatings.length > 0 ? totalRating / listenerRatings.length : 0;
+        const avgRating = totalRating / listenerRatings.length;
 
         const listener = getUserById(listenerId);
         if (listener) {
@@ -1064,6 +829,90 @@ io.on('connection', (socket) => {
         }
     });
 
+    // МОДЕРАЦИЯ
+    socket.on('apply_moderation_action', (data) => {
+        console.log(`⚖️ Применение модерации:`, data);
+        
+        const { userId, action, reason, moderatorId, duration } = data;
+        const user = getUserById(userId);
+        const moderator = getUserById(moderatorId);
+        
+        if (!user) {
+            socket.emit('moderation_error', 'Пользователь не найден');
+            return;
+        }
+
+        const updates = {};
+        const history = getModerationHistory();
+        
+        const moderationRecord = {
+            id: generateId(),
+            userId,
+            moderatorId,
+            action,
+            reason,
+            timestamp: new Date().toISOString()
+        };
+
+        switch (action) {
+            case 'warning':
+                updates.warnings = (user.warnings || 0) + 1;
+                moderationRecord.message = `Пользователь получил предупреждение: ${reason}`;
+                break;
+                
+            case 'block':
+                const blockUntil = new Date();
+                blockUntil.setDate(blockUntil.getDate() + (duration || 7));
+                updates.isBlocked = true;
+                updates.blockedUntil = blockUntil.toISOString();
+                moderationRecord.duration = duration;
+                moderationRecord.message = `Пользователь заблокирован до ${blockUntil.toLocaleDateString()}: ${reason}`;
+                break;
+                
+            case 'vacation':
+                const vacationUntil = new Date();
+                vacationUntil.setDate(vacationUntil.getDate() + (duration || 7));
+                updates.isOnVacation = true;
+                updates.vacationUntil = vacationUntil.toISOString();
+                moderationRecord.duration = duration;
+                moderationRecord.message = `Пользователь в отпуске до ${vacationUntil.toLocaleDateString()}: ${reason}`;
+                break;
+                
+            case 'unblock':
+                updates.isBlocked = false;
+                updates.blockedUntil = null;
+                moderationRecord.message = `Пользователь разблокирован: ${reason}`;
+                break;
+        }
+
+        updateUser(userId, updates);
+        history.push(moderationRecord);
+        saveModerationHistory(history);
+
+        socket.emit('moderation_action_applied', {
+            success: true,
+            message: moderationRecord.message,
+            user: getUserById(userId)
+        });
+
+        // Уведомляем пользователя если он онлайн
+        if (user.socketId) {
+            const userSocket = io.sockets.sockets.get(user.socketId);
+            if (userSocket) {
+                userSocket.emit('moderation_action_received', {
+                    action,
+                    reason,
+                    duration,
+                    moderator: moderator ? moderator.displayName : 'Система'
+                });
+            }
+        }
+
+        // Обновляем списки
+        io.emit('users_list', { users: getUsers() });
+        io.emit('moderation_history', { history });
+    });
+
     // ЗАВЕРШЕНИЕ ЧАТА
     socket.on('end_chat', (data) => {
         console.log(`🔚 Завершение чата:`, data);
@@ -1081,7 +930,7 @@ io.on('connection', (socket) => {
         chat.endTime = new Date().toISOString();
         saveChats(chats);
 
-        // Уведомляем обоих участников чата
+        // Уведомляем обоих участников
         socket.emit('chat_ended', { chatId });
         
         const user2 = getUserById(chat.user2);
@@ -1092,32 +941,20 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Обновляем списки чатов для обоих пользователей
-        const user1 = getUserById(chat.user1);
-        if (user1 && user1.socketId) {
-            const user1Socket = io.sockets.sockets.get(user1.socketId);
-            if (user1Socket) {
-                user1Socket.emit('chats_updated');
-            }
-        }
-        
-        if (user2 && user2.socketId) {
-            const user2Socket = io.sockets.sockets.get(user2.socketId);
-            if (user2Socket) {
-                user2Socket.emit('chats_updated');
-            }
-        }
+        // Обновляем список чатов
+        io.emit('chats_list', { chats: getChats() });
     });
 
     // ОТКЛЮЧЕНИЕ
     socket.on('disconnect', (reason) => {
-        console.log(`🔌 Отключение: ${socket.id} (${reason})`);
+        console.log(`🔌 Отключение: ${socket.id} - ${reason}`);
         
         const user = getUserBySocketId(socket.id);
         if (user) {
             updateUser(user.id, {
                 isOnline: false,
-                socketId: null
+                socketId: null,
+                lastSeen: new Date().toISOString()
             });
             
             socket.broadcast.emit('user_disconnected', { userId: user.id });
@@ -1146,11 +983,6 @@ app.get('/api/notifications', (req, res) => {
     res.json(notifications);
 });
 
-app.get('/api/moderation', (req, res) => {
-    const history = getModerationHistory();
-    res.json(history);
-});
-
 app.get('/api/stats', (req, res) => {
     const users = getUsers();
     const chats = getChats();
@@ -1159,7 +991,11 @@ app.get('/api/stats', (req, res) => {
         totalUsers: users.length,
         totalListeners: users.filter(u => u.role === 'listener').length,
         activeChats: chats.filter(c => c.isActive).length,
-        onlineUsers: users.filter(u => u.isOnline).length
+        onlineUsers: users.filter(u => u.isOnline).length,
+        totalMessages: chats.reduce((total, chat) => total + (chat.messages?.length || 0), 0),
+        avgRating: users.filter(u => u.role === 'listener' && u.ratingCount > 0)
+                      .reduce((sum, u) => sum + u.rating, 0) / 
+                      users.filter(u => u.role === 'listener' && u.ratingCount > 0).length || 0
     };
     res.json(stats);
 });
@@ -1169,24 +1005,18 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'OK', 
-        timestamp: new Date().toISOString(),
-        data: {
-            users: getUsers().length,
-            chats: getChats().length,
-            ratings: getRatings().length
-        }
-    });
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
+
+// Запускаем автосохранение
+startAutoSave();
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     const users = getUsers();
     console.log(`🚀 Сервер запущен на порту ${PORT}`);
     console.log(`📊 Пользователей: ${users.length}`);
-    console.log(`💬 Чатов: ${getChats().length}`);
-    console.log(`⭐ Рейтингов: ${getRatings().length}`);
+    console.log(`💾 Автосохранение данных включено`);
     console.log(`🔐 Аккаунты для входа:`);
     console.log(`   👑 Владелец: owner / owner2024`);
     console.log(`   ⚙️ Админ: admin / admin123`);

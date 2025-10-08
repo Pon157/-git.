@@ -8,7 +8,20 @@ const cors = require('cors');
 const app = express();
 const server = http.createServer(app);
 
-// Настройка CORS для Render
+// Улучшенные настройки CORS
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Статические файлы
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Улучшенные настройки Socket.IO
 const io = socketIo(server, {
     cors: {
         origin: "*",
@@ -17,14 +30,17 @@ const io = socketIo(server, {
     },
     pingTimeout: 60000,
     pingInterval: 25000,
-    transports: ['websocket', 'polling']
+    transports: ['websocket', 'polling'],
+    allowEIO3: true
 });
 
-// Middleware
-app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Обработка ошибок соединения Socket.IO
+io.engine.on("connection_error", (err) => {
+    console.log('❌ Ошибка соединения Socket.IO:', err.req);
+    console.log('❌ Code:', err.code);
+    console.log('❌ Message:', err.message);
+    console.log('❌ Context:', err.context);
+});
 
 // Файлы для хранения данных
 const DATA_DIR = './data';
@@ -173,6 +189,19 @@ function initializeUsers() {
             avatar: '🎧',
             rating: 4.8,
             ratingCount: 15,
+            isOnline: false,
+            socketId: null,
+            createdAt: new Date().toISOString()
+        },
+        {
+            id: 'user-5', 
+            username: 'listener2',
+            password: '123456',
+            role: 'listener',
+            displayName: 'Максим Слушатель',
+            avatar: '🎵',
+            rating: 4.5,
+            ratingCount: 8,
             isOnline: false,
             socketId: null,
             createdAt: new Date().toISOString()
@@ -752,7 +781,7 @@ io.on('connection', (socket) => {
 
     // ОТКЛЮЧЕНИЕ
     socket.on('disconnect', (reason) => {
-        console.log(`🔌 Отключение: ${socket.id}`);
+        console.log(`🔌 Отключение: ${socket.id} (${reason})`);
         
         const user = getUserBySocketId(socket.id);
         if (user) {
@@ -800,6 +829,28 @@ app.get('/api/stats', (req, res) => {
     res.json(stats);
 });
 
+app.get('/api/health', (req, res) => {
+    const users = getUsers();
+    const chats = getChats();
+    
+    res.json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        users: users.length,
+        chats: chats.length,
+        environment: process.env.NODE_ENV || 'development',
+        message: 'Server is running on Render'
+    });
+});
+
+app.get('/api/socket-check', (req, res) => {
+    const sockets = Array.from(io.sockets.sockets.keys());
+    res.json({
+        connectedSockets: sockets.length,
+        socketIds: sockets
+    });
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -822,5 +873,7 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`   ⚙️ Админ: admin / admin123`);
     console.log(`   👤 Пользователь: user / 123456`);
     console.log(`   🎧 Слушатель: listener / 123456`);
+    console.log(`   🎧 Слушатель 2: listener2 / 123456`);
     console.log(`🌐 Сервер готов к работе!`);
+    console.log(`📡 Socket.IO подключен и ожидает соединений`);
 });

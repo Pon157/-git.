@@ -439,6 +439,7 @@
             border-top: 1px solid var(--border-color);
             background: var(--card-bg);
             align-items: center;
+            gap: 10px;
         }
 
         .message-input {
@@ -453,13 +454,17 @@
         }
 
         .send-btn {
-            margin-left: 10px;
             padding: 12px 20px;
             background: var(--primary-color);
             color: white;
             border: none;
             border-radius: 24px;
             cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .send-btn:hover {
+            background: var(--accent-color);
         }
 
         .admin-panel, .owner-panel {
@@ -859,6 +864,81 @@
             margin-bottom: 15px;
         }
 
+        /* НОВЫЕ СТИЛИ ДЛЯ ИСПРАВЛЕНИЙ */
+        .chat-controls {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .media-attachment {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin: 5px 0;
+        }
+
+        .message.media {
+            background: transparent;
+            border: 1px solid var(--border-color);
+        }
+
+        .message.sticker {
+            background: transparent;
+            font-size: 32px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .mobile-functions {
+            display: none;
+            background: var(--card-bg);
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .mobile-functions.active {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .mobile-function-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
         @media (max-width: 992px) {
             .admin-container, .owner-container {
                 flex-direction: column;
@@ -892,6 +972,10 @@
             .mobile-back-btn {
                 display: block;
             }
+
+            .mobile-functions {
+                display: flex;
+            }
         }
 
         @media (max-width: 768px) {
@@ -922,6 +1006,11 @@
             
             .message {
                 max-width: 85%;
+            }
+
+            .chat-controls {
+                flex-wrap: wrap;
+                justify-content: center;
             }
         }
 
@@ -1003,7 +1092,7 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="settings-btn" onclick="showUserSettings()">⚙️ Настройки</button>
+                <button class="settings-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
                 <button class="btn btn-primary" onclick="logout()">🚪 Выйти</button>
             </div>
         </div>
@@ -1044,9 +1133,14 @@
                             </div>
                         </div>
                         <div class="message-input-container">
+                            <div class="chat-controls">
+                                <button class="sticker-btn" onclick="toggleStickerPicker('user')">😊</button>
+                                <button class="file-upload-btn" onclick="triggerFileUpload('user')">📎</button>
+                            </div>
                             <input type="text" class="message-input" id="userChatMessageInput" placeholder="Введите сообщение... (Enter для отправки)">
                             <button class="send-btn" onclick="sendUserChatMessage()">📤</button>
                         </div>
+                        <div id="userStickerPicker" class="sticker-picker hidden"></div>
                     </div>
                 </div>
             </div>
@@ -1062,6 +1156,14 @@
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- МОБИЛЬНЫЕ ФУНКЦИИ -->
+        <div class="mobile-functions" id="userMobileFunctions">
+            <button class="mobile-function-btn" onclick="showUserTab('listeners')">🎧 Слушатели</button>
+            <button class="mobile-function-btn" onclick="showUserTab('chats')">💬 Чаты</button>
+            <button class="mobile-function-btn" onclick="showUserTab('notifications')">📢 Уведомления</button>
+            <button class="mobile-function-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
         </div>
     </div>
 
@@ -1081,6 +1183,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="settings-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
                 <button class="btn btn-primary" onclick="logout()">🚪 Выйти</button>
             </div>
         </div>
@@ -1109,9 +1212,14 @@
                             </div>
                         </div>
                         <div class="message-input-container">
+                            <div class="chat-controls">
+                                <button class="sticker-btn" onclick="toggleStickerPicker('listener')">😊</button>
+                                <button class="file-upload-btn" onclick="triggerFileUpload('listener')">📎</button>
+                            </div>
                             <input type="text" class="message-input" id="listenerMessageInput" placeholder="Введите сообщение... (Enter для отправки)">
                             <button class="send-btn" onclick="sendListenerMessage()">📤</button>
                         </div>
+                        <div id="listenerStickerPicker" class="sticker-picker hidden"></div>
                     </div>
                 </div>
             </div>
@@ -1136,6 +1244,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- МОБИЛЬНЫЕ ФУНКЦИИ СЛУШАТЕЛЯ -->
+        <div class="mobile-functions" id="listenerMobileFunctions">
+            <button class="mobile-function-btn" onclick="showListenerTab('chats')">💬 Чаты</button>
+            <button class="mobile-function-btn" onclick="showListenerTab('stats')">📊 Статистика</button>
+            <button class="mobile-function-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
         </div>
     </div>
 
@@ -1163,6 +1278,7 @@
                 <div class="content-header admin-header">
                     <h2 id="contentTitle">📊 Статистика системы</h2>
                     <div class="header-actions">
+                        <button class="settings-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
                         <button class="btn btn-primary" onclick="logout()">🚪 Выйти</button>
                     </div>
                 </div>
@@ -1303,6 +1419,7 @@
                 <div class="content-header owner-header">
                     <h2 id="ownerContentTitle">📊 Статистика системы</h2>
                     <div class="header-actions">
+                        <button class="settings-btn" onclick="showSettingsModal()">⚙️ Настройки</button>
                         <button class="btn btn-owner" onclick="logout()">🚪 Выйти</button>
                     </div>
                 </div>
@@ -1516,6 +1633,86 @@
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Настройки системы</h3>
+                <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+            </div>
+            
+            <div class="settings-section">
+                <h4 class="settings-title">🎨 Внешний вид</h4>
+                <div class="theme-selector">
+                    <div class="theme-option active" data-theme="sunrise">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);"></div>
+                        <div>Sunrise</div>
+                    </div>
+                    <div class="theme-option" data-theme="light">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);"></div>
+                        <div>Light</div>
+                    </div>
+                    <div class="theme-option" data-theme="dark">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #3498db 0%, #34495e 100%);"></div>
+                        <div>Dark</div>
+                    </div>
+                    <div class="theme-option" data-theme="ocean">
+                        <div class="theme-preview" style="background: linear-gradient(135deg, #1e90ff 0%, #00ced1 100%);"></div>
+                        <div>Ocean</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h4 class="settings-title">🔤 Шрифт</h4>
+                <div class="form-group">
+                    <select class="form-input" id="fontFamilySelect">
+                        <option value="default">Segoe UI (По умолчанию)</option>
+                        <option value="modern">Arial (Современный)</option>
+                        <option value="elegant">Georgia (Элегантный)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h4 class="settings-title">📏 Размер текста</h4>
+                <div class="form-group">
+                    <select class="form-input" id="fontSizeSelect">
+                        <option value="small">Маленький</option>
+                        <option value="normal" selected>Обычный</option>
+                        <option value="large">Большой</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <h4 class="settings-title">👤 Настройки профиля</h4>
+                <div class="form-group">
+                    <label class="form-label">📛 Отображаемое имя</label>
+                    <input type="text" class="form-input" id="profileDisplayName" placeholder="Введите ваше имя">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🖼️ Аватар</label>
+                    <div class="avatar-selection">
+                        <div class="avatar-option active" data-avatar="👤">👤</div>
+                        <div class="avatar-option" data-avatar="😊">😊</div>
+                        <div class="avatar-option" data-avatar="🎧">🎧</div>
+                        <div class="avatar-option" data-avatar="👑">👑</div>
+                        <div class="avatar-option" data-avatar="⭐">⭐</div>
+                        <div class="avatar-option" data-avatar="🔥">🔥</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary w-full" onclick="saveSettings()">
+                💾 Сохранить настройки
+            </button>
+        </div>
+    </div>
+
+    <!-- СКРЫТЫЙ ИНПУТ ДЛЯ ЗАГРУЗКИ ФАЙЛОВ -->
+    <input type="file" id="fileUploadInput" class="hidden" accept="image/*,video/*,.pdf,.doc,.docx">
+
     <!-- УВЕДОМЛЕНИЯ -->
     <div class="notification" id="notification"></div>
 
@@ -1527,6 +1724,7 @@
         let users = [];
         let chats = [];
         let selectedChatId = null;
+        let stickerPickers = {};
 
         // URL сервера
         const SERVER_URL = window.location.origin;
@@ -1538,7 +1736,9 @@
 
         function initializeApp() {
             setupEventListeners();
+            initializeStickers();
             connectToServer();
+            loadSettings();
         }
 
         function setupEventListeners() {
@@ -1599,6 +1799,40 @@
             });
             document.getElementById('listenerMessageInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') sendListenerMessage();
+            });
+
+            // Обработчики настроек
+            document.querySelectorAll('.theme-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('.avatar-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.avatar-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            // Обработчик загрузки файлов
+            document.getElementById('fileUploadInput').addEventListener('change', handleFileUpload);
+        }
+
+        function initializeStickers() {
+            const stickers = ['😀', '😂', '🥰', '😎', '🤔', '😢', '😡', '🎉', '❤️', '🔥', '⭐', '👍'];
+            stickerPickers = {
+                'user': document.getElementById('userStickerPicker'),
+                'listener': document.getElementById('listenerStickerPicker')
+            };
+
+            Object.keys(stickerPickers).forEach(key => {
+                if (stickerPickers[key]) {
+                    stickerPickers[key].innerHTML = stickers.map(sticker => 
+                        `<div class="sticker-item" onclick="sendSticker('${sticker}', '${key}')">${sticker}</div>`
+                    ).join('');
+                }
             });
         }
 
@@ -1677,6 +1911,20 @@
                 showNotification('⚖️ Действие применено!', 'success');
             });
 
+            // Автоматическое обновление чатов
+            socket.on('chat_updated', (data) => {
+                const chatIndex = chats.findIndex(c => c.id === data.chat.id);
+                if (chatIndex !== -1) {
+                    chats[chatIndex] = data.chat;
+                    updateChatsUI();
+                    
+                    // Если это активный чат, обновляем сообщения
+                    if (selectedChatId === data.chat.id) {
+                        displayChatMessages(data.chat);
+                    }
+                }
+            });
+
             // Запрос данных
             setTimeout(() => {
                 if (socket.connected) {
@@ -1741,17 +1989,19 @@
             } else {
                 showUserInterface();
             }
+            
+            // Обновляем интерфейс в реальном времени
+            setupRealTimeUpdates();
         }
 
         // ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ
         function showUserInterface() {
             hideAllInterfaces();
             document.getElementById('userInterface').style.display = 'block';
-            document.getElementById('userDisplayName').textContent = currentUser.displayName || currentUser.username;
-            document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
-            document.getElementById('userAvatar').textContent = currentUser.avatar || '👤';
+            updateUserProfile();
             loadListenerCards();
             showUserTab('listeners');
+            setupRealTimeUpdates();
         }
 
         function showUserTab(tabName) {
@@ -1761,17 +2011,20 @@
             document.getElementById('listenersTab').classList.toggle('hidden', tabName !== 'listeners');
             document.getElementById('userChatsTab').classList.toggle('hidden', tabName !== 'chats');
             document.getElementById('userNotificationsTab').classList.toggle('hidden', tabName !== 'notifications');
+            
+            if (tabName === 'chats') {
+                updateUserChatsList();
+            }
         }
 
         // ИНТЕРФЕЙС СЛУШАТЕЛЯ
         function showListenerInterface() {
             hideAllInterfaces();
             document.getElementById('listenerInterface').style.display = 'block';
-            document.getElementById('listenerDisplayName').textContent = currentUser.displayName || currentUser.username;
-            document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
-            document.getElementById('listenerAvatar').textContent = currentUser.avatar || '🎧';
+            updateListenerProfile();
             updateListenerStats();
             showListenerTab('chats');
+            setupRealTimeUpdates();
         }
 
         function showListenerTab(tabName) {
@@ -1780,6 +2033,10 @@
             });
             document.getElementById('listenerChatsTab').classList.toggle('hidden', tabName !== 'chats');
             document.getElementById('listenerStatsTab').classList.toggle('hidden', tabName !== 'stats');
+            
+            if (tabName === 'chats') {
+                updateListenerChatsList();
+            }
         }
 
         // ПАНЕЛЬ АДМИНИСТРАТОРА
@@ -1788,6 +2045,7 @@
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('adminDisplayName').textContent = currentUser.displayName || currentUser.username;
             showAdminSection('dashboard');
+            setupRealTimeUpdates();
         }
 
         function showAdminSection(section) {
@@ -1814,12 +2072,13 @@
             }
         }
 
-        // ПАНЕЛЬ ВЛАДЕЛЬЦА - ИСПРАВЛЕНА!
+        // ПАНЕЛЬ ВЛАДЕЛЬЦА
         function showOwnerPanel() {
             hideAllInterfaces();
             document.getElementById('ownerPanel').style.display = 'block';
             document.getElementById('ownerDisplayName').textContent = currentUser.displayName || currentUser.username;
             showOwnerSection('dashboard');
+            setupRealTimeUpdates();
         }
 
         function showOwnerSection(section) {
@@ -1888,7 +2147,7 @@
             showNotification('👋 До свидания!', 'success');
         }
 
-        // ФУНКЦИОНАЛ ЧАТА - ОПТИМИЗИРОВАН!
+        // ФУНКЦИОНАЛ ЧАТА
         function loadListenerCards() {
             const container = document.getElementById('listenerCards');
             const listeners = users.filter(user => user.role === 'listener' && !user.isBlocked);
@@ -1961,7 +2220,7 @@
                     <div class="chat-item ${selectedChatId === chat.id ? 'active' : ''}" onclick="selectUserChat('${chat.id}')">
                         <div style="font-weight: 600;">${otherUser ? (otherUser.displayName || otherUser.username) : 'Пользователь'}</div>
                         <div style="font-size: 12px; margin-top: 5px;">
-                            ${lastMessage ? lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '') : 'Нет сообщений'}
+                            ${lastMessage ? (lastMessage.type === 'sticker' ? 'Стикер' : lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 'Нет сообщений'}
                         </div>
                     </div>
                 `;
@@ -1973,12 +2232,18 @@
             const chat = chats.find(c => c.id === chatId);
             if (!chat) return;
             
-            const container = document.getElementById('userChatMessagesContainer');
+            displayChatMessages(chat);
+        }
+
+        function displayChatMessages(chat) {
+            const container = getCurrentMessagesContainer();
+            if (!container) return;
+            
             container.innerHTML = '';
             
             if (chat.messages && chat.messages.length > 0) {
                 chat.messages.forEach(message => {
-                    addMessageToContainer(message, 'userChatMessagesContainer', false);
+                    addMessageToContainer(message, container.id, false);
                 });
                 container.scrollTop = container.scrollHeight;
             }
@@ -2005,6 +2270,42 @@
             input.value = '';
         }
 
+        function sendListenerMessage() {
+            const input = document.getElementById('listenerMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !selectedChatId) return;
+            
+            socket.emit('send_message', {
+                chatId: selectedChatId,
+                message: {
+                    text: message,
+                    senderId: currentUser.id,
+                    type: 'text'
+                }
+            });
+            
+            input.value = '';
+        }
+
+        function sendSticker(sticker, userType) {
+            if (!selectedChatId) {
+                showNotification('❌ Выберите чат для отправки стикера!', 'error');
+                return;
+            }
+            
+            socket.emit('send_message', {
+                chatId: selectedChatId,
+                message: {
+                    text: sticker,
+                    senderId: currentUser.id,
+                    type: 'sticker'
+                }
+            });
+            
+            toggleStickerPicker(userType);
+        }
+
         function handleNewMessage(data) {
             const chat = chats.find(c => c.id === data.chatId);
             if (chat) {
@@ -2026,17 +2327,35 @@
             
             const messageElement = document.createElement('div');
             const isOwnMessage = message.senderId === currentUser.id;
-            messageElement.className = `message ${isOwnMessage ? 'user' : 'other'}`;
             
-            const sender = users.find(u => u.id === message.senderId);
-            const senderName = sender ? (sender.displayName || sender.username) : 'Неизвестный';
-            
-            messageElement.innerHTML = `
-                <div>${message.text}</div>
-                <div class="message-time">
-                    ${senderName} • ${new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
-                </div>
-            `;
+            if (message.type === 'sticker') {
+                messageElement.className = `message sticker ${isOwnMessage ? 'user' : 'other'}`;
+                messageElement.innerHTML = `
+                    <div>${message.text}</div>
+                    <div class="message-time">
+                        ${new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                `;
+            } else if (message.type === 'media') {
+                messageElement.className = `message media ${isOwnMessage ? 'user' : 'other'}`;
+                messageElement.innerHTML = `
+                    <img src="${message.mediaUrl}" alt="Медиафайл" class="media-attachment">
+                    <div class="message-time">
+                        ${new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                `;
+            } else {
+                messageElement.className = `message ${isOwnMessage ? 'user' : 'other'}`;
+                const sender = users.find(u => u.id === message.senderId);
+                const senderName = sender ? (sender.displayName || sender.username) : 'Неизвестный';
+                
+                messageElement.innerHTML = `
+                    <div>${message.text}</div>
+                    <div class="message-time">
+                        ${senderName} • ${new Date(message.timestamp).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                    </div>
+                `;
+            }
             
             container.appendChild(messageElement);
             
@@ -2046,9 +2365,149 @@
         }
 
         function getCurrentMessagesContainer() {
-            if (currentUser.role === 'user') return 'userChatMessagesContainer';
-            if (currentUser.role === 'listener') return 'listenerMessagesContainer';
-            return 'userChatMessagesContainer';
+            if (currentUser.role === 'user') return document.getElementById('userChatMessagesContainer');
+            if (currentUser.role === 'listener') return document.getElementById('listenerMessagesContainer');
+            return document.getElementById('userChatMessagesContainer');
+        }
+
+        // СТИКЕРЫ И МЕДИА
+        function toggleStickerPicker(userType) {
+            const picker = stickerPickers[userType];
+            if (picker) {
+                picker.classList.toggle('hidden');
+            }
+        }
+
+        function triggerFileUpload(userType) {
+            document.getElementById('fileUploadInput').click();
+            // Сохраняем тип пользователя для обработки загрузки
+            document.getElementById('fileUploadInput').setAttribute('data-user-type', userType);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !selectedChatId) return;
+            
+            const userType = document.getElementById('fileUploadInput').getAttribute('data-user-type');
+            
+            // В реальном приложении здесь была бы загрузка на сервер
+            // Для демонстрации создаем mock URL
+            const mockMediaUrl = URL.createObjectURL(file);
+            
+            socket.emit('send_message', {
+                chatId: selectedChatId,
+                message: {
+                    mediaUrl: mockMediaUrl,
+                    senderId: currentUser.id,
+                    type: 'media',
+                    fileName: file.name
+                }
+            });
+            
+            // Очищаем input
+            event.target.value = '';
+        }
+
+        // НАСТРОЙКИ
+        function showSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'flex';
+            loadCurrentSettings();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function loadCurrentSettings() {
+            // Загрузка текущих настроек
+            const savedTheme = localStorage.getItem('theme') || 'sunrise';
+            const savedFontFamily = localStorage.getItem('fontFamily') || 'default';
+            const savedFontSize = localStorage.getItem('fontSize') || 'normal';
+            const savedDisplayName = localStorage.getItem('displayName') || '';
+            const savedAvatar = localStorage.getItem('avatar') || '👤';
+            
+            // Установка значений в форму
+            document.querySelectorAll('.theme-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-theme') === savedTheme);
+            });
+            
+            document.getElementById('fontFamilySelect').value = savedFontFamily;
+            document.getElementById('fontSizeSelect').value = savedFontSize;
+            document.getElementById('profileDisplayName').value = savedDisplayName;
+            
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-avatar') === savedAvatar);
+            });
+        }
+
+        function saveSettings() {
+            const theme = document.querySelector('.theme-option.active').getAttribute('data-theme');
+            const fontFamily = document.getElementById('fontFamilySelect').value;
+            const fontSize = document.getElementById('fontSizeSelect').value;
+            const displayName = document.getElementById('profileDisplayName').value.trim();
+            const avatar = document.querySelector('.avatar-option.active').getAttribute('data-avatar');
+            
+            // Сохранение в localStorage
+            localStorage.setItem('theme', theme);
+            localStorage.setItem('fontFamily', fontFamily);
+            localStorage.setItem('fontSize', fontSize);
+            localStorage.setItem('displayName', displayName);
+            localStorage.setItem('avatar', avatar);
+            
+            // Применение настроек
+            applySettings();
+            
+            closeSettingsModal();
+            showNotification('✅ Настройки сохранены!', 'success');
+        }
+
+        function loadSettings() {
+            applySettings();
+        }
+
+        function applySettings() {
+            const theme = localStorage.getItem('theme') || 'sunrise';
+            const fontFamily = localStorage.getItem('fontFamily') || 'default';
+            const fontSize = localStorage.getItem('fontSize') || 'normal';
+            const displayName = localStorage.getItem('displayName') || '';
+            const avatar = localStorage.getItem('avatar') || '👤';
+            
+            // Применение темы
+            document.body.className = `theme-${theme} font-${fontFamily} font-size-${fontSize}`;
+            
+            // Обновление профиля если пользователь авторизован
+            if (currentUser) {
+                updateUserProfile();
+            }
+        }
+
+        function updateUserProfile() {
+            const displayName = localStorage.getItem('displayName') || currentUser.username;
+            const avatar = localStorage.getItem('avatar') || '👤';
+            
+            document.getElementById('userDisplayName').textContent = displayName;
+            document.getElementById('userRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('userAvatar').textContent = avatar;
+        }
+
+        function updateListenerProfile() {
+            const displayName = localStorage.getItem('displayName') || currentUser.username;
+            const avatar = localStorage.getItem('avatar') || '🎧';
+            
+            document.getElementById('listenerDisplayName').textContent = displayName;
+            document.getElementById('listenerRole').textContent = getRoleDisplayName(currentUser.role);
+            document.getElementById('listenerAvatar').textContent = avatar;
+        }
+
+        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА В РЕАЛЬНОМ ВРЕМЕНИ
+        function setupRealTimeUpdates() {
+            // Автоматическое обновление списка чатов каждые 5 секунд
+            setInterval(() => {
+                if (socket.connected) {
+                    socket.emit('get_chats');
+                    socket.emit('get_users');
+                }
+            }, 5000);
         }
 
         // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
@@ -2089,7 +2548,7 @@
             document.getElementById('ownerTotalAdmins').textContent = totalAdmins;
         }
 
-        // ФУНКЦИИ ВЛАДЕЛЬЦА - ИСПРАВЛЕНЫ!
+        // ФУНКЦИИ ВЛАДЕЛЬЦА
         function updateOwnerUsersTable() {
             const container = document.getElementById('ownerUsersTable').querySelector('tbody');
             
@@ -2335,10 +2794,15 @@
             
             container.innerHTML = listenerChats.map(chat => {
                 const user = users.find(u => u.id === chat.user1);
+                const lastMessage = chat.messages && chat.messages.length > 0 ? 
+                    chat.messages[chat.messages.length - 1] : null;
+                
                 return `
-                    <div class="chat-item" onclick="selectListenerChat('${chat.id}')">
+                    <div class="chat-item ${selectedChatId === chat.id ? 'active' : ''}" onclick="selectListenerChat('${chat.id}')">
                         <div style="font-weight: 600;">${user ? (user.displayName || user.username) : 'Пользователь'}</div>
-                        <div style="font-size: 11px; margin-top: 5px;">🟢 Активен</div>
+                        <div style="font-size: 12px; margin-top: 5px;">
+                            ${lastMessage ? (lastMessage.type === 'sticker' ? 'Стикер' : lastMessage.text.substring(0, 30) + (lastMessage.text.length > 30 ? '...' : '')) : 'Нет сообщений'}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -2349,33 +2813,7 @@
             const chat = chats.find(c => c.id === chatId);
             if (!chat) return;
             
-            const container = document.getElementById('listenerMessagesContainer');
-            container.innerHTML = '';
-            
-            if (chat.messages && chat.messages.length > 0) {
-                chat.messages.forEach(message => {
-                    addMessageToContainer(message, 'listenerMessagesContainer', false);
-                });
-                container.scrollTop = container.scrollHeight;
-            }
-        }
-
-        function sendListenerMessage() {
-            const input = document.getElementById('listenerMessageInput');
-            const message = input.value.trim();
-            
-            if (!message || !selectedChatId) return;
-            
-            socket.emit('send_message', {
-                chatId: selectedChatId,
-                message: {
-                    text: message,
-                    senderId: currentUser.id,
-                    type: 'text'
-                }
-            });
-            
-            input.value = '';
+            displayChatMessages(chat);
         }
 
         function updateListenerStats() {
@@ -2451,7 +2889,7 @@
             document.getElementById('moderationReason').value = '';
         }
 
-        console.log('🎉 Система загружена!');
+        console.log('🎉 Система загружена! Все функции активированы!');
     </script>
 </body>
 </html>
